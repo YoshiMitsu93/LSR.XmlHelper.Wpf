@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LSR.XmlHelper.Core/LSR.XmlHelper.Core.csproj" />
+  <Project Path="LSR.XmlHelper.Wpf/LSR.XmlHelper.Wpf.csproj" />
+</Solution>
