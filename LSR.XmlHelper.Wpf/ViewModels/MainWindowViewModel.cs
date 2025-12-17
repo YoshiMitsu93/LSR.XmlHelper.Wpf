@@ -23,6 +23,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly XmlFileDiscoveryService _discovery;
         private readonly XmlFileLoaderService _loader;
         private readonly XmlFileSaveService _saver;
+        private readonly XmlFriendlyViewService _friendly;
 
         private CancellationTokenSource? _loadCts;
 
@@ -34,8 +35,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private XmlFileListItem? _selectedXmlFile;
         private XmlExplorerNode? _selectedTreeNode;
 
-        private XmlListViewMode _viewMode = XmlListViewMode.Folders;
-        private bool _includeSubfolders = true;
+        private XmlListViewMode _viewMode = XmlListViewMode.Flat;
+        private bool _includeSubfolders;
+
+        private bool _isFriendlyView;
+        private XmlFriendlyDocument? _friendlyDocument;
+
+        private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
+        private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
+        private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
+        private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
 
         public MainWindowViewModel()
         {
@@ -43,6 +52,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _discovery = new XmlFileDiscoveryService();
             _loader = new XmlFileLoaderService();
             _saver = new XmlFileSaveService();
+            _friendly = new XmlFriendlyViewService();
 
             XmlFiles = new ObservableCollection<XmlFileListItem>();
             XmlTree = new ObservableCollection<XmlExplorerNode>();
@@ -50,9 +60,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OpenCommand = new RelayCommand(OpenFolder);
             FormatCommand = new RelayCommand(Format, () => !string.IsNullOrWhiteSpace(XmlText));
             ValidateCommand = new RelayCommand(Validate, () => !string.IsNullOrWhiteSpace(XmlText));
-            SaveCommand = new RelayCommand(Save, () => GetSelectedFilePath() is not null);
-            SaveAsCommand = new RelayCommand(SaveAs);
-            ClearCommand = new RelayCommand(Clear);
+            SaveCommand = new RelayCommand(Save, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
+            SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
+            ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
         }
 
         public string Title
@@ -70,7 +80,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string XmlText
         {
             get => _xmlText;
-            set => SetProperty(ref _xmlText, value);
+            set
+            {
+                if (SetProperty(ref _xmlText, value))
+                {
+                    Status = string.IsNullOrWhiteSpace(_xmlText) ? "Ready." : "Edited.";
+                    RefreshFriendlyFromXml();
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                }
+            }
         }
 
         public ObservableCollection<XmlFileListItem> XmlFiles { get; }
@@ -84,7 +102,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _viewMode, value))
                     return;
 
-                RefreshFileViews(false);
+                OnPropertyChanged(nameof(IsFlatMode));
+                OnPropertyChanged(nameof(IsFoldersMode));
+
+                RefreshFileViews(resetEditorAndSelection: false);
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -96,8 +118,77 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _includeSubfolders, value))
                     return;
 
-                RefreshFileViews(false);
+                RefreshFileViews(resetEditorAndSelection: false);
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
+        }
+
+        public bool IsFlatMode
+        {
+            get => ViewMode == XmlListViewMode.Flat;
+            set
+            {
+                if (value)
+                {
+                    ViewMode = XmlListViewMode.Flat;
+                    OnPropertyChanged(nameof(IsFoldersMode));
+                }
+            }
+        }
+
+        public bool IsFoldersMode
+        {
+            get => ViewMode == XmlListViewMode.Folders;
+            set
+            {
+                if (value)
+                {
+                    ViewMode = XmlListViewMode.Folders;
+                    OnPropertyChanged(nameof(IsFlatMode));
+                }
+            }
+        }
+
+        public bool IsFriendlyView
+        {
+            get => _isFriendlyView;
+            set => SetProperty(ref _isFriendlyView, value);
+        }
+
+        public ObservableCollection<XmlFriendlyCollectionViewModel> FriendlyCollections
+        {
+            get => _friendlyCollections;
+            private set => SetProperty(ref _friendlyCollections, value);
+        }
+
+        public XmlFriendlyCollectionViewModel? SelectedFriendlyCollection
+        {
+            get => _selectedFriendlyCollection;
+            set
+            {
+                if (!SetProperty(ref _selectedFriendlyCollection, value))
+                    return;
+
+                SelectedFriendlyEntry = value?.Entries.FirstOrDefault();
+            }
+        }
+
+        public XmlFriendlyEntryViewModel? SelectedFriendlyEntry
+        {
+            get => _selectedFriendlyEntry;
+            set
+            {
+                if (!SetProperty(ref _selectedFriendlyEntry, value))
+                    return;
+
+                RebuildFieldsForSelectedEntry();
+            }
+        }
+
+        public ObservableCollection<XmlFriendlyFieldViewModel> FriendlyFields
+        {
+            get => _friendlyFields;
+            private set => SetProperty(ref _friendlyFields, value);
         }
 
         public XmlFileListItem? SelectedXmlFile
@@ -113,6 +204,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     SelectedTreeNode = null;
                     _ = LoadFileAsync(value.FullPath);
                 }
+
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -124,11 +217,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _selectedTreeNode, value))
                     return;
 
-                if (value?.IsFile == true && value.FullPath is not null)
+                if (value is not null && value.IsFile && value.FullPath is not null)
                 {
                     SelectedXmlFile = null;
                     _ = LoadFileAsync(value.FullPath);
                 }
+
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -141,85 +236,159 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenFolder()
         {
-            using var dialog = new WinForms.FolderBrowserDialog
-            {
-                Description = "Pick the folder that contains your XML files",
-                ShowNewFolderButton = false
-            };
+            string? picked = null;
 
-            if (dialog.ShowDialog() != WinForms.DialogResult.OK)
+            try
+            {
+                using var dialog = new WinForms.FolderBrowserDialog
+                {
+                    Description = "Pick the folder that contains your XML files",
+                    ShowNewFolderButton = false
+                };
+
+                if (dialog.ShowDialog() == WinForms.DialogResult.OK &&
+                    !string.IsNullOrWhiteSpace(dialog.SelectedPath))
+                {
+                    picked = dialog.SelectedPath;
+                }
+            }
+            catch
+            {
+                picked = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(picked))
                 return;
 
-            _rootFolder = dialog.SelectedPath;
+            _rootFolder = picked;
+
+            RefreshFileViews(resetEditorAndSelection: true);
+
             Title = $"LSR XML Helper - {_rootFolder}";
-            RefreshFileViews(true);
+            Status = "Ready.";
         }
 
-        private void RefreshFileViews(bool resetEditor)
+        private void RefreshFileViews(bool resetEditorAndSelection)
         {
-            CancelPendingLoad();
+            var previouslySelectedPath = resetEditorAndSelection ? null : GetSelectedFilePath();
 
             XmlFiles.Clear();
             XmlTree.Clear();
 
-            if (resetEditor)
+            if (resetEditorAndSelection)
             {
-                XmlText = "";
+                CancelPendingLoad();
                 SelectedXmlFile = null;
                 SelectedTreeNode = null;
+                XmlText = "";
             }
 
             if (string.IsNullOrWhiteSpace(_rootFolder))
                 return;
 
             var include = ViewMode == XmlListViewMode.Folders || IncludeSubfolders;
-            var paths = _discovery.GetXmlFiles(_rootFolder, include);
+
+            IReadOnlyList<string> paths;
+
+            try
+            {
+                paths = _discovery.GetXmlFiles(_rootFolder, include);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Folder scan failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Folder scan failed.";
+                return;
+            }
 
             foreach (var p in paths)
-                XmlFiles.Add(new XmlFileListItem(p, Path.GetRelativePath(_rootFolder, p)));
+            {
+                var display = Path.GetRelativePath(_rootFolder, p);
+                XmlFiles.Add(new XmlFileListItem(p, display));
+            }
 
             BuildTree(paths);
 
-            Status = $"Found {paths.Count} XML file(s).";
+            Status = paths.Count == 0 ? "No XML files found." : $"Found {paths.Count} XML file(s).";
+
+            if (resetEditorAndSelection)
+            {
+                if (ViewMode == XmlListViewMode.Flat && XmlFiles.Count > 0)
+                    SelectedXmlFile = XmlFiles[0];
+
+                return;
+            }
+
+            if (previouslySelectedPath is null)
+                return;
+
+            if (ViewMode == XmlListViewMode.Flat)
+            {
+                var match = XmlFiles.FirstOrDefault(x => string.Equals(x.FullPath, previouslySelectedPath, StringComparison.OrdinalIgnoreCase));
+                if (match is not null)
+                    SelectedXmlFile = match;
+            }
         }
 
         private void BuildTree(IReadOnlyList<string> paths)
         {
-            var map = new Dictionary<string, XmlFolderNode>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(_rootFolder))
+                return;
 
-            foreach (var path in paths)
+            var folderMap = new Dictionary<string, XmlFolderNode>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var fullPath in paths)
             {
-                var rel = Path.GetRelativePath(_rootFolder!, path);
-                var parts = rel.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var relative = Path.GetRelativePath(_rootFolder, fullPath);
+                var parts = relative.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (parts.Length == 0)
+                    continue;
 
                 if (parts.Length == 1)
                 {
-                    XmlTree.Add(new XmlFileNode(parts[0], path));
+                    XmlTree.Add(new XmlFileNode(parts[0], fullPath));
                     continue;
                 }
 
-                XmlFolderNode? current = null;
-                var key = "";
+                XmlFolderNode? currentFolder = null;
+                var currentKey = "";
 
-                for (int i = 0; i < parts.Length - 1; i++)
+                for (var i = 0; i < parts.Length - 1; i++)
                 {
-                    key = key.Length == 0 ? parts[i] : $"{key}\\{parts[i]}";
+                    currentKey = string.IsNullOrEmpty(currentKey) ? parts[i] : $"{currentKey}\\{parts[i]}";
 
-                    if (!map.TryGetValue(key, out var folder))
+                    if (!folderMap.TryGetValue(currentKey, out var folderNode))
                     {
-                        folder = new XmlFolderNode(parts[i]);
-                        map[key] = folder;
+                        folderNode = new XmlFolderNode(parts[i]);
+                        folderMap[currentKey] = folderNode;
 
-                        if (current == null)
-                            XmlTree.Add(folder);
+                        if (currentFolder is null)
+                            XmlTree.Add(folderNode);
                         else
-                            current.Children.Add(folder);
+                            currentFolder.Children.Add(folderNode);
                     }
 
-                    current = folder;
+                    currentFolder = folderNode;
                 }
 
-                current!.Children.Add(new XmlFileNode(parts[^1], path));
+                currentFolder?.Children.Add(new XmlFileNode(parts[^1], fullPath));
+            }
+        }
+
+        private void CancelPendingLoad()
+        {
+            try
+            {
+                _loadCts?.Cancel();
+                _loadCts?.Dispose();
+            }
+            catch
+            {
+            }
+            finally
+            {
+                _loadCts = null;
             }
         }
 
@@ -228,86 +397,180 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             CancelPendingLoad();
             _loadCts = new CancellationTokenSource();
 
-            Status = $"Loading: {Path.GetFileName(path)}";
+            var name = Path.GetFileName(path);
+            Status = $"Loading: {name}";
 
             var result = await _loader.LoadAsync(path, _loadCts.Token);
 
             if (!result.Success)
             {
-                Status = "Open failed.";
-                if (result.Error != null)
+                if (result.Error is not null)
                 {
-                    MessageBox.Show(result.Error, "Open failed",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(result.Error, "Open failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Status = "Open failed.";
                 }
+
                 return;
             }
 
-            XmlText = result.Text!;
-            Status = $"Opened: {Path.GetFileName(path)}";
+            XmlText = result.Text ?? "";
+            Status = $"Opened: {name}";
         }
 
-        private void CancelPendingLoad()
+        private void RefreshFriendlyFromXml()
         {
-            _loadCts?.Cancel();
-            _loadCts?.Dispose();
-            _loadCts = null;
+            _friendlyDocument = _friendly.TryBuild(XmlText);
+
+            if (_friendlyDocument is null)
+            {
+                FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>();
+                SelectedFriendlyCollection = null;
+                SelectedFriendlyEntry = null;
+                FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
+                return;
+            }
+
+            var cols = _friendlyDocument.Collections.Select(c => new XmlFriendlyCollectionViewModel(c)).ToList();
+            FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
+            SelectedFriendlyCollection = FriendlyCollections.FirstOrDefault();
+
+            if (FriendlyCollections.Count > 0)
+                IsFriendlyView = true;
+        }
+
+        private void RebuildFieldsForSelectedEntry()
+        {
+            var entry = SelectedFriendlyEntry?.Entry;
+            if (entry is null)
+            {
+                FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
+                return;
+            }
+
+            var fields = entry.Fields
+                .OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(k => new XmlFriendlyFieldViewModel(k.Key, k.Value.Value ?? ""))
+                .ToList();
+
+            var newFields = new ObservableCollection<XmlFriendlyFieldViewModel>(fields);
+
+            foreach (var f in newFields)
+                f.PropertyChanged += FriendlyField_PropertyChanged;
+
+            FriendlyFields = newFields;
+        }
+
+        private void FriendlyField_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(XmlFriendlyFieldViewModel.Value))
+                return;
+
+            if (sender is not XmlFriendlyFieldViewModel field)
+                return;
+
+            var entry = SelectedFriendlyEntry?.Entry;
+            if (entry is null)
+                return;
+
+            if (!entry.TrySetField(field.Name, field.Value))
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            var updatedXml = _friendly.ToXml(_friendlyDocument);
+            _xmlText = updatedXml;
+            OnPropertyChanged(nameof(XmlText));
+
+            Status = "Edited.";
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         private string? GetSelectedFilePath()
         {
-            return SelectedXmlFile?.FullPath
-                ?? (SelectedTreeNode?.IsFile == true ? SelectedTreeNode.FullPath : null);
+            if (SelectedXmlFile is not null)
+                return SelectedXmlFile.FullPath;
+
+            if (SelectedTreeNode is not null && SelectedTreeNode.IsFile && SelectedTreeNode.FullPath is not null)
+                return SelectedTreeNode.FullPath;
+
+            return null;
         }
 
         private void Format()
         {
-            XmlText = _xml.Format(XmlText);
-            Status = "Formatted.";
+            try
+            {
+                XmlText = _xml.Format(XmlText);
+                Status = "Formatted.";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Format failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Format failed.";
+            }
         }
 
         private void Validate()
         {
             var (ok, msg) = _xml.ValidateWellFormed(XmlText);
-            MessageBox.Show(msg, "Validate",
-                MessageBoxButton.OK,
-                ok ? MessageBoxImage.Information : MessageBoxImage.Error);
+
+            MessageBox.Show(msg, ok ? "Validate" : "Validate failed",
+                MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Error);
+
+            Status = ok ? "Valid." : "Invalid.";
         }
 
         private void Save()
         {
             var path = GetSelectedFilePath();
-            if (path == null)
-                return;
-
-            var result = _saver.Save(path, XmlText);
-            if (!result.Success)
+            if (path is null)
             {
-                MessageBox.Show(result.Error!, "Save failed",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                SaveAs();
                 return;
             }
 
-            Status = $"Saved: {Path.GetFileName(path)}";
+            try
+            {
+                _saver.Save(path, XmlText);
+                Status = $"Saved: {Path.GetFileName(path)}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+            }
         }
 
         private void SaveAs()
         {
+            var current = GetSelectedFilePath();
+
             var dlg = new WpfSaveFileDialog
             {
                 Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
-                FileName = "document.xml"
+                Title = "Save XML As",
+                FileName = current is null ? "document.xml" : Path.GetFileName(current),
+                InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder) ? null : _rootFolder
             };
 
             if (dlg.ShowDialog() != true)
                 return;
 
-            var result = _saver.Save(dlg.FileName, XmlText);
-            if (!result.Success)
+            try
             {
-                MessageBox.Show(result.Error!, "Save As failed",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _saver.Save(dlg.FileName, XmlText);
+                Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Save As failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save As failed.";
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(_rootFolder))
+                RefreshFileViews(resetEditorAndSelection: false);
         }
 
         private void Clear()
@@ -316,6 +579,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             XmlText = "";
             SelectedXmlFile = null;
             SelectedTreeNode = null;
+            IsFriendlyView = false;
             Status = "Cleared.";
         }
     }

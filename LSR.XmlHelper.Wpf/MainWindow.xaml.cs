@@ -1,4 +1,7 @@
-﻿using LSR.XmlHelper.Wpf.ViewModels;
+﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Search;
+using LSR.XmlHelper.Wpf.ViewModels;
 using System.Windows;
 
 namespace LSR.XmlHelper.Wpf
@@ -8,6 +11,14 @@ namespace LSR.XmlHelper.Wpf
         public MainWindow()
         {
             InitializeComponent();
+
+            var editor = FindName("XmlEditor") as TextEditor;
+            if (editor is not null)
+            {
+                editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
+                SearchPanel.Install(editor);
+            }
+
             DataContext = new MainWindowViewModel();
         }
 

@@ -13,11 +13,6 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-
-        <HierarchicalDataTemplate DataType="{x:Type vm:XmlExplorerNode}"
-                                  ItemsSource="{Binding Children}">
-            <TextBlock Text="{Binding Name}" />
-        </HierarchicalDataTemplate>
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
@@ -72,8 +67,12 @@
 
             <CheckBox Content="Include subfolders"
                       VerticalAlignment="Center"
-                      IsChecked="{Binding IncludeSubfolders}"
-                      Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
+                      Margin="0,0,16,0"
+                      IsChecked="{Binding IncludeSubfolders}" />
+
+            <CheckBox Content="Friendly view"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding IsFriendlyView}" />
         </StackPanel>
 
         <StatusBar DockPanel.Dock="Bottom">
@@ -99,7 +98,6 @@
 
                     <Grid>
                         <TreeView ItemsSource="{Binding XmlTree}"
-                                  SelectedItemChanged="TreeView_SelectedItemChanged"
                                   Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
 
                         <ListBox ItemsSource="{Binding XmlFiles}"
@@ -116,13 +114,83 @@
                           ResizeBehavior="PreviousAndNext"
                           ResizeDirection="Columns" />
 
-            <avalonedit:TextEditor Grid.Column="2"
-                                   ShowLineNumbers="True"
-                                   FontFamily="Consolas"
-                                   FontSize="13"
-                                   HorizontalScrollBarVisibility="Auto"
-                                   VerticalScrollBarVisibility="Auto"
-                                   infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <DockPanel Grid.Column="0" Margin="0,0,8,0">
+                        <ComboBox DockPanel.Dock="Top"
+                                  ItemsSource="{Binding FriendlyCollections}"
+                                  SelectedItem="{Binding SelectedFriendlyCollection}"
+                                  DisplayMemberPath="Title"
+                                  Margin="0,0,0,8" />
+
+                        <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
+                                 SelectedItem="{Binding SelectedFriendlyEntry}"
+                                 DisplayMemberPath="Display" />
+                    </DockPanel>
+
+                    <DataGrid Grid.Column="1"
+                              ItemsSource="{Binding FriendlyFields}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              HeadersVisibility="Column"
+                              IsReadOnly="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="220" />
+                            <DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                                       Opacity="0" />
+
+                <avalonedit:TextEditor Grid.Row="0"
+                                       ShowLineNumbers="True"
+                                       FontFamily="Consolas"
+                                       FontSize="13"
+                                       HorizontalScrollBarVisibility="Auto"
+                                       VerticalScrollBarVisibility="Auto"
+                                       Background="#1E1E1E"
+                                       Foreground="#D4D4D4"
+                                       infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>

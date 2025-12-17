@@ -1,10 +1,16 @@
-﻿using System.IO;
-using System.Text;
+﻿using LSR.XmlHelper.Core.Services;
 
 namespace LSR.XmlHelper.Wpf.Services
 {
     public sealed class XmlFileSaveService
     {
+        private readonly XmlDocumentService _xml;
+
+        public XmlFileSaveService()
+        {
+            _xml = new XmlDocumentService();
+        }
+
         public (bool Success, string? Error) Save(string filePath, string xml)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -12,10 +18,10 @@ namespace LSR.XmlHelper.Wpf.Services
 
             try
             {
-                File.WriteAllText(filePath, xml, Encoding.UTF8);
+                _xml.SaveToFile(filePath, xml);
                 return (true, null);
             }
-            catch (IOException ex)
+            catch (System.Exception ex)
             {
                 return (false, ex.Message);
             }

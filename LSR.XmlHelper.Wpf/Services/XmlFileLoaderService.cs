@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text;
+﻿using LSR.XmlHelper.Core.Services;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,38 +6,35 @@ namespace LSR.XmlHelper.Wpf.Services
 {
     public sealed class XmlFileLoaderService
     {
-        public async Task<(bool Success, string? Text, string? Error)> LoadAsync(
+        private readonly XmlDocumentService _xml;
+
+        public XmlFileLoaderService()
+        {
+            _xml = new XmlDocumentService();
+        }
+
+        public Task<(bool Success, string? Text, string? Error)> LoadAsync(
             string filePath,
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(filePath))
-                return (false, null, "Invalid file path.");
+                return Task.FromResult<(bool, string?, string?)>((false, null, "Invalid file path."));
 
-            if (!File.Exists(filePath))
-                return (false, null, "File does not exist.");
-
-            try
+            return Task.Run<(bool Success, string? Text, string? Error)>(() =>
             {
-                using var stream = new FileStream(
-                    filePath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read,
-                    bufferSize: 4096,
-                    useAsync: true);
-
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-                var text = await reader.ReadToEndAsync();
-
                 if (cancellationToken.IsCancellationRequested)
-                    return (false, null, null);
+                    return (false, null, "Cancelled.");
 
-                return (true, text, null);
-            }
-            catch (IOException ex)
-            {
-                return (false, null, ex.Message);
-            }
+                try
+                {
+                    var text = _xml.LoadFromFile(filePath);
+                    return (true, text, null);
+                }
+                catch (System.Exception ex)
+                {
+                    return (false, null, ex.Message);
+                }
+            }, cancellationToken);
         }
     }
 }
