@@ -1,6 +1,5 @@
 ﻿using LSR.XmlHelper.Wpf.ViewModels;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace LSR.XmlHelper.Wpf
 {

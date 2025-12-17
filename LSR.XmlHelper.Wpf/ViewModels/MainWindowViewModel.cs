@@ -177,6 +177,56 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
 
+        private void CancelPendingLoad()
+        {
+            try
+            {
+                _loadCts?.Cancel();
+                _loadCts?.Dispose();
+            }
+            catch
+            {
+            }
+            finally
+            {
+                _loadCts = null;
+            }
+        }
+
+        private async Task LoadFileAsync(string fullPath)
+        {
+            CancelPendingLoad();
+            _loadCts = new CancellationTokenSource();
+            var token = _loadCts.Token;
+
+            var name = Path.GetFileName(fullPath);
+            Status = $"Loading: {name}";
+
+            try
+            {
+                var text = await Task.Run(() =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    return _xml.LoadFromFile(fullPath);
+                }, token);
+
+                if (token.IsCancellationRequested)
+                    return;
+
+                XmlText = text;
+                Status = $"Opened: {name}";
+            }
+            catch (OperationCanceledException)
+            {
+                Status = "Ready.";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Open failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Open failed.";
+            }
+        }
+
         private void OpenFolder()
         {
             string? picked = null;
@@ -316,55 +366,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 }
 
                 currentFolder?.Children.Add(new XmlFileNode(parts[^1], fullPath));
-            }
-        }
-
-        private void CancelPendingLoad()
-        {
-            try
-            {
-                _loadCts?.Cancel();
-                _loadCts?.Dispose();
-            }
-            catch
-            {
-            }
-            finally
-            {
-                _loadCts = null;
-            }
-        }
-
-        private async Task LoadFileAsync(string fullPath)
-        {
-            CancelPendingLoad();
-            _loadCts = new CancellationTokenSource();
-            var token = _loadCts.Token;
-
-            Status = $"Loading: {Path.GetFileName(fullPath)}";
-
-            try
-            {
-                var text = await Task.Run(() =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    return _xml.LoadFromFile(fullPath);
-                }, token);
-
-                if (token.IsCancellationRequested)
-                    return;
-
-                XmlText = text;
-                Status = $"Opened: {Path.GetFileName(fullPath)}";
-            }
-            catch (OperationCanceledException)
-            {
-                Status = "Ready.";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Open failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Open failed.";
             }
         }
 

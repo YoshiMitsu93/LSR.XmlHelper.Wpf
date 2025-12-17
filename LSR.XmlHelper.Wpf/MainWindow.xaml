@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
+        xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="450"
@@ -114,15 +116,13 @@
                           ResizeBehavior="PreviousAndNext"
                           ResizeDirection="Columns" />
 
-            <TextBox Grid.Column="2"
-         AcceptsReturn="True"
-         AcceptsTab="True"
-         VerticalScrollBarVisibility="Auto"
-         HorizontalScrollBarVisibility="Auto"
-         IsUndoEnabled="False"
-         UndoLimit="0"
-         TextWrapping="NoWrap"
-         Text="{Binding XmlText, UpdateSourceTrigger=PropertyChanged}" />
+            <avalonedit:TextEditor Grid.Column="2"
+                                   ShowLineNumbers="True"
+                                   FontFamily="Consolas"
+                                   FontSize="13"
+                                   HorizontalScrollBarVisibility="Auto"
+                                   VerticalScrollBarVisibility="Auto"
+                                   infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
         </Grid>
     </DockPanel>
 </Window>

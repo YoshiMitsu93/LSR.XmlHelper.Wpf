@@ -2,6 +2,8 @@
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using System;
+
 
 namespace LSR.XmlHelper.Core.Services
 {
