@@ -3,10 +3,23 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels;assembly=LSR.XmlHelper.Wpf"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="450"
         Width="900">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <HierarchicalDataTemplate DataType="{x:Type vm:XmlFolderNode}" ItemsSource="{Binding Children}">
+            <TextBlock Text="{Binding Name}" />
+        </HierarchicalDataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:XmlFileNode}">
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+    </Window.Resources>
 
     <DockPanel LastChildFill="True">
 
@@ -41,7 +54,27 @@
 
             <Button Content="Clear"
                     MinWidth="70"
+                    Margin="0,0,16,0"
                     Command="{Binding ClearCommand}" />
+
+            <TextBlock Text="View:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,6,0" />
+
+            <RadioButton Content="Folders"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0"
+                         IsChecked="{Binding IsFoldersMode}" />
+
+            <RadioButton Content="Flat"
+                         VerticalAlignment="Center"
+                         Margin="0,0,16,0"
+                         IsChecked="{Binding IsFlatMode}" />
+
+            <CheckBox Content="Include subfolders"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding IncludeSubfolders}"
+                      Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
         </StackPanel>
 
         <StatusBar DockPanel.Dock="Bottom">
@@ -65,9 +98,16 @@
                                FontWeight="SemiBold"
                                Margin="0,0,0,6" />
 
-                    <ListBox ItemsSource="{Binding XmlFiles}"
-                             SelectedItem="{Binding SelectedXmlFile}"
-                             DisplayMemberPath="DisplayPath" />
+                    <Grid>
+                        <TreeView ItemsSource="{Binding XmlTree}"
+                                  SelectedItemChanged="TreeView_SelectedItemChanged"
+                                  Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
+
+                        <ListBox ItemsSource="{Binding XmlFiles}"
+                                 SelectedItem="{Binding SelectedXmlFile}"
+                                 DisplayMemberPath="DisplayPath"
+                                 Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
                 </DockPanel>
             </Border>
 

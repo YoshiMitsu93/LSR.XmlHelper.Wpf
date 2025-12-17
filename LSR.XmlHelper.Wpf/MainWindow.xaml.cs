@@ -1,5 +1,6 @@
-﻿using System.Windows;
-using LSR.XmlHelper.Wpf.ViewModels;
+﻿using LSR.XmlHelper.Wpf.ViewModels;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace LSR.XmlHelper.Wpf
 {
@@ -8,12 +9,14 @@ namespace LSR.XmlHelper.Wpf
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
 
+            vm.SelectedTreeNode = e.NewValue as XmlExplorerNode;
         }
     }
 }

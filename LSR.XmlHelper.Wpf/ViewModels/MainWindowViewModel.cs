@@ -2,6 +2,7 @@
 using LSR.XmlHelper.Wpf.Infrastructure;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,6 @@ using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
 
-
 namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
@@ -26,7 +26,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _status = "Ready.";
         private string _xmlText = "";
         private string? _rootFolder;
+
         private XmlFileListItem? _selectedXmlFile;
+        private XmlExplorerNode? _selectedTreeNode;
+
+        private XmlListViewMode _viewMode = XmlListViewMode.Folders;
+        private bool _includeSubfolders = true;
 
         public MainWindowViewModel()
         {
@@ -34,13 +39,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _discovery = new XmlFileDiscoveryService();
 
             XmlFiles = new ObservableCollection<XmlFileListItem>();
+            XmlTree = new ObservableCollection<XmlExplorerNode>();
 
             OpenCommand = new RelayCommand(OpenFolder);
             FormatCommand = new RelayCommand(Format, () => !string.IsNullOrWhiteSpace(XmlText));
             ValidateCommand = new RelayCommand(Validate, () => !string.IsNullOrWhiteSpace(XmlText));
-            SaveCommand = new RelayCommand(Save, () => SelectedXmlFile is not null && !string.IsNullOrWhiteSpace(XmlText));
+            SaveCommand = new RelayCommand(Save, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
             SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
-            ClearCommand = new RelayCommand(Clear, () => SelectedXmlFile is not null || !string.IsNullOrWhiteSpace(XmlText));
+            ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
         }
 
         public string Title
@@ -69,6 +75,59 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         }
 
         public ObservableCollection<XmlFileListItem> XmlFiles { get; }
+        public ObservableCollection<XmlExplorerNode> XmlTree { get; }
+
+        public XmlListViewMode ViewMode
+        {
+            get => _viewMode;
+            set
+            {
+                if (!SetProperty(ref _viewMode, value))
+                    return;
+
+                RefreshFileViews();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public bool IncludeSubfolders
+        {
+            get => _includeSubfolders;
+            set
+            {
+                if (!SetProperty(ref _includeSubfolders, value))
+                    return;
+
+                RefreshFileViews();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public bool IsFlatMode
+        {
+            get => ViewMode == XmlListViewMode.Flat;
+            set
+            {
+                if (value)
+                {
+                    ViewMode = XmlListViewMode.Flat;
+                    OnPropertyChanged(nameof(IsFoldersMode));
+                }
+            }
+        }
+
+        public bool IsFoldersMode
+        {
+            get => ViewMode == XmlListViewMode.Folders;
+            set
+            {
+                if (value)
+                {
+                    ViewMode = XmlListViewMode.Folders;
+                    OnPropertyChanged(nameof(IsFlatMode));
+                }
+            }
+        }
 
         public XmlFileListItem? SelectedXmlFile
         {
@@ -78,7 +137,30 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _selectedXmlFile, value))
                     return;
 
-                LoadSelectedFile();
+                if (value is not null)
+                {
+                    SelectedTreeNode = null;
+                    LoadFile(value.FullPath);
+                }
+
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public XmlExplorerNode? SelectedTreeNode
+        {
+            get => _selectedTreeNode;
+            set
+            {
+                if (!SetProperty(ref _selectedTreeNode, value))
+                    return;
+
+                if (value is not null && value.IsFile && value.FullPath is not null)
+                {
+                    SelectedXmlFile = null;
+                    LoadFile(value.FullPath);
+                }
+
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -102,7 +184,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     ShowNewFolderButton = false
                 };
 
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK &&
+                if (dialog.ShowDialog() == WinForms.DialogResult.OK &&
                     !string.IsNullOrWhiteSpace(dialog.SelectedPath))
                 {
                     picked = dialog.SelectedPath;
@@ -118,27 +200,31 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             _rootFolder = picked;
 
-            RefreshFileList(includeSubfolders: true);
+            RefreshFileViews();
 
-            Title = string.IsNullOrWhiteSpace(_rootFolder) ? "LSR XML Helper" : $"LSR XML Helper - {_rootFolder}";
-            Status = XmlFiles.Count == 0 ? "No XML files found." : $"Found {XmlFiles.Count} XML file(s).";
-
-            if (XmlFiles.Count > 0)
-                SelectedXmlFile = XmlFiles[0];
+            Title = $"LSR XML Helper - {_rootFolder}";
+            Status = "Ready.";
         }
 
-        private void RefreshFileList(bool includeSubfolders)
+        private void RefreshFileViews()
         {
             XmlFiles.Clear();
+            XmlTree.Clear();
+
+            SelectedXmlFile = null;
+            SelectedTreeNode = null;
+            XmlText = "";
 
             if (string.IsNullOrWhiteSpace(_rootFolder))
                 return;
+
+            var include = ViewMode == XmlListViewMode.Folders ? true : IncludeSubfolders;
 
             IReadOnlyList<string> paths;
 
             try
             {
-                paths = _discovery.GetXmlFiles(_rootFolder, includeSubfolders);
+                paths = _discovery.GetXmlFiles(_rootFolder, include);
             }
             catch (Exception ex)
             {
@@ -152,26 +238,84 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 var display = Path.GetRelativePath(_rootFolder, p);
                 XmlFiles.Add(new XmlFileListItem(p, display));
             }
+
+            BuildTree(paths);
+
+            Status = paths.Count == 0 ? "No XML files found." : $"Found {paths.Count} XML file(s).";
+
+            if (ViewMode == XmlListViewMode.Flat && XmlFiles.Count > 0)
+                SelectedXmlFile = XmlFiles[0];
         }
 
-        private void LoadSelectedFile()
+        private void BuildTree(IReadOnlyList<string> paths)
         {
-            if (SelectedXmlFile is null)
-            {
-                XmlText = "";
+            if (string.IsNullOrWhiteSpace(_rootFolder))
                 return;
-            }
 
+            var folderMap = new Dictionary<string, XmlFolderNode>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var fullPath in paths)
+            {
+                var relative = Path.GetRelativePath(_rootFolder, fullPath);
+                var parts = relative.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (parts.Length == 0)
+                    continue;
+
+                if (parts.Length == 1)
+                {
+                    XmlTree.Add(new XmlFileNode(parts[0], fullPath));
+                    continue;
+                }
+
+                XmlFolderNode? currentFolder = null;
+                var currentKey = "";
+
+                for (var i = 0; i < parts.Length - 1; i++)
+                {
+                    currentKey = string.IsNullOrEmpty(currentKey) ? parts[i] : $"{currentKey}\\{parts[i]}";
+
+                    if (!folderMap.TryGetValue(currentKey, out var folderNode))
+                    {
+                        folderNode = new XmlFolderNode(parts[i]);
+                        folderMap[currentKey] = folderNode;
+
+                        if (currentFolder is null)
+                            XmlTree.Add(folderNode);
+                        else
+                            currentFolder.Children.Add(folderNode);
+                    }
+
+                    currentFolder = folderNode;
+                }
+
+                currentFolder?.Children.Add(new XmlFileNode(parts[^1], fullPath));
+            }
+        }
+
+        private void LoadFile(string fullPath)
+        {
             try
             {
-                XmlText = _xml.LoadFromFile(SelectedXmlFile.FullPath);
-                Status = $"Opened: {Path.GetFileName(SelectedXmlFile.FullPath)}";
+                XmlText = _xml.LoadFromFile(fullPath);
+                Status = $"Opened: {Path.GetFileName(fullPath)}";
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Open failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 Status = "Open failed.";
             }
+        }
+
+        private string? GetSelectedFilePath()
+        {
+            if (SelectedXmlFile is not null)
+                return SelectedXmlFile.FullPath;
+
+            if (SelectedTreeNode is not null && SelectedTreeNode.IsFile && SelectedTreeNode.FullPath is not null)
+                return SelectedTreeNode.FullPath;
+
+            return null;
         }
 
         private void Format()
@@ -200,7 +344,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void Save()
         {
-            if (SelectedXmlFile is null)
+            var path = GetSelectedFilePath();
+            if (path is null)
             {
                 SaveAs();
                 return;
@@ -208,8 +353,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             try
             {
-                _xml.SaveToFile(SelectedXmlFile.FullPath, XmlText);
-                Status = $"Saved: {Path.GetFileName(SelectedXmlFile.FullPath)}";
+                _xml.SaveToFile(path, XmlText);
+                Status = $"Saved: {Path.GetFileName(path)}";
             }
             catch (Exception ex)
             {
@@ -220,11 +365,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void SaveAs()
         {
+            var current = GetSelectedFilePath();
+
             var dlg = new WpfSaveFileDialog
             {
                 Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
                 Title = "Save XML As",
-                FileName = SelectedXmlFile is null ? "document.xml" : Path.GetFileName(SelectedXmlFile.FullPath),
+                FileName = current is null ? "document.xml" : Path.GetFileName(current),
                 InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder) ? null : _rootFolder
             };
 
@@ -244,19 +391,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             if (!string.IsNullOrWhiteSpace(_rootFolder))
-            {
-                RefreshFileList(includeSubfolders: true);
-
-                var match = XmlFiles.FirstOrDefault(x => string.Equals(x.FullPath, dlg.FileName, StringComparison.OrdinalIgnoreCase));
-                if (match is not null)
-                    SelectedXmlFile = match;
-            }
+                RefreshFileViews();
         }
 
         private void Clear()
         {
             XmlText = "";
             SelectedXmlFile = null;
+            SelectedTreeNode = null;
             Status = "Cleared.";
         }
     }
