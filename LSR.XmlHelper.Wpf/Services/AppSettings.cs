@@ -5,5 +5,6 @@
         public string? LastFolder { get; set; }
         public string ViewMode { get; set; } = "Flat";
         public bool IncludeSubfolders { get; set; } = false;
+        public bool IsDarkMode { get; set; } = true;
     }
 }

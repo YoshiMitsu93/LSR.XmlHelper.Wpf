@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Media = System.Windows.Media;
 using WinForms = System.Windows.Forms;
 using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using MessageBox = System.Windows.MessageBox;
@@ -19,11 +20,17 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
+        private static readonly Media.Brush DarkEditorBackground = CreateFrozenBrush("#1E1E1E");
+        private static readonly Media.Brush DarkEditorForeground = CreateFrozenBrush("#D4D4D4");
+
         private readonly XmlDocumentService _xml;
         private readonly XmlFileDiscoveryService _discovery;
         private readonly XmlFileLoaderService _loader;
         private readonly XmlFileSaveService _saver;
         private readonly XmlFriendlyViewService _friendly;
+
+        private readonly AppSettingsService _settingsService;
+        private AppSettings _settings;
 
         private CancellationTokenSource? _loadCts;
 
@@ -38,8 +45,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private XmlListViewMode _viewMode = XmlListViewMode.Flat;
         private bool _includeSubfolders;
 
+        private bool _hasFriendlyView;
         private bool _isFriendlyView;
         private XmlFriendlyDocument? _friendlyDocument;
+
+        private bool _isDarkMode = true;
 
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
@@ -54,6 +64,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _saver = new XmlFileSaveService();
             _friendly = new XmlFriendlyViewService();
 
+            _settingsService = new AppSettingsService();
+            _settings = _settingsService.Load();
+
+            ApplySettingsToState();
+
             XmlFiles = new ObservableCollection<XmlFileListItem>();
             XmlTree = new ObservableCollection<XmlExplorerNode>();
 
@@ -63,6 +78,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SaveCommand = new RelayCommand(Save, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
             SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
             ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
+
+            if (!string.IsNullOrWhiteSpace(_rootFolder))
+            {
+                RefreshFileViews(resetEditorAndSelection: true);
+                Title = $"LSR XML Helper - {_rootFolder}";
+            }
         }
 
         public string Title
@@ -105,6 +126,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(IsFlatMode));
                 OnPropertyChanged(nameof(IsFoldersMode));
 
+                _settings.ViewMode = value.ToString();
+                SaveSettings();
+
                 RefreshFileViews(resetEditorAndSelection: false);
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
@@ -117,6 +141,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             {
                 if (!SetProperty(ref _includeSubfolders, value))
                     return;
+
+                _settings.IncludeSubfolders = value;
+                SaveSettings();
 
                 RefreshFileViews(resetEditorAndSelection: false);
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
@@ -149,11 +176,40 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
         }
 
+        public bool HasFriendlyView
+        {
+            get => _hasFriendlyView;
+            private set => SetProperty(ref _hasFriendlyView, value);
+        }
+
         public bool IsFriendlyView
         {
             get => _isFriendlyView;
-            set => SetProperty(ref _isFriendlyView, value);
+            set
+            {
+                var next = value && HasFriendlyView;
+                SetProperty(ref _isFriendlyView, next);
+            }
         }
+
+        public bool IsDarkMode
+        {
+            get => _isDarkMode;
+            set
+            {
+                if (!SetProperty(ref _isDarkMode, value))
+                    return;
+
+                _settings.IsDarkMode = value;
+                SaveSettings();
+
+                OnPropertyChanged(nameof(EditorBackground));
+                OnPropertyChanged(nameof(EditorForeground));
+            }
+        }
+
+        public Media.Brush EditorBackground => IsDarkMode ? DarkEditorBackground : Media.Brushes.White;
+        public Media.Brush EditorForeground => IsDarkMode ? DarkEditorForeground : Media.Brushes.Black;
 
         public ObservableCollection<XmlFriendlyCollectionViewModel> FriendlyCollections
         {
@@ -261,6 +317,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
 
             _rootFolder = picked;
+
+            _settings.LastFolder = _rootFolder;
+            SaveSettings();
 
             RefreshFileViews(resetEditorAndSelection: true);
 
@@ -423,19 +482,34 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             if (_friendlyDocument is null)
             {
+                HasFriendlyView = false;
+
                 FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>();
                 SelectedFriendlyCollection = null;
                 SelectedFriendlyEntry = null;
                 FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
+
+                if (_isFriendlyView)
+                {
+                    _isFriendlyView = false;
+                    OnPropertyChanged(nameof(IsFriendlyView));
+                }
+
                 return;
             }
 
             var cols = _friendlyDocument.Collections.Select(c => new XmlFriendlyCollectionViewModel(c)).ToList();
+
             FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
             SelectedFriendlyCollection = FriendlyCollections.FirstOrDefault();
 
-            if (FriendlyCollections.Count > 0)
-                IsFriendlyView = true;
+            HasFriendlyView = FriendlyCollections.Count > 0;
+
+            if (!HasFriendlyView && _isFriendlyView)
+            {
+                _isFriendlyView = false;
+                OnPropertyChanged(nameof(IsFriendlyView));
+            }
         }
 
         private void RebuildFieldsForSelectedEntry()
@@ -530,16 +604,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            try
+            var (ok, err) = _saver.Save(path, XmlText);
+            if (!ok)
             {
-                _saver.Save(path, XmlText);
-                Status = $"Saved: {Path.GetFileName(path)}";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 Status = "Save failed.";
+                return;
             }
+
+            Status = $"Saved: {Path.GetFileName(path)}";
         }
 
         private void SaveAs()
@@ -557,17 +630,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (dlg.ShowDialog() != true)
                 return;
 
-            try
+            var (ok, err) = _saver.Save(dlg.FileName, XmlText);
+            if (!ok)
             {
-                _saver.Save(dlg.FileName, XmlText);
-                Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Save As failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(err ?? "Save As failed.", "Save As failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 Status = "Save As failed.";
                 return;
             }
+
+            Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
 
             if (!string.IsNullOrWhiteSpace(_rootFolder))
                 RefreshFileViews(resetEditorAndSelection: false);
@@ -581,6 +652,37 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SelectedTreeNode = null;
             IsFriendlyView = false;
             Status = "Cleared.";
+        }
+
+        private void ApplySettingsToState()
+        {
+            if (!string.IsNullOrWhiteSpace(_settings.LastFolder) && Directory.Exists(_settings.LastFolder))
+                _rootFolder = _settings.LastFolder;
+
+            if (Enum.TryParse(_settings.ViewMode, ignoreCase: true, out XmlListViewMode parsed))
+                _viewMode = parsed;
+
+            _includeSubfolders = _settings.IncludeSubfolders;
+            _isDarkMode = _settings.IsDarkMode;
+        }
+
+        private void SaveSettings()
+        {
+            try
+            {
+                _settingsService.Save(_settings);
+            }
+            catch
+            {
+            }
+        }
+
+        private static Media.Brush CreateFrozenBrush(string hex)
+        {
+            var c = (Media.Color)Media.ColorConverter.ConvertFromString(hex);
+            var b = new Media.SolidColorBrush(c);
+            b.Freeze();
+            return b;
         }
     }
 }

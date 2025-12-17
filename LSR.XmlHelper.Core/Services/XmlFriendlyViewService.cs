@@ -61,7 +61,7 @@ namespace LSR.XmlHelper.Core.Services
                 return topLevelGroups;
 
             var best = root.Elements()
-                .Select(e => new { Parent = e, Groups = GroupRepeatedChildren(e) })
+                .Select(e => new { Groups = GroupRepeatedChildren(e) })
                 .OrderByDescending(x => x.Groups.Sum(g => g.Entries.Count))
                 .FirstOrDefault();
 
@@ -96,20 +96,44 @@ namespace LSR.XmlHelper.Core.Services
 
         private static XmlFriendlyEntry? BuildEntry(XElement element)
         {
-            var fields = element.Elements()
+            var leafElements = element.Elements()
                 .Where(e => !e.HasElements)
-                .ToDictionary(e => e.Name.LocalName, e => e, StringComparer.OrdinalIgnoreCase);
+                .ToList();
 
-            var key = PickFirstValue(fields, KeyCandidates) ?? PickEndsWithId(fields);
-            var display = PickFirstValue(fields, DisplayCandidates);
+            var primaryFields = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
+            var allFields = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var group in leafElements.GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase))
+            {
+                var name = group.Key;
+                var items = group.ToList();
+
+                if (!primaryFields.ContainsKey(name))
+                    primaryFields[name] = items[0];
+
+                if (items.Count == 1)
+                {
+                    allFields[name] = items[0];
+                    continue;
+                }
+
+                for (var i = 0; i < items.Count; i++)
+                {
+                    var indexedName = $"{name}[{i + 1}]";
+                    allFields[indexedName] = items[i];
+                }
+            }
+
+            var entryKey = PickFirstValue(primaryFields, KeyCandidates) ?? PickEndsWithId(primaryFields);
+            var display = PickFirstValue(primaryFields, DisplayCandidates);
 
             if (string.IsNullOrWhiteSpace(display))
-                display = key;
+                display = entryKey;
 
             if (string.IsNullOrWhiteSpace(display))
                 display = $"{element.Name.LocalName}";
 
-            return new XmlFriendlyEntry(element, key, display, fields);
+            return new XmlFriendlyEntry(element, entryKey, display, allFields);
         }
 
         private static string? PickEndsWithId(Dictionary<string, XElement> fields)

@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
         xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
@@ -13,6 +12,7 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
@@ -72,7 +72,13 @@
 
             <CheckBox Content="Friendly view"
                       VerticalAlignment="Center"
+                      Margin="0,0,16,0"
+                      IsEnabled="{Binding HasFriendlyView}"
                       IsChecked="{Binding IsFriendlyView}" />
+
+            <CheckBox Content="Dark mode"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding IsDarkMode}" />
         </StackPanel>
 
         <StatusBar DockPanel.Dock="Bottom">
@@ -90,22 +96,16 @@
                     BorderThickness="1"
                     BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
                     Padding="6">
-                <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top"
-                               Text="XML Files"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,6" />
+                <Grid>
+                    <TreeView ItemsSource="{Binding XmlTree}"
+                              SelectedItemChanged="TreeView_SelectedItemChanged"
+                              Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
 
-                    <Grid>
-                        <TreeView ItemsSource="{Binding XmlTree}"
-                                  Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
-
-                        <ListBox ItemsSource="{Binding XmlFiles}"
-                                 SelectedItem="{Binding SelectedXmlFile}"
-                                 DisplayMemberPath="DisplayPath"
-                                 Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
-                    </Grid>
-                </DockPanel>
+                    <ListBox ItemsSource="{Binding XmlFiles}"
+                             SelectedItem="{Binding SelectedXmlFile}"
+                             DisplayMemberPath="DisplayPath"
+                             Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
+                </Grid>
             </Border>
 
             <GridSplitter Grid.Column="1"
@@ -115,10 +115,6 @@
                           ResizeDirection="Columns" />
 
             <Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
                 <Grid Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="280" />
@@ -142,8 +138,7 @@
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
-                              HeadersVisibility="Column"
-                              IsReadOnly="False">
+                              HeadersVisibility="Column">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="220" />
                             <DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" />
@@ -151,44 +146,15 @@
                     </DataGrid>
                 </Grid>
 
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                                       Opacity="0" />
-
-                <avalonedit:TextEditor Grid.Row="0"
+                <avalonedit:TextEditor x:Name="XmlEditor"
+                                       Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
                                        ShowLineNumbers="True"
                                        FontFamily="Consolas"
                                        FontSize="13"
                                        HorizontalScrollBarVisibility="Auto"
                                        VerticalScrollBarVisibility="Auto"
-                                       Background="#1E1E1E"
-                                       Foreground="#D4D4D4"
+                                       Background="{Binding EditorBackground}"
+                                       Foreground="{Binding EditorForeground}"
                                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
             </Grid>
         </Grid>
