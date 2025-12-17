@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Windows.Input;
 
 using WinForms = System.Windows.Forms;
 using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
@@ -35,9 +34,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public MainWindowViewModel()
         {
-            AssertExplorerTypes();
-
-            _ = typeof(XmlFolderNode);
             _xml = new XmlDocumentService();
             _discovery = new XmlFileDiscoveryService();
 
@@ -88,7 +84,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _viewMode, value))
                     return;
 
-                RefreshFileViews();
+                OnPropertyChanged(nameof(IsFlatMode));
+                OnPropertyChanged(nameof(IsFoldersMode));
+
+                RefreshFileViews(resetEditorAndSelection: false);
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -101,7 +100,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _includeSubfolders, value))
                     return;
 
-                RefreshFileViews();
+                RefreshFileViews(resetEditorAndSelection: false);
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -175,13 +174,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
 
-        private static void AssertExplorerTypes()
-        {
-            _ = typeof(XmlExplorerNode);
-            _ = typeof(XmlFolderNode);
-            _ = typeof(XmlFileNode);
-        }
-
         private void OpenFolder()
         {
             string? picked = null;
@@ -210,20 +202,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             _rootFolder = picked;
 
-            RefreshFileViews();
+            RefreshFileViews(resetEditorAndSelection: true);
 
             Title = $"LSR XML Helper - {_rootFolder}";
             Status = "Ready.";
         }
 
-        private void RefreshFileViews()
+        private void RefreshFileViews(bool resetEditorAndSelection)
         {
+            var previouslySelectedPath = resetEditorAndSelection ? null : GetSelectedFilePath();
+
             XmlFiles.Clear();
             XmlTree.Clear();
 
-            SelectedXmlFile = null;
-            SelectedTreeNode = null;
-            XmlText = "";
+            if (resetEditorAndSelection)
+            {
+                SelectedXmlFile = null;
+                SelectedTreeNode = null;
+                XmlText = "";
+            }
 
             if (string.IsNullOrWhiteSpace(_rootFolder))
                 return;
@@ -253,8 +250,23 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             Status = paths.Count == 0 ? "No XML files found." : $"Found {paths.Count} XML file(s).";
 
-            if (ViewMode == XmlListViewMode.Flat && XmlFiles.Count > 0)
-                SelectedXmlFile = XmlFiles[0];
+            if (resetEditorAndSelection)
+            {
+                if (ViewMode == XmlListViewMode.Flat && XmlFiles.Count > 0)
+                    SelectedXmlFile = XmlFiles[0];
+
+                return;
+            }
+
+            if (previouslySelectedPath is null)
+                return;
+
+            if (ViewMode == XmlListViewMode.Flat)
+            {
+                var match = XmlFiles.FirstOrDefault(x => string.Equals(x.FullPath, previouslySelectedPath, StringComparison.OrdinalIgnoreCase));
+                if (match is not null)
+                    SelectedXmlFile = match;
+            }
         }
 
         private void BuildTree(IReadOnlyList<string> paths)
@@ -401,7 +413,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             if (!string.IsNullOrWhiteSpace(_rootFolder))
-                RefreshFileViews();
+                RefreshFileViews(resetEditorAndSelection: false);
         }
 
         private void Clear()

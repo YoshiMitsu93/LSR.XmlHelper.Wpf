@@ -12,13 +12,10 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
-        <HierarchicalDataTemplate DataType="{x:Type vm:XmlFolderNode}" ItemsSource="{Binding Children}">
+        <HierarchicalDataTemplate DataType="{x:Type vm:XmlExplorerNode}"
+                                  ItemsSource="{Binding Children}">
             <TextBlock Text="{Binding Name}" />
         </HierarchicalDataTemplate>
-
-        <DataTemplate DataType="{x:Type vm:XmlFileNode}">
-            <TextBlock Text="{Binding Name}" />
-        </DataTemplate>
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
