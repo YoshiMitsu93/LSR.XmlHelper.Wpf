@@ -9,10 +9,20 @@
         Width="800">
 
     <Grid>
-        <TextBlock
-            Text="{Binding Title}"
-            FontSize="24"
+        <StackPanel
             HorizontalAlignment="Center"
-            VerticalAlignment="Center" />
+            VerticalAlignment="Center">
+
+            <TextBlock
+                Text="{Binding Title}"
+                FontSize="24"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,12" />
+
+            <Button
+                Content="Test Command"
+                Padding="16,8"
+                Command="{Binding TestCommand}" />
+        </StackPanel>
     </Grid>
 </Window>
