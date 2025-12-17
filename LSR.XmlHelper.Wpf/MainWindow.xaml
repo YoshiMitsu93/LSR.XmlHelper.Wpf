@@ -8,21 +8,55 @@
         Height="450"
         Width="800">
 
-    <Grid>
-        <StackPanel
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center">
+    <!-- Main layout: toolbar (top), editor (center), status (bottom) -->
+    <DockPanel LastChildFill="True">
 
-            <TextBlock
-                Text="{Binding Title}"
-                FontSize="24"
-                HorizontalAlignment="Center"
-                Margin="0,0,0,12" />
+        <!-- Toolbar -->
+        <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Margin="8">
 
-            <Button
-                Content="Test Command"
-                Padding="16,8"
-                Command="{Binding TestCommand}" />
+            <Button Content="Open"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding OpenCommand}" />
+
+            <Button Content="Format"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding FormatCommand}" />
+
+            <Button Content="Validate"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding ValidateCommand}" />
+
+            <Button Content="Save"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding SaveCommand}" />
+
+            <Button Content="Save As..."
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding SaveAsCommand}" />
+
+            <Button Content="Clear"
+                    MinWidth="70"
+                    Command="{Binding ClearCommand}" />
         </StackPanel>
-    </Grid>
+
+        <!-- Status bar -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <TextBlock Text="{Binding Status}" />
+        </StatusBar>
+
+        <!-- XML editor -->
+        <TextBox Margin="8"
+                 AcceptsReturn="True"
+                 AcceptsTab="True"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"
+                 Text="{Binding XmlText, UpdateSourceTrigger=PropertyChanged}" />
+    </DockPanel>
 </Window>
