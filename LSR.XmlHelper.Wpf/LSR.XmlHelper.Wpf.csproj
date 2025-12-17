@@ -5,8 +5,12 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+
+    <AssemblyName>LSR.XmlHelper.Wpf</AssemblyName>
+    <RootNamespace>LSR.XmlHelper.Wpf</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

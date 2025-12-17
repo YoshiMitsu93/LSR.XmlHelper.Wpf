@@ -35,6 +35,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public MainWindowViewModel()
         {
+            AssertExplorerTypes();
+
+            _ = typeof(XmlFolderNode);
             _xml = new XmlDocumentService();
             _discovery = new XmlFileDiscoveryService();
 
@@ -171,6 +174,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveCommand { get; }
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
+
+        private static void AssertExplorerTypes()
+        {
+            _ = typeof(XmlExplorerNode);
+            _ = typeof(XmlFolderNode);
+            _ = typeof(XmlFileNode);
+        }
 
         private void OpenFolder()
         {
