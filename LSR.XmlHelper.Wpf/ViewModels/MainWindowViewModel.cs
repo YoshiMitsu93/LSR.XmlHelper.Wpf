@@ -1,11 +1,12 @@
 ﻿using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using WinForms = System.Windows.Forms;
 using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
@@ -31,6 +32,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private XmlListViewMode _viewMode = XmlListViewMode.Folders;
         private bool _includeSubfolders = true;
+
+        private CancellationTokenSource? _loadCts;
 
         public MainWindowViewModel()
         {
@@ -142,7 +145,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (value is not null)
                 {
                     SelectedTreeNode = null;
-                    LoadFile(value.FullPath);
+                    _ = LoadFileAsync(value.FullPath);
                 }
 
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
@@ -160,7 +163,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (value is not null && value.IsFile && value.FullPath is not null)
                 {
                     SelectedXmlFile = null;
-                    LoadFile(value.FullPath);
+                    _ = LoadFileAsync(value.FullPath);
                 }
 
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
@@ -217,6 +220,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             if (resetEditorAndSelection)
             {
+                CancelPendingLoad();
                 SelectedXmlFile = null;
                 SelectedTreeNode = null;
                 XmlText = "";
@@ -315,12 +319,47 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
         }
 
-        private void LoadFile(string fullPath)
+        private void CancelPendingLoad()
         {
             try
             {
-                XmlText = _xml.LoadFromFile(fullPath);
+                _loadCts?.Cancel();
+                _loadCts?.Dispose();
+            }
+            catch
+            {
+            }
+            finally
+            {
+                _loadCts = null;
+            }
+        }
+
+        private async Task LoadFileAsync(string fullPath)
+        {
+            CancelPendingLoad();
+            _loadCts = new CancellationTokenSource();
+            var token = _loadCts.Token;
+
+            Status = $"Loading: {Path.GetFileName(fullPath)}";
+
+            try
+            {
+                var text = await Task.Run(() =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    return _xml.LoadFromFile(fullPath);
+                }, token);
+
+                if (token.IsCancellationRequested)
+                    return;
+
+                XmlText = text;
                 Status = $"Opened: {Path.GetFileName(fullPath)}";
+            }
+            catch (OperationCanceledException)
+            {
+                Status = "Ready.";
             }
             catch (Exception ex)
             {
@@ -418,6 +457,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void Clear()
         {
+            CancelPendingLoad();
             XmlText = "";
             SelectedXmlFile = null;
             SelectedTreeNode = null;
