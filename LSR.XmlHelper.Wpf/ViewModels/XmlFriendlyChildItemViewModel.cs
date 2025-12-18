@@ -12,8 +12,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public XmlFriendlyChildItemViewModel(XmlFriendlyChildItem model)
         {
             _model = model;
-            _id = _model.GetValue("ID") ?? string.Empty;
-            _name = _model.GetValue("Name") ?? string.Empty;
+            _id = _model.GetValueOrEmpty("ID");
+            _name = _model.GetValueOrEmpty("Name");
         }
 
         public string Id
