@@ -1,4 +1,5 @@
-﻿using LSR.XmlHelper.Core.Services;
+﻿// LSR.XmlHelper.Wpf\ViewModels\MainWindowViewModel.cs
+using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Services;
 using System;
@@ -54,7 +55,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
+
         private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
+        private ObservableCollection<XmlFriendlyFieldGroupViewModel> _friendlyFieldGroups = new();
+        private ObservableCollection<object> _friendlyGroups = new();
 
         public MainWindowViewModel()
         {
@@ -247,6 +251,18 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             private set => SetProperty(ref _friendlyFields, value);
         }
 
+        public ObservableCollection<XmlFriendlyFieldGroupViewModel> FriendlyFieldGroups
+        {
+            get => _friendlyFieldGroups;
+            private set => SetProperty(ref _friendlyFieldGroups, value);
+        }
+
+        public ObservableCollection<object> FriendlyGroups
+        {
+            get => _friendlyGroups;
+            private set => SetProperty(ref _friendlyGroups, value);
+        }
+
         public XmlFileListItem? SelectedXmlFile
         {
             get => _selectedXmlFile;
@@ -289,6 +305,349 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveCommand { get; }
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
+
+        private void RefreshFriendlyFromXml()
+        {
+            _friendlyDocument = _friendly.TryBuild(XmlText);
+
+            if (_friendlyDocument is null)
+            {
+                HasFriendlyView = false;
+
+                FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>();
+                SelectedFriendlyCollection = null;
+                SelectedFriendlyEntry = null;
+                ClearFriendlyFields();
+
+                if (_isFriendlyView)
+                {
+                    _isFriendlyView = false;
+                    OnPropertyChanged(nameof(IsFriendlyView));
+                }
+
+                return;
+            }
+
+            var cols = _friendlyDocument.Collections.Select(c => new XmlFriendlyCollectionViewModel(c)).ToList();
+
+            FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
+
+            var primary = _friendlyDocument.PrimaryCollectionKey;
+            var primaryVm = FriendlyCollections.FirstOrDefault(c =>
+                string.Equals(c.Collection.Title, primary, StringComparison.OrdinalIgnoreCase));
+
+            SelectedFriendlyCollection = primaryVm ?? FriendlyCollections.FirstOrDefault();
+
+            HasFriendlyView = FriendlyCollections.Count > 0;
+
+            if (!HasFriendlyView && _isFriendlyView)
+            {
+                _isFriendlyView = false;
+                OnPropertyChanged(nameof(IsFriendlyView));
+            }
+        }
+
+        private void ClearFriendlyFields()
+        {
+            DetachFriendlyFieldHandlers(_friendlyFields);
+
+            FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
+            FriendlyFieldGroups = new ObservableCollection<XmlFriendlyFieldGroupViewModel>();
+            FriendlyGroups = new ObservableCollection<object>();
+        }
+
+        private static void DetachFriendlyFieldHandlers(ObservableCollection<XmlFriendlyFieldViewModel> fields)
+        {
+            foreach (var f in fields)
+                f.PropertyChanged -= null;
+        }
+
+        private void RebuildFieldsForSelectedEntry()
+        {
+            var entry = SelectedFriendlyEntry?.Entry;
+            if (entry is null)
+            {
+                ClearFriendlyFields();
+                return;
+            }
+
+            var fields = entry.Fields
+                .OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(k => new XmlFriendlyFieldViewModel(k.Key, k.Value.Value ?? ""))
+                .ToList();
+
+            var newFields = new ObservableCollection<XmlFriendlyFieldViewModel>(fields);
+
+            foreach (var f in newFields)
+                f.PropertyChanged += FriendlyField_PropertyChanged;
+
+            FriendlyFields = newFields;
+            FriendlyFieldGroups = BuildGroupsFromFields(newFields);
+            FriendlyGroups = BuildUnifiedGroups(newFields);
+        }
+
+        private static ObservableCollection<object> BuildUnifiedGroups(ObservableCollection<XmlFriendlyFieldViewModel> fields)
+        {
+            static bool TryParseLookupField(string name, out string groupTitle, out string itemName, out string leafField)
+            {
+                groupTitle = "";
+                itemName = "";
+                leafField = "";
+
+                if (string.IsNullOrWhiteSpace(name))
+                    return false;
+
+                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 3)
+                    return false;
+
+                var first = parts[0];
+                var second = parts[1];
+                var third = parts[2];
+
+                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second) || string.IsNullOrWhiteSpace(third))
+                    return false;
+
+                var lb = second.IndexOf('[');
+                var rb = second.EndsWith("]", StringComparison.Ordinal);
+
+                if (lb <= 0 || !rb)
+                    return false;
+
+                groupTitle = first;
+                itemName = second;
+                leafField = third;
+                return true;
+            }
+
+            static string GetGroupTitle(string fieldName)
+            {
+                if (string.IsNullOrWhiteSpace(fieldName))
+                    return "General";
+
+                var slash = fieldName.IndexOf('/');
+                if (slash <= 0)
+                    return "General";
+
+                return fieldName.Substring(0, slash);
+            }
+
+            var lookupBuckets = new Dictionary<string, Dictionary<string, List<XmlFriendlyLookupItemViewModel>>>(StringComparer.OrdinalIgnoreCase);
+            var normalBuckets = new Dictionary<string, List<XmlFriendlyFieldViewModel>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var f in fields)
+            {
+                if (TryParseLookupField(f.Name, out var lookupGroup, out var itemName, out var leaf))
+                {
+                    if (!lookupBuckets.TryGetValue(lookupGroup, out var itemsByName))
+                    {
+                        itemsByName = new Dictionary<string, List<XmlFriendlyLookupItemViewModel>>(StringComparer.OrdinalIgnoreCase);
+                        lookupBuckets[lookupGroup] = itemsByName;
+                    }
+
+                    if (!itemsByName.TryGetValue(itemName, out var rows))
+                    {
+                        rows = new List<XmlFriendlyLookupItemViewModel>();
+                        itemsByName[itemName] = rows;
+                    }
+
+                    rows.Add(new XmlFriendlyLookupItemViewModel(itemName, leaf, f));
+                    continue;
+                }
+
+                var normalGroup = GetGroupTitle(f.Name);
+                if (!normalBuckets.TryGetValue(normalGroup, out var list))
+                {
+                    list = new List<XmlFriendlyFieldViewModel>();
+                    normalBuckets[normalGroup] = list;
+                }
+
+                list.Add(f);
+            }
+
+            var output = new List<object>();
+
+            if (normalBuckets.TryGetValue("General", out var general))
+            {
+                var generalVm = new XmlFriendlyFieldGroupViewModel(
+                    "General",
+                    new ObservableCollection<XmlFriendlyFieldViewModel>(general));
+                output.Add(generalVm);
+                normalBuckets.Remove("General");
+            }
+
+            foreach (var lookupGroup in lookupBuckets.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                var rows = new List<XmlFriendlyLookupItemViewModel>();
+
+                foreach (var item in lookupGroup.Value.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    rows.AddRange(item.Value.OrderBy(x => x.Field, StringComparer.OrdinalIgnoreCase));
+                }
+
+                output.Add(new XmlFriendlyLookupGroupViewModel(
+                    lookupGroup.Key,
+                    new ObservableCollection<XmlFriendlyLookupItemViewModel>(rows)));
+            }
+
+            foreach (var g in normalBuckets.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                output.Add(new XmlFriendlyFieldGroupViewModel(
+                    g.Key,
+                    new ObservableCollection<XmlFriendlyFieldViewModel>(g.Value)));
+            }
+
+            return new ObservableCollection<object>(output);
+        }
+
+        private static ObservableCollection<XmlFriendlyFieldGroupViewModel> BuildGroupsFromFields(ObservableCollection<XmlFriendlyFieldViewModel> fields)
+        {
+            static string GetGroupTitle(string fieldName)
+            {
+                if (string.IsNullOrWhiteSpace(fieldName))
+                    return "General";
+
+                var slash = fieldName.IndexOf('/');
+                if (slash <= 0)
+                    return "General";
+
+                return fieldName.Substring(0, slash);
+            }
+
+            var grouped = fields
+                .GroupBy(f => GetGroupTitle(f.Name), StringComparer.OrdinalIgnoreCase)
+                .Select(g => new
+                {
+                    Title = g.Key,
+                    Fields = new ObservableCollection<XmlFriendlyFieldViewModel>(g.ToList())
+                })
+                .ToList();
+
+            var ordered = grouped
+                .OrderBy(g => !string.Equals(g.Title, "General", StringComparison.OrdinalIgnoreCase))
+                .ThenBy(g => g.Title, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new XmlFriendlyFieldGroupViewModel(g.Title, g.Fields))
+                .ToList();
+
+            return new ObservableCollection<XmlFriendlyFieldGroupViewModel>(ordered);
+        }
+
+        private void FriendlyField_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(XmlFriendlyFieldViewModel.Value))
+                return;
+
+            if (sender is not XmlFriendlyFieldViewModel field)
+                return;
+
+            var entry = SelectedFriendlyEntry?.Entry;
+            if (entry is null)
+                return;
+
+            if (!entry.TrySetField(field.Name, field.Value, out var error))
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            var updatedXml = _friendly.ToXml(_friendlyDocument);
+            XmlText = updatedXml;
+
+            Status = "Edited.";
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+
+        private string? GetSelectedFilePath()
+        {
+            if (SelectedXmlFile is not null)
+                return SelectedXmlFile.FullPath;
+
+            if (SelectedTreeNode is not null && SelectedTreeNode.IsFile && SelectedTreeNode.FullPath is not null)
+                return SelectedTreeNode.FullPath;
+
+            return null;
+        }
+
+        private void Format()
+        {
+            try
+            {
+                XmlText = _xml.Format(XmlText);
+                Status = "Formatted.";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Format failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Format failed.";
+            }
+        }
+
+        private void Validate()
+        {
+            var (ok, msg) = _xml.ValidateWellFormed(XmlText);
+
+            MessageBox.Show(msg, ok ? "Validate" : "Validate failed",
+                MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Error);
+
+            Status = ok ? "Valid." : "Invalid.";
+        }
+
+        private void Save()
+        {
+            var path = GetSelectedFilePath();
+            if (path is null)
+            {
+                SaveAs();
+                return;
+            }
+
+            var (ok, err) = _saver.Save(path, XmlText);
+            if (!ok)
+            {
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+                return;
+            }
+
+            Status = $"Saved: {Path.GetFileName(path)}";
+        }
+
+        private void SaveAs()
+        {
+            var current = GetSelectedFilePath();
+
+            var dlg = new WpfSaveFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Save XML As",
+                FileName = current is null ? "document.xml" : Path.GetFileName(current),
+                InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    : _rootFolder
+            };
+
+            if (dlg.ShowDialog() != true || string.IsNullOrWhiteSpace(dlg.FileName))
+                return;
+
+            var (ok, err) = _saver.Save(dlg.FileName, XmlText);
+            if (!ok)
+            {
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+                return;
+            }
+
+            Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
+        }
+
+        private void Clear()
+        {
+            CancelPendingLoad();
+            SelectedXmlFile = null;
+            SelectedTreeNode = null;
+            XmlText = "";
+            Status = "Ready.";
+        }
 
         private void OpenFolder()
         {
@@ -360,13 +719,17 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            foreach (var p in paths)
+            foreach (var p in paths.OrderBy(p => p, StringComparer.OrdinalIgnoreCase))
             {
-                var display = Path.GetRelativePath(_rootFolder, p);
+                var display = string.IsNullOrWhiteSpace(_rootFolder)
+                    ? p
+                    : Path.GetRelativePath(_rootFolder, p);
+
                 XmlFiles.Add(new XmlFileListItem(p, display));
             }
 
-            BuildTree(paths);
+            if (ViewMode == XmlListViewMode.Folders)
+                BuildTree(paths);
 
             Status = paths.Count == 0 ? "No XML files found." : $"Found {paths.Count} XML file(s).";
 
@@ -476,194 +839,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             Status = $"Opened: {name}";
         }
 
-        private void RefreshFriendlyFromXml()
-        {
-            _friendlyDocument = _friendly.TryBuild(XmlText);
-
-            if (_friendlyDocument is null)
-            {
-                HasFriendlyView = false;
-
-                FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>();
-                SelectedFriendlyCollection = null;
-                SelectedFriendlyEntry = null;
-                FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
-
-                if (_isFriendlyView)
-                {
-                    _isFriendlyView = false;
-                    OnPropertyChanged(nameof(IsFriendlyView));
-                }
-
-                return;
-            }
-
-            var cols = _friendlyDocument.Collections.Select(c => new XmlFriendlyCollectionViewModel(c)).ToList();
-
-            FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
-            SelectedFriendlyCollection = FriendlyCollections.FirstOrDefault();
-
-            HasFriendlyView = FriendlyCollections.Count > 0;
-
-            if (!HasFriendlyView && _isFriendlyView)
-            {
-                _isFriendlyView = false;
-                OnPropertyChanged(nameof(IsFriendlyView));
-            }
-        }
-
-        private void RebuildFieldsForSelectedEntry()
-        {
-            var entry = SelectedFriendlyEntry?.Entry;
-            if (entry is null)
-            {
-                FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
-                return;
-            }
-
-            var fields = entry.Fields
-                .OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(k => new XmlFriendlyFieldViewModel(k.Key, k.Value.Value ?? ""))
-                .ToList();
-
-            var newFields = new ObservableCollection<XmlFriendlyFieldViewModel>(fields);
-
-            foreach (var f in newFields)
-                f.PropertyChanged += FriendlyField_PropertyChanged;
-
-            FriendlyFields = newFields;
-        }
-
-        private void FriendlyField_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName != nameof(XmlFriendlyFieldViewModel.Value))
-                return;
-
-            if (sender is not XmlFriendlyFieldViewModel field)
-                return;
-
-            var entry = SelectedFriendlyEntry?.Entry;
-            if (entry is null)
-                return;
-
-            if (!entry.TrySetField(field.Name, field.Value, out var error))
-                return;
-
-            if (_friendlyDocument is null)
-                return;
-
-            var updatedXml = _friendly.ToXml(_friendlyDocument);
-            _xmlText = updatedXml;
-            OnPropertyChanged(nameof(XmlText));
-
-            Status = "Edited.";
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
-        }
-
-        private string? GetSelectedFilePath()
-        {
-            if (SelectedXmlFile is not null)
-                return SelectedXmlFile.FullPath;
-
-            if (SelectedTreeNode is not null && SelectedTreeNode.IsFile && SelectedTreeNode.FullPath is not null)
-                return SelectedTreeNode.FullPath;
-
-            return null;
-        }
-
-        private void Format()
-        {
-            try
-            {
-                XmlText = _xml.Format(XmlText);
-                Status = "Formatted.";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Format failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Format failed.";
-            }
-        }
-
-        private void Validate()
-        {
-            var (ok, msg) = _xml.ValidateWellFormed(XmlText);
-
-            MessageBox.Show(msg, ok ? "Validate" : "Validate failed",
-                MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Error);
-
-            Status = ok ? "Valid." : "Invalid.";
-        }
-
-        private void Save()
-        {
-            var path = GetSelectedFilePath();
-            if (path is null)
-            {
-                SaveAs();
-                return;
-            }
-
-            var (ok, err) = _saver.Save(path, XmlText);
-            if (!ok)
-            {
-                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Save failed.";
-                return;
-            }
-
-            Status = $"Saved: {Path.GetFileName(path)}";
-        }
-
-        private void SaveAs()
-        {
-            var current = GetSelectedFilePath();
-
-            var dlg = new WpfSaveFileDialog
-            {
-                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
-                Title = "Save XML As",
-                FileName = current is null ? "document.xml" : Path.GetFileName(current),
-                InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder) ? null : _rootFolder
-            };
-
-            if (dlg.ShowDialog() != true)
-                return;
-
-            var (ok, err) = _saver.Save(dlg.FileName, XmlText);
-            if (!ok)
-            {
-                MessageBox.Show(err ?? "Save As failed.", "Save As failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Save As failed.";
-                return;
-            }
-
-            Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
-
-            if (!string.IsNullOrWhiteSpace(_rootFolder))
-                RefreshFileViews(resetEditorAndSelection: false);
-        }
-
-        private void Clear()
-        {
-            CancelPendingLoad();
-            XmlText = "";
-            SelectedXmlFile = null;
-            SelectedTreeNode = null;
-            IsFriendlyView = false;
-            Status = "Cleared.";
-        }
-
         private void ApplySettingsToState()
         {
-            if (!string.IsNullOrWhiteSpace(_settings.LastFolder) && Directory.Exists(_settings.LastFolder))
-                _rootFolder = _settings.LastFolder;
+            _rootFolder = string.IsNullOrWhiteSpace(_settings.LastFolder) ? null : _settings.LastFolder;
 
-            if (Enum.TryParse(_settings.ViewMode, ignoreCase: true, out XmlListViewMode parsed))
+            if (Enum.TryParse<XmlListViewMode>(_settings.ViewMode ?? "", ignoreCase: true, out var parsed))
                 _viewMode = parsed;
 
             _includeSubfolders = _settings.IncludeSubfolders;
             _isDarkMode = _settings.IsDarkMode;
+            _isFriendlyView = _settings.IsFriendlyView;
         }
 
         private void SaveSettings()
@@ -679,10 +864,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private static Media.Brush CreateFrozenBrush(string hex)
         {
-            var c = (Media.Color)Media.ColorConverter.ConvertFromString(hex);
-            var b = new Media.SolidColorBrush(c);
-            b.Freeze();
-            return b;
+            var brush = (Media.Brush)new Media.BrushConverter().ConvertFromString(hex)!;
+            brush.Freeze();
+            return brush;
         }
     }
 }

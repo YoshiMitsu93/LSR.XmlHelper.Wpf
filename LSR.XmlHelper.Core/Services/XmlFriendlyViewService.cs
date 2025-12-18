@@ -1,4 +1,5 @@
-﻿using System;
+﻿// LSR.XmlHelper.Core\Services\XmlFriendlyViewService.cs
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -37,11 +38,9 @@ namespace LSR.XmlHelper.Core.Services
             }
 
             if (doc.Root == null)
-            {
                 return null;
-            }
 
-            var collections = DiscoverCollections(doc);
+            var collections = DiscoverTopLevelCollections(doc);
 
             if (collections.Count == 0)
             {
@@ -52,7 +51,7 @@ namespace LSR.XmlHelper.Core.Services
                 collections.Add(single);
             }
 
-            var primary = collections[0].Title;
+            var primary = DeterminePrimaryCollectionKey(doc, collections) ?? collections[0].Title;
 
             return new XmlFriendlyDocument(doc, collections, primary);
         }
@@ -62,72 +61,70 @@ namespace LSR.XmlHelper.Core.Services
             return friendly.Document.ToString(SaveOptions.DisableFormatting);
         }
 
-        private List<XmlFriendlyCollection> DiscoverCollections(XDocument doc)
+        private static string? DeterminePrimaryCollectionKey(XDocument doc, List<XmlFriendlyCollection> collections)
+        {
+            var root = doc.Root;
+            if (root == null)
+                return null;
+
+            var groups = root.Elements()
+                .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .Where(x => x.Count >= 2)
+                .OrderByDescending(x => x.Count)
+                .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (groups.Count == 0)
+                return null;
+
+            var rootPath = root.Name.LocalName;
+            var desired = $"{rootPath}/{groups[0].Name}";
+
+            var match = collections.FirstOrDefault(c => string.Equals(c.Title, desired, StringComparison.OrdinalIgnoreCase));
+            return match?.Title;
+        }
+
+        private List<XmlFriendlyCollection> DiscoverTopLevelCollections(XDocument doc)
         {
             var root = doc.Root!;
-            var collectionsByTitle = new Dictionary<string, XmlFriendlyCollection>(StringComparer.OrdinalIgnoreCase);
+            var collections = new List<XmlFriendlyCollection>();
 
-            void AddOrMergeCollection(string title, IEnumerable<XElement> elements)
+            void AddGroupCollection(XElement parent, string parentPath)
             {
-                var entries = elements.Select(e => BuildEntry(e, FindAncestorContext(e))).ToList();
+                var grouped = parent.Elements()
+                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => new { Name = g.Key, Elements = g.ToList() })
+                    .Where(x => x.Elements.Count >= 2)
+                    .OrderByDescending(x => x.Elements.Count)
+                    .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
 
-                if (collectionsByTitle.TryGetValue(title, out var existing))
+                foreach (var g in grouped)
                 {
-                    existing.Entries.AddRange(entries);
-                    return;
-                }
-
-                collectionsByTitle[title] = new XmlFriendlyCollection(title, entries);
-            }
-
-            void Visit(XElement node, string path, bool isDirectRootChild)
-            {
-                var children = node.Elements().ToList();
-                if (children.Count == 0)
-                {
-                    return;
-                }
-
-                var groups = children.GroupBy(e => e.Name.LocalName).ToList();
-
-                foreach (var g in groups)
-                {
-                    var groupElements = g.ToList();
-                    if (groupElements.Count >= 2)
-                    {
-                        var title = $"{path}/{g.Key}";
-                        AddOrMergeCollection(title, groupElements);
-                    }
-                    else if (isDirectRootChild)
-                    {
-                        var only = groupElements[0];
-                        if (only.HasElements || !string.IsNullOrWhiteSpace(only.Value))
-                        {
-                            var title = $"{path}/{g.Key}";
-                            AddOrMergeCollection(title, groupElements);
-                        }
-                    }
-                }
-
-                foreach (var child in children)
-                {
-                    Visit(child, $"{path}/{child.Name.LocalName}", isDirectRootChild: false);
+                    var title = $"{parentPath}/{g.Name}";
+                    var entries = g.Elements.Select(e => BuildEntry(e, FindAncestorContext(e))).ToList();
+                    collections.Add(new XmlFriendlyCollection(title, entries));
                 }
             }
 
             var rootPath = root.Name.LocalName;
 
-            foreach (var child in root.Elements().ToList())
+            AddGroupCollection(root, rootPath);
+
+            if (collections.Count == 0)
             {
-                Visit(child, $"{rootPath}/{child.Name.LocalName}", isDirectRootChild: true);
+                var onlyChild = root.Elements().FirstOrDefault();
+                if (onlyChild != null && root.Elements().Skip(1).Any() == false)
+                {
+                    AddGroupCollection(onlyChild, $"{rootPath}/{onlyChild.Name.LocalName}");
+                }
             }
 
-            var ordered = collectionsByTitle.Values
+            return collections
                 .OrderByDescending(c => c.Entries.Count)
                 .ThenBy(c => c.Title, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-
-            return ordered;
         }
 
         private XmlFriendlyEntry BuildEntry(XElement element, string? parentContext)
@@ -160,9 +157,7 @@ namespace LSR.XmlHelper.Core.Services
                 {
                     var v = (match.Value ?? string.Empty).Trim();
                     if (!string.IsNullOrWhiteSpace(v))
-                    {
                         return v;
-                    }
                 }
 
                 var attr = element.Attribute(name);
@@ -170,9 +165,7 @@ namespace LSR.XmlHelper.Core.Services
                 {
                     var v = (attr.Value ?? string.Empty).Trim();
                     if (!string.IsNullOrWhiteSpace(v))
-                    {
                         return v;
-                    }
                 }
             }
 
@@ -180,9 +173,7 @@ namespace LSR.XmlHelper.Core.Services
             {
                 var v = (element.Value ?? string.Empty).Trim();
                 if (!string.IsNullOrWhiteSpace(v))
-                {
                     return v;
-                }
             }
 
             return Guid.NewGuid().ToString("N");
@@ -203,9 +194,7 @@ namespace LSR.XmlHelper.Core.Services
                 {
                     var v = (match.Value ?? string.Empty).Trim();
                     if (!string.IsNullOrWhiteSpace(v))
-                    {
                         return v;
-                    }
                 }
             }
 
@@ -218,9 +207,7 @@ namespace LSR.XmlHelper.Core.Services
             while (current != null)
             {
                 if (current.Parent == null)
-                {
                     break;
-                }
 
                 if (current.HasElements)
                 {
@@ -231,9 +218,7 @@ namespace LSR.XmlHelper.Core.Services
                         {
                             var v = (match.Value ?? string.Empty).Trim();
                             if (!string.IsNullOrWhiteSpace(v))
-                            {
                                 return v;
-                            }
                         }
                     }
                 }
@@ -255,12 +240,6 @@ namespace LSR.XmlHelper.Core.Services
             }
 
             var dict = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
-            var stopNodes = new HashSet<XElement>();
-
-            foreach (var n in element.Descendants().Where(HasRepeatedChildren))
-            {
-                stopNodes.Add(n);
-            }
 
             void AddField(string key, XElement leaf)
             {
@@ -272,9 +251,8 @@ namespace LSR.XmlHelper.Core.Services
 
                 var i = 2;
                 while (dict.ContainsKey($"{key} ({i})"))
-                {
                     i++;
-                }
+
                 dict[$"{key} ({i})"] = leaf;
             }
 
@@ -287,17 +265,6 @@ namespace LSR.XmlHelper.Core.Services
                     var childPath = string.IsNullOrEmpty(path)
                         ? indexedName
                         : $"{path}/{indexedName}";
-
-                    if (stopNodes.Contains(child))
-                    {
-                        var count = child.Elements().Count();
-                        if (count > 0)
-                        {
-                            var synthetic = new XElement(child.Name, count.ToString());
-                            AddField($"{childPath}/Count", synthetic);
-                        }
-                        continue;
-                    }
 
                     if (!child.HasElements)
                     {
@@ -312,19 +279,9 @@ namespace LSR.XmlHelper.Core.Services
             Walk(element, "");
 
             if (dict.Count == 0)
-            {
                 AddField("Value", element);
-            }
 
             return dict;
-        }
-
-        private static bool HasRepeatedChildren(XElement element)
-        {
-            var children = element.Elements().ToList();
-            if (children.Count < 2) return false;
-
-            return children.GroupBy(e => e.Name.LocalName).Any(g => g.Count() >= 2);
         }
 
         private static string GetIndexedName(XElement element)
@@ -339,9 +296,7 @@ namespace LSR.XmlHelper.Core.Services
             foreach (var s in same)
             {
                 if (ReferenceEquals(s, element))
-                {
                     break;
-                }
                 index++;
             }
 

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="450"
@@ -13,6 +14,54 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+
+        <DataTemplate DataType="{x:Type vm:XmlFriendlyFieldGroupViewModel}">
+            <Expander Header="{Binding Title}"
+                      IsExpanded="{Binding IsExpanded}"
+                      Margin="0,0,0,6">
+                <DataGrid ItemsSource="{Binding Fields}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Field"
+                                            Binding="{Binding Name}"
+                                            IsReadOnly="True"
+                                            Width="260" />
+                        <DataGridTextColumn Header="Value"
+                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                            Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Expander>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:XmlFriendlyLookupGroupViewModel}">
+            <Expander Header="{Binding Title}"
+                      IsExpanded="{Binding IsExpanded}"
+                      Margin="0,0,0,6">
+                <DataGrid ItemsSource="{Binding Items}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Item"
+                                            Binding="{Binding Item}"
+                                            IsReadOnly="True"
+                                            Width="220" />
+                        <DataGridTextColumn Header="Field"
+                                            Binding="{Binding Field}"
+                                            IsReadOnly="True"
+                                            Width="160" />
+                        <DataGridTextColumn Header="Value"
+                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                            Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Expander>
+        </DataTemplate>
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
@@ -133,17 +182,11 @@
                                  DisplayMemberPath="Display" />
                     </DockPanel>
 
-                    <DataGrid Grid.Column="1"
-                              ItemsSource="{Binding FriendlyFields}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              HeadersVisibility="Column">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="220" />
-                            <DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <ScrollViewer Grid.Column="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding FriendlyGroups}" />
+                    </ScrollViewer>
                 </Grid>
 
                 <avalonedit:TextEditor x:Name="XmlEditor"
