@@ -1,311 +1,210 @@
-﻿// LSR.XmlHelper.Core\Services\XmlFriendlyViewService.cs
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace LSR.XmlHelper.Core.Services
 {
     public sealed class XmlFriendlyViewService
     {
-        private static readonly string[] KeyCandidates =
-        {
-            "ID", "Id", "Key", "Guid",
-            "Name", "FullName", "ShortName", "DisplayName",
-            "ModItemName", "ContactName", "PlayerName",
-            "ModelName", "ModelHash",
-            "GroupName", "TypeName"
-        };
-
-        private static readonly string[] DisplayCandidates =
-        {
-            "FullName", "DisplayName", "ShortName", "Name",
-            "ModItemName", "ContactName", "PlayerName",
-            "GroupName", "TypeName",
-            "ModelName"
-        };
-
         public XmlFriendlyDocument? TryBuild(string xmlText)
         {
+            if (string.IsNullOrWhiteSpace(xmlText))
+                return null;
+
             XDocument doc;
             try
             {
-                doc = XDocument.Parse(xmlText, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
+                doc = XDocument.Parse(xmlText, LoadOptions.PreserveWhitespace);
             }
             catch
             {
                 return null;
             }
 
-            if (doc.Root == null)
-                return null;
-
-            var collections = DiscoverTopLevelCollections(doc);
-
-            if (collections.Count == 0)
-            {
-                var single = new XmlFriendlyCollection(
-                    title: doc.Root.Name.LocalName,
-                    entries: new List<XmlFriendlyEntry> { BuildEntry(doc.Root, parentContext: null) }
-                );
-                collections.Add(single);
-            }
-
-            var primary = DeterminePrimaryCollectionKey(doc, collections) ?? collections[0].Title;
-
-            return new XmlFriendlyDocument(doc, collections, primary);
-        }
-
-        public string ToXml(XmlFriendlyDocument friendly)
-        {
-            return friendly.Document.ToString(SaveOptions.DisableFormatting);
-        }
-
-        private static string? DeterminePrimaryCollectionKey(XDocument doc, List<XmlFriendlyCollection> collections)
-        {
             var root = doc.Root;
-            if (root == null)
+            if (root is null)
                 return null;
 
-            var groups = root.Elements()
-                .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-                .Select(g => new { Name = g.Key, Count = g.Count() })
-                .Where(x => x.Count >= 2)
-                .OrderByDescending(x => x.Count)
-                .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            if (groups.Count == 0)
-                return null;
-
-            var rootPath = root.Name.LocalName;
-            var desired = $"{rootPath}/{groups[0].Name}";
-
-            var match = collections.FirstOrDefault(c => string.Equals(c.Title, desired, StringComparison.OrdinalIgnoreCase));
-            return match?.Title;
-        }
-
-        private List<XmlFriendlyCollection> DiscoverTopLevelCollections(XDocument doc)
-        {
-            var root = doc.Root!;
             var collections = new List<XmlFriendlyCollection>();
 
-            void AddGroupCollection(XElement parent, string parentPath)
-            {
-                var grouped = parent.Elements()
-                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-                    .Select(g => new { Name = g.Key, Elements = g.ToList() })
-                    .Where(x => x.Elements.Count >= 2)
-                    .OrderByDescending(x => x.Elements.Count)
-                    .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
+            var directChildren = root.Elements().ToList();
+            if (directChildren.Count == 0)
+                return null;
 
-                foreach (var g in grouped)
-                {
-                    var title = $"{parentPath}/{g.Name}";
-                    var entries = g.Elements.Select(e => BuildEntry(e, FindAncestorContext(e))).ToList();
-                    collections.Add(new XmlFriendlyCollection(title, entries));
-                }
-            }
-
-            var rootPath = root.Name.LocalName;
-
-            AddGroupCollection(root, rootPath);
-
-            if (collections.Count == 0)
-            {
-                var onlyChild = root.Elements().FirstOrDefault();
-                if (onlyChild != null && root.Elements().Skip(1).Any() == false)
-                {
-                    AddGroupCollection(onlyChild, $"{rootPath}/{onlyChild.Name.LocalName}");
-                }
-            }
-
-            return collections
-                .OrderByDescending(c => c.Entries.Count)
-                .ThenBy(c => c.Title, StringComparer.OrdinalIgnoreCase)
+            var grouped = directChildren
+                .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-        }
 
-        private XmlFriendlyEntry BuildEntry(XElement element, string? parentContext)
-        {
-            var key = ResolveKey(element);
-            var display = ResolveDisplay(element);
-
-            if (!string.IsNullOrWhiteSpace(parentContext))
+            foreach (var g in grouped)
             {
-                var trimmed = display.Trim();
-                if (string.Equals(trimmed, element.Name.LocalName, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(trimmed, "string", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(trimmed, "value", StringComparison.OrdinalIgnoreCase))
+                var entries = new List<XmlFriendlyEntry>();
+                var index = 0;
+
+                foreach (var element in g)
                 {
-                    display = $"{parentContext} / {trimmed}";
-                }
-            }
+                    index++;
 
-            var fields = BuildFields(element);
+                    var key = ResolveKey(element, index);
+                    var display = ResolveDisplay(element, key);
 
-            return new XmlFriendlyEntry(key, display, element, fields);
-        }
+                    var fields = FlattenFields(element);
 
-        private string ResolveKey(XElement element)
-        {
-            foreach (var name in KeyCandidates)
-            {
-                var match = element.Elements().FirstOrDefault(e => NameEquals(e, name));
-                if (match != null)
-                {
-                    var v = (match.Value ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(v))
-                        return v;
+                    entries.Add(new XmlFriendlyEntry(key, display, element, fields));
                 }
 
-                var attr = element.Attribute(name);
-                if (attr != null)
-                {
-                    var v = (attr.Value ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(v))
-                        return v;
-                }
+                var title = g.Key;
+                collections.Add(new XmlFriendlyCollection(title, entries));
             }
 
-            if (!element.HasElements)
-            {
-                var v = (element.Value ?? string.Empty).Trim();
-                if (!string.IsNullOrWhiteSpace(v))
-                    return v;
-            }
+            var primaryKey = grouped
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? grouped[0].Key;
 
-            return Guid.NewGuid().ToString("N");
+            return new XmlFriendlyDocument(doc, collections, primaryKey);
         }
 
-        private string ResolveDisplay(XElement element)
+        public string ToXml(XmlFriendlyDocument document)
         {
-            if (!element.HasElements)
-            {
-                var v = (element.Value ?? string.Empty).Trim();
-                return string.IsNullOrWhiteSpace(v) ? element.Name.LocalName : v;
-            }
-
-            foreach (var name in DisplayCandidates)
-            {
-                var match = element.Elements().FirstOrDefault(e => NameEquals(e, name));
-                if (match != null)
-                {
-                    var v = (match.Value ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(v))
-                        return v;
-                }
-            }
-
-            return element.Name.LocalName;
+            return document.Document.ToString(SaveOptions.DisableFormatting);
         }
 
-        private string? FindAncestorContext(XElement element)
+        private static Dictionary<string, XmlFriendlyField> FlattenFields(XElement element)
         {
-            var current = element.Parent;
-            while (current != null)
-            {
-                if (current.Parent == null)
-                    break;
+            var result = new Dictionary<string, XmlFriendlyField>(StringComparer.OrdinalIgnoreCase);
 
-                if (current.HasElements)
+            void Walk(XElement el, string prefix)
+            {
+                foreach (var attr in el.Attributes())
                 {
-                    foreach (var name in DisplayCandidates)
-                    {
-                        var match = current.Elements().FirstOrDefault(e => NameEquals(e, name));
-                        if (match != null)
-                        {
-                            var v = (match.Value ?? string.Empty).Trim();
-                            if (!string.IsNullOrWhiteSpace(v))
-                                return v;
-                        }
-                    }
+                    var key = string.IsNullOrEmpty(prefix)
+                        ? $"@{attr.Name.LocalName}"
+                        : $"{prefix}/@{attr.Name.LocalName}";
+
+                    result[key] = new XmlFriendlyField(key, attr.Value, attr);
                 }
 
-                current = current.Parent;
-            }
+                var children = el.Elements().ToList();
 
-            return null;
-        }
-
-        private Dictionary<string, XElement> BuildFields(XElement element)
-        {
-            if (!element.HasElements)
-            {
-                return new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase)
+                if (children.Count == 0)
                 {
-                    ["Value"] = element
-                };
-            }
+                    if (!string.IsNullOrEmpty(prefix))
+                        result[prefix] = new XmlFriendlyField(prefix, el.Value, el);
 
-            var dict = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
-
-            void AddField(string key, XElement leaf)
-            {
-                if (!dict.ContainsKey(key))
-                {
-                    dict[key] = leaf;
                     return;
                 }
 
-                var i = 2;
-                while (dict.ContainsKey($"{key} ({i})"))
-                    i++;
+                var grouped = children.GroupBy(c => c.Name.LocalName, StringComparer.OrdinalIgnoreCase);
 
-                dict[$"{key} ({i})"] = leaf;
-            }
-
-            void Walk(XElement node, string path)
-            {
-                foreach (var child in node.Elements())
+                foreach (var group in grouped)
                 {
-                    var indexedName = GetIndexedName(child);
-
-                    var childPath = string.IsNullOrEmpty(path)
-                        ? indexedName
-                        : $"{path}/{indexedName}";
-
-                    if (!child.HasElements)
+                    var list = group.ToList();
+                    if (list.Count == 1)
                     {
-                        AddField(childPath, child);
-                        continue;
-                    }
+                        var child = list[0];
+                        var childPrefix = string.IsNullOrEmpty(prefix)
+                            ? child.Name.LocalName
+                            : $"{prefix}/{child.Name.LocalName}";
 
-                    Walk(child, childPath);
+                        Walk(child, childPrefix);
+                    }
+                    else
+                    {
+                        var idx = 0;
+                        foreach (var child in list)
+                        {
+                            idx++;
+
+                            var childPrefix = string.IsNullOrEmpty(prefix)
+                                ? $"{child.Name.LocalName}[{idx}]"
+                                : $"{prefix}/{child.Name.LocalName}[{idx}]";
+
+                            Walk(child, childPrefix);
+                        }
+                    }
                 }
             }
 
             Walk(element, "");
-
-            if (dict.Count == 0)
-                AddField("Value", element);
-
-            return dict;
+            return result;
         }
 
-        private static string GetIndexedName(XElement element)
+        private static string ResolveKey(XElement element, int index)
         {
-            var parent = element.Parent;
-            if (parent == null) return element.Name.LocalName;
-
-            var same = parent.Elements(element.Name).ToList();
-            if (same.Count <= 1) return element.Name.LocalName;
-
-            var index = 1;
-            foreach (var s in same)
+            var keyCandidates = new[]
             {
-                if (ReferenceEquals(s, element))
-                    break;
-                index++;
+                "ID",
+                "Id",
+                "Key",
+                "Name",
+                "Type",
+                "Hash",
+                "Guid"
+            };
+
+            foreach (var candidate in keyCandidates)
+            {
+                var child = element.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
+                if (child is not null && !string.IsNullOrWhiteSpace(child.Value))
+                    return child.Value.Trim();
+
+                var attr = element.Attributes().FirstOrDefault(a => string.Equals(a.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
+                if (attr is not null && !string.IsNullOrWhiteSpace(attr.Value))
+                    return attr.Value.Trim();
             }
+
+            var anyIdLike = element.Elements()
+                .Select(e => e)
+                .FirstOrDefault(e =>
+                    e.Name.LocalName.EndsWith("ID", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrWhiteSpace(e.Value));
+
+            if (anyIdLike is not null)
+                return anyIdLike.Value.Trim();
 
             return $"{element.Name.LocalName}[{index}]";
         }
 
-        private static bool NameEquals(XElement element, string candidate)
+        private static string ResolveDisplay(XElement element, string fallback)
         {
-            return string.Equals(element.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase);
+            var displayCandidates = new[]
+            {
+                "Name",
+                "DisplayName",
+                "Title",
+                "Label",
+                "ModelName",
+                "GroupName",
+                "TypeName",
+                "ModItemName"
+            };
+
+            foreach (var candidate in displayCandidates)
+            {
+                var child = element.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
+                if (child is not null && !string.IsNullOrWhiteSpace(child.Value))
+                    return child.Value.Trim();
+
+                var attr = element.Attributes().FirstOrDefault(a => string.Equals(a.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
+                if (attr is not null && !string.IsNullOrWhiteSpace(attr.Value))
+                    return attr.Value.Trim();
+            }
+
+            var anyNameLike = element.Elements()
+                .FirstOrDefault(e =>
+                    e.Name.LocalName.EndsWith("Name", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrWhiteSpace(e.Value));
+
+            if (anyNameLike is not null)
+                return anyNameLike.Value.Trim();
+
+            var anyIdLike = element.Elements()
+                .FirstOrDefault(e =>
+                    e.Name.LocalName.EndsWith("ID", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrWhiteSpace(e.Value));
+
+            if (anyIdLike is not null)
+                return anyIdLike.Value.Trim();
+
+            return fallback;
         }
     }
 
@@ -337,7 +236,7 @@ namespace LSR.XmlHelper.Core.Services
 
     public sealed class XmlFriendlyEntry
     {
-        public XmlFriendlyEntry(string key, string display, XElement element, Dictionary<string, XElement> fields)
+        public XmlFriendlyEntry(string key, string display, XElement element, Dictionary<string, XmlFriendlyField> fields)
         {
             Key = key;
             Display = display;
@@ -348,22 +247,36 @@ namespace LSR.XmlHelper.Core.Services
         public string Key { get; }
         public string Display { get; }
         public XElement Element { get; }
-        public Dictionary<string, XElement> Fields { get; }
+        public Dictionary<string, XmlFriendlyField> Fields { get; }
 
-        public bool TrySetField(string fieldKey, string newValue, out string? error)
+        public bool TrySetField(string fieldPath, string newValue, out string? error)
         {
             error = null;
 
-            if (!Fields.TryGetValue(fieldKey, out var el))
+            if (!Fields.TryGetValue(fieldPath, out var field))
             {
-                error = $"Field '{fieldKey}' was not found.";
+                error = "Field not found.";
                 return false;
             }
 
             try
             {
-                el.Value = newValue ?? string.Empty;
-                return true;
+                if (field.BoundTo is XAttribute attr)
+                {
+                    attr.Value = newValue;
+                    field.Value = newValue;
+                    return true;
+                }
+
+                if (field.BoundTo is XElement el)
+                {
+                    el.Value = newValue;
+                    field.Value = newValue;
+                    return true;
+                }
+
+                error = "Field cannot be updated.";
+                return false;
             }
             catch (Exception ex)
             {
@@ -371,5 +284,19 @@ namespace LSR.XmlHelper.Core.Services
                 return false;
             }
         }
+    }
+
+    public sealed class XmlFriendlyField
+    {
+        public XmlFriendlyField(string key, string value, XObject boundTo)
+        {
+            Key = key;
+            Value = value;
+            BoundTo = boundTo;
+        }
+
+        public string Key { get; }
+        public string Value { get; set; }
+        public XObject BoundTo { get; }
     }
 }
