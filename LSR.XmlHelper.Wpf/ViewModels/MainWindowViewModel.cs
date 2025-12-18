@@ -547,10 +547,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
 
             if (!entry.TrySetField(field.Name, field.Value, out var error))
-            {
-                Status = error ?? "Edit failed.";
                 return;
-            }
 
             if (_friendlyDocument is null)
                 return;

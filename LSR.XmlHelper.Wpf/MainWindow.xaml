@@ -1,60 +1,118 @@
 ﻿<Window x:Class="LSR.XmlHelper.Wpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         Title="{Binding Title}"
-        Height="720"
-        Width="1200">
+        Height="450"
+        Width="900">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
-
-        <CollectionViewSource x:Key="FriendlyFieldsView" Source="{Binding FriendlyFields}">
-            <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="GroupHeader" />
-            </CollectionViewSource.GroupDescriptions>
-        </CollectionViewSource>
     </Window.Resources>
 
-    <DockPanel Margin="8">
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button Content="Open Folder" Command="{Binding OpenCommand}" Width="95" Margin="0,0,8,0" />
-            <Button Content="Format" Command="{Binding FormatCommand}" Width="70" Margin="0,0,8,0" />
-            <Button Content="Validate" Command="{Binding ValidateCommand}" Width="70" Margin="0,0,8,0" />
-            <Button Content="Save" Command="{Binding SaveCommand}" Width="60" Margin="0,0,8,0" />
-            <Button Content="Save As..." Command="{Binding SaveAsCommand}" Width="80" Margin="0,0,8,0" />
-            <Button Content="Clear" Command="{Binding ClearCommand}" Width="60" Margin="0,0,16,0" />
+    <DockPanel LastChildFill="True">
 
-            <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
-            <RadioButton Content="Folders" IsChecked="{Binding IsFoldersMode}" VerticalAlignment="Center" Margin="0,0,6,0" />
-            <RadioButton Content="Flat" IsChecked="{Binding IsFlatMode}" VerticalAlignment="Center" Margin="0,0,16,0" />
+        <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Margin="8">
 
-            <CheckBox Content="Include subfolders" IsChecked="{Binding IncludeSubfolders}" VerticalAlignment="Center" Margin="0,0,16,0" />
-            <CheckBox Content="Friendly view" IsEnabled="{Binding HasFriendlyView}" IsChecked="{Binding IsFriendlyView}" VerticalAlignment="Center" Margin="0,0,16,0" />
-            <CheckBox Content="Dark mode" IsChecked="{Binding IsDarkMode}" VerticalAlignment="Center" />
+            <Button Content="Open Folder"
+                    MinWidth="100"
+                    Margin="0,0,8,0"
+                    Command="{Binding OpenCommand}" />
+
+            <Button Content="Format"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding FormatCommand}" />
+
+            <Button Content="Validate"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding ValidateCommand}" />
+
+            <Button Content="Save"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding SaveCommand}" />
+
+            <Button Content="Save As..."
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding SaveAsCommand}" />
+
+            <Button Content="Clear"
+                    MinWidth="70"
+                    Margin="0,0,16,0"
+                    Command="{Binding ClearCommand}" />
+
+            <TextBlock Text="View:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,6,0" />
+
+            <RadioButton Content="Folders"
+                         VerticalAlignment="Center"
+                         Margin="0,0,8,0"
+                         IsChecked="{Binding IsFoldersMode}" />
+
+            <RadioButton Content="Flat"
+                         VerticalAlignment="Center"
+                         Margin="0,0,16,0"
+                         IsChecked="{Binding IsFlatMode}" />
+
+            <CheckBox Content="Include subfolders"
+                      VerticalAlignment="Center"
+                      Margin="0,0,16,0"
+                      IsChecked="{Binding IncludeSubfolders}" />
+
+            <CheckBox Content="Friendly view"
+                      VerticalAlignment="Center"
+                      Margin="0,0,16,0"
+                      IsEnabled="{Binding HasFriendlyView}"
+                      IsChecked="{Binding IsFriendlyView}" />
+
+            <CheckBox Content="Dark mode"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding IsDarkMode}" />
         </StackPanel>
 
-        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Margin="0,8,0,0" />
+        <StatusBar DockPanel.Dock="Bottom">
+            <TextBlock Text="{Binding Status}" />
+        </StatusBar>
 
-        <Grid>
+        <Grid Margin="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="280" />
-                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="6" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Padding="6">
-                <ListBox ItemsSource="{Binding XmlFiles}"
-                         SelectedItem="{Binding SelectedXmlFile}"
-                         DisplayMemberPath="DisplayPath" />
+            <Border Grid.Column="0"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                    Padding="6">
+                <Grid>
+                    <TreeView ItemsSource="{Binding XmlTree}"
+                              SelectedItemChanged="TreeView_SelectedItemChanged"
+                              Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
+
+                    <ListBox ItemsSource="{Binding XmlFiles}"
+                             SelectedItem="{Binding SelectedXmlFile}"
+                             DisplayMemberPath="DisplayPath"
+                             Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
+                </Grid>
             </Border>
 
-            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" />
+            <GridSplitter Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Columns" />
 
             <Grid Grid.Column="2">
                 <Grid Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}">
@@ -63,80 +121,29 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Padding="6" Margin="0,0,8,0">
-                        <DockPanel>
-                            <ComboBox DockPanel.Dock="Top"
-                                      ItemsSource="{Binding FriendlyCollections}"
-                                      SelectedItem="{Binding SelectedFriendlyCollection}"
-                                      DisplayMemberPath="Title"
-                                      Margin="0,0,0,8" />
-                            <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
-                                     SelectedItem="{Binding SelectedFriendlyEntry}"
-                                     DisplayMemberPath="Display" />
-                        </DockPanel>
-                    </Border>
+                    <DockPanel Grid.Column="0" Margin="0,0,8,0">
+                        <ComboBox DockPanel.Dock="Top"
+                                  ItemsSource="{Binding FriendlyCollections}"
+                                  SelectedItem="{Binding SelectedFriendlyCollection}"
+                                  DisplayMemberPath="Title"
+                                  Margin="0,0,0,8" />
 
-                    <Border Grid.Column="1" BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Padding="6">
-                        <TabControl>
-                            <TabItem Header="Fields">
-                                <ListView ItemsSource="{Binding Source={StaticResource FriendlyFieldsView}}">
-                                    <ListView.GroupStyle>
-                                        <GroupStyle>
-                                            <GroupStyle.ContainerStyle>
-                                                <Style TargetType="{x:Type GroupItem}">
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                                <Expander Header="{Binding Name}" IsExpanded="True" Margin="0,0,0,8">
-                                                                    <ItemsPresenter />
-                                                                </Expander>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Style>
-                                            </GroupStyle.ContainerStyle>
-                                        </GroupStyle>
-                                    </ListView.GroupStyle>
+                        <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
+                                 SelectedItem="{Binding SelectedFriendlyEntry}"
+                                 DisplayMemberPath="Display" />
+                    </DockPanel>
 
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Field" Width="260" DisplayMemberBinding="{Binding Name}" />
-                                            <GridViewColumn Header="Value" Width="Auto">
-                                                <GridViewColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Padding="2" />
-                                                    </DataTemplate>
-                                                </GridViewColumn.CellTemplate>
-                                            </GridViewColumn>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
-                            </TabItem>
-
-                            <TabItem Header="Child lists">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl ItemsSource="{Binding SelectedFriendlyEntry.ChildCollections}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Expander Header="{Binding Name}" IsExpanded="True" Margin="0,0,0,8">
-                                                    <DataGrid ItemsSource="{Binding Items}"
-                                                              AutoGenerateColumns="False"
-                                                              CanUserAddRows="False"
-                                                              CanUserDeleteRows="False"
-                                                              HeadersVisibility="Column">
-                                                        <DataGrid.Columns>
-                                                            <DataGridTextColumn Header="ID" Binding="{Binding Id, UpdateSourceTrigger=PropertyChanged}" Width="120" />
-                                                            <DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*" />
-                                                        </DataGrid.Columns>
-                                                    </DataGrid>
-                                                </Expander>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                            </TabItem>
-                        </TabControl>
-                    </Border>
+                    <DataGrid Grid.Column="1"
+                              ItemsSource="{Binding FriendlyFields}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Field" Binding="{Binding Name}" IsReadOnly="True" Width="220" />
+                            <DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
 
                 <avalonedit:TextEditor x:Name="XmlEditor"
@@ -146,6 +153,8 @@
                                        FontSize="13"
                                        HorizontalScrollBarVisibility="Auto"
                                        VerticalScrollBarVisibility="Auto"
+                                       Background="{Binding EditorBackground}"
+                                       Foreground="{Binding EditorForeground}"
                                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
             </Grid>
         </Grid>
