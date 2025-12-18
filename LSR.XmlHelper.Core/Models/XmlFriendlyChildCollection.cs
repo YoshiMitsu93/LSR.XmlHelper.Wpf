@@ -7,10 +7,10 @@ namespace LSR.XmlHelper.Core.Models
 {
     public sealed class XmlFriendlyChildCollection
     {
-        public XmlFriendlyChildCollection(string name, IEnumerable<XElement> items)
+        public XmlFriendlyChildCollection(string name, IEnumerable<XElement> itemElements)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Items = items.Select(x => new XmlFriendlyChildItem(x)).ToList();
+            Items = itemElements.Select(e => new XmlFriendlyChildItem(e)).ToList();
         }
 
         public string Name { get; }
@@ -18,4 +18,3 @@ namespace LSR.XmlHelper.Core.Models
         public List<XmlFriendlyChildItem> Items { get; }
     }
 }
-    

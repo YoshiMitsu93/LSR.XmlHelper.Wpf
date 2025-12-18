@@ -143,41 +143,66 @@ namespace LSR.XmlHelper.Core.Services
                 .ToList();
         }
 
-        private XmlFriendlyEntry BuildEntry(XElement element, string contextPath)
+        private XmlFriendlyEntry BuildEntry(XElement element, string? parentContext)
         {
-            var fields = BuildFields(element);
+            var key = ResolveKey(element);
+            var display = ResolveDisplay(element);
 
-            var childCollections = new List<LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection>();
-
-            foreach (var container in element.Elements())
+            if (!string.IsNullOrWhiteSpace(parentContext))
             {
-                var repeatedGroups = container.Elements()
-                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-                    .Where(g => g.Count() >= 2)
-                    .ToList();
-
-                foreach (var g in repeatedGroups)
+                var trimmed = display.Trim();
+                if (string.Equals(trimmed, element.Name.LocalName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(trimmed, "string", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(trimmed, "value", StringComparison.OrdinalIgnoreCase))
                 {
-                    var items = g.ToList();
-
-                    var allHaveIdOrName = items.All(i =>
-                        i.Elements().Any(e => string.Equals(e.Name.LocalName, "ID", StringComparison.OrdinalIgnoreCase)) ||
-                        i.Elements().Any(e => string.Equals(e.Name.LocalName, "Name", StringComparison.OrdinalIgnoreCase)));
-
-                    if (!allHaveIdOrName)
-                        continue;
-
-                    var collectionName = container.Name.LocalName;
-
-                    if (childCollections.Any(c => string.Equals(c.Name, collectionName, StringComparison.OrdinalIgnoreCase)))
-                        continue;
-
-                    childCollections.Add(new LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection(collectionName, items));
+                    display = $"{parentContext} / {trimmed}";
                 }
             }
 
-            return new XmlFriendlyEntry(element, contextPath, fields, childCollections);
+            var fields = BuildFields(element);
+            var childCollections = BuildChildCollections(element);
+
+            return new XmlFriendlyEntry(key, display, element, fields, childCollections);
         }
+
+        private List<LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection> BuildChildCollections(XElement entryElement)
+        {
+            var result = new List<LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection>();
+
+            foreach (var container in entryElement.Elements())
+            {
+                var children = container.Elements().ToList();
+                if (children.Count < 2)
+                    continue;
+
+                var repeatedGroups = children
+                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .Where(g => g.Count() >= 2)
+                    .OrderByDescending(g => g.Count())
+                    .ToList();
+
+                if (repeatedGroups.Count == 0)
+                    continue;
+
+                var bestGroup = repeatedGroups[0];
+                var items = bestGroup.ToList();
+
+                var hasIdAndNameLeafs = items.All(i =>
+                {
+                    var id = i.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, "ID", StringComparison.OrdinalIgnoreCase));
+                    var name = i.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, "Name", StringComparison.OrdinalIgnoreCase));
+                    return id != null && name != null && !id.HasElements && !name.HasElements;
+                });
+
+                if (!hasIdAndNameLeafs)
+                    continue;
+
+                result.Add(new LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection(container.Name.LocalName, items));
+            }
+
+            return result;
+        }
+
 
         private string ResolveKey(XElement element)
         {

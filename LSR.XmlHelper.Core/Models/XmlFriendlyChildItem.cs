@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
 
 namespace LSR.XmlHelper.Core.Models
@@ -11,44 +10,44 @@ namespace LSR.XmlHelper.Core.Models
         {
             Element = element ?? throw new ArgumentNullException(nameof(element));
 
-            var dict = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
+            var leafs = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var child in Element.Elements())
             {
                 if (!child.HasElements)
                 {
-                    dict[child.Name.LocalName] = child;
+                    leafs[child.Name.LocalName] = child;
                 }
             }
 
-            Fields = dict;
+            LeafFields = leafs;
         }
 
         public XElement Element { get; }
 
-        public IReadOnlyDictionary<string, XElement> Fields { get; }
+        public IReadOnlyDictionary<string, XElement> LeafFields { get; }
 
-        public string? GetValue(string fieldName)
+        public string GetValueOrEmpty(string fieldName)
         {
-            if (Fields.TryGetValue(fieldName, out var el))
-                return el.Value;
+            if (LeafFields.TryGetValue(fieldName, out var el))
+                return el.Value ?? string.Empty;
 
-            return null;
+            return string.Empty;
         }
 
-        public bool TrySetValue(string fieldName, string? value, out string? error)
+        public bool TrySetValue(string fieldName, string newValue, out string? error)
         {
             error = null;
 
-            if (!Fields.TryGetValue(fieldName, out var el))
+            if (!LeafFields.TryGetValue(fieldName, out var el))
             {
-                error = $"Field '{fieldName}' not found on child item '{Element.Name.LocalName}'.";
+                error = $"Field '{fieldName}' was not found.";
                 return false;
             }
 
             try
             {
-                el.Value = value ?? string.Empty;
+                el.Value = newValue ?? string.Empty;
                 return true;
             }
             catch (Exception ex)
