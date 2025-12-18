@@ -15,10 +15,188 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
 
-        <!-- Ensures mouse wheel over DataGrids scrolls the outer ScrollViewer (Friendly View right panel). -->
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="#555555" />
+            <Setter Property="GridLinesVisibility" Value="All" />
+            <Setter Property="HeadersVisibility" Value="Column" />
         </Style>
+
+        <Style TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="#555555" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridCell}">
+            <Setter Property="BorderBrush" Value="#555555" />
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type Expander}">
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2A2A2A" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2F2F2F" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="#555555" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid>
+                            <Border x:Name="Outer"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="28" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                      RecognizesAccessKey="True"/>
+
+                                    <ToggleButton x:Name="DropDownToggle"
+                                                  Grid.Column="1"
+                                                  Focusable="False"
+                                                  IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                  Background="{TemplateBinding Background}"
+                                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                                  BorderThickness="0">
+                                        <Grid>
+                                            <Path Width="10" Height="6"
+                                                  Stretch="Fill"
+                                                  Fill="{TemplateBinding Foreground}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Data="M 0 0 L 10 0 L 5 6 Z"/>
+                                        </Grid>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border x:Name="DropDownBorder"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        SnapsToDevicePixels="True">
+                                    <ScrollViewer Margin="0"
+                                                  SnapsToDevicePixels="True">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Outer" Property="BorderBrush" Value="#7A7A7A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ListBox}">
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground"
+                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type ScrollViewer}">
+            <Setter Property="Background"
+                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <HierarchicalDataTemplate DataType="{x:Type vm:XmlFolderNode}" ItemsSource="{Binding Children}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="📁" Margin="0,0,6,0" />
+                <TextBlock Text="{Binding Name}" />
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:XmlFileNode}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="📄" Margin="0,0,6,0" />
+                <TextBlock Text="{Binding Name}" />
+            </StackPanel>
+        </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:XmlFriendlyFieldGroupViewModel}">
             <Expander Header="{Binding Title}"
@@ -27,8 +205,7 @@
                 <DataGrid ItemsSource="{Binding Fields}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column">
+                          CanUserDeleteRows="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Field"
                                             Binding="{Binding Name}"
@@ -49,8 +226,7 @@
                 <DataGrid ItemsSource="{Binding Items}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column">
+                          CanUserDeleteRows="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Item"
                                             Binding="{Binding Item}"
@@ -71,68 +247,130 @@
 
     <DockPanel LastChildFill="True">
 
-        <StackPanel DockPanel.Dock="Top"
-                    Orientation="Horizontal"
-                    Margin="8">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Folder..."
+                          Command="{Binding OpenCommand}" />
+                <Separator />
+                <MenuItem Header="_Save"
+                          IsEnabled="{Binding IsDirty}"
+                          Command="{Binding SaveCommand}" />
+                <MenuItem Header="Save _As..."
+                          IsEnabled="{Binding IsDirty}"
+                          Command="{Binding SaveAsCommand}" />
+                <Separator />
+                <MenuItem Header="E_xit"
+                          Click="Exit_Click" />
+            </MenuItem>
 
-            <Button Content="Open Folder"
-                    MinWidth="100"
-                    Margin="0,0,8,0"
-                    Command="{Binding OpenCommand}" />
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Format"
+                          Command="{Binding FormatCommand}" />
+                <MenuItem Header="_Validate"
+                          Command="{Binding ValidateCommand}" />
+                <Separator />
+                <MenuItem Header="_Clear"
+                          Command="{Binding ClearCommand}" />
+            </MenuItem>
 
-            <Button Content="Format"
-                    MinWidth="70"
-                    Margin="0,0,8,0"
-                    Command="{Binding FormatCommand}" />
+            <MenuItem Header="_View">
+                <MenuItem Header="_Folders"
+                          IsCheckable="True"
+                          IsChecked="{Binding IsFoldersMode}" />
+                <MenuItem Header="_Flat"
+                          IsCheckable="True"
+                          IsChecked="{Binding IsFlatMode}" />
+                <Separator />
+                <MenuItem Header="Include _subfolders"
+                          IsCheckable="True"
+                          IsChecked="{Binding IncludeSubfolders}" />
+                <MenuItem Header="_Friendly view"
+                          IsCheckable="True"
+                          IsEnabled="{Binding HasFriendlyView}"
+                          IsChecked="{Binding IsFriendlyView}" />
+                <MenuItem Header="_Dark mode"
+                          IsCheckable="True"
+                          IsChecked="{Binding IsDarkMode}" />
+                <Separator />
+                <MenuItem Header="Open _Current XML Folder"
+                          Click="OpenCurrentXmlFolder_Click" />
+                <MenuItem Header="Open _Helper Root Folder"
+                          Click="OpenHelperRootFolder_Click" />
+                <MenuItem Header="Open _Backups Folder"
+                          Click="OpenBackupsFolder_Click" />
+            </MenuItem>
 
-            <Button Content="Validate"
-                    MinWidth="70"
-                    Margin="0,0,8,0"
-                    Command="{Binding ValidateCommand}" />
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About"
+                          Click="About_Click" />
+            </MenuItem>
+        </Menu>
 
-            <Button Content="Save"
-                    MinWidth="70"
-                    Margin="0,0,8,0"
-                    Command="{Binding SaveCommand}" />
+        <StackPanel DockPanel.Dock="Top" Margin="8" Orientation="Vertical">
+            <WrapPanel>
+                <Button Content="Open Folder"
+                        MinWidth="100"
+                        Margin="0,0,8,0"
+                        Command="{Binding OpenCommand}" />
 
-            <Button Content="Save As..."
-                    MinWidth="90"
-                    Margin="0,0,8,0"
-                    Command="{Binding SaveAsCommand}" />
+                <Button Content="Format"
+                        MinWidth="70"
+                        Margin="0,0,8,0"
+                        Command="{Binding FormatCommand}" />
 
-            <Button Content="Clear"
-                    MinWidth="70"
-                    Margin="0,0,16,0"
-                    Command="{Binding ClearCommand}" />
+                <Button Content="Validate"
+                        MinWidth="70"
+                        Margin="0,0,8,0"
+                        Command="{Binding ValidateCommand}" />
 
-            <TextBlock Text="View:"
-                       VerticalAlignment="Center"
-                       Margin="0,0,6,0" />
+                <Button Content="Save"
+                        MinWidth="70"
+                        Margin="0,0,8,0"
+                        IsEnabled="{Binding IsDirty}"
+                        Command="{Binding SaveCommand}" />
 
-            <RadioButton Content="Folders"
-                         VerticalAlignment="Center"
-                         Margin="0,0,8,0"
-                         IsChecked="{Binding IsFoldersMode}" />
+                <Button Content="Save As..."
+                        MinWidth="90"
+                        Margin="0,0,8,0"
+                        IsEnabled="{Binding IsDirty}"
+                        Command="{Binding SaveAsCommand}" />
 
-            <RadioButton Content="Flat"
-                         VerticalAlignment="Center"
-                         Margin="0,0,16,0"
-                         IsChecked="{Binding IsFlatMode}" />
+                <Button Content="Clear"
+                        MinWidth="70"
+                        Margin="0,0,8,0"
+                        Command="{Binding ClearCommand}" />
+            </WrapPanel>
 
-            <CheckBox Content="Include subfolders"
-                      VerticalAlignment="Center"
-                      Margin="0,0,16,0"
-                      IsChecked="{Binding IncludeSubfolders}" />
+            <WrapPanel Margin="0,6,0,0">
+                <TextBlock Text="View:"
+                           VerticalAlignment="Center"
+                           Margin="0,0,6,0" />
 
-            <CheckBox Content="Friendly view"
-                      VerticalAlignment="Center"
-                      Margin="0,0,16,0"
-                      IsEnabled="{Binding HasFriendlyView}"
-                      IsChecked="{Binding IsFriendlyView}" />
+                <RadioButton Content="Folders"
+                             VerticalAlignment="Center"
+                             Margin="0,0,8,0"
+                             IsChecked="{Binding IsFoldersMode}" />
 
-            <CheckBox Content="Dark mode"
-                      VerticalAlignment="Center"
-                      IsChecked="{Binding IsDarkMode}" />
+                <RadioButton Content="Flat"
+                             VerticalAlignment="Center"
+                             Margin="0,0,16,0"
+                             IsChecked="{Binding IsFlatMode}" />
+
+                <CheckBox Content="Include subfolders"
+                          VerticalAlignment="Center"
+                          Margin="0,0,16,0"
+                          IsChecked="{Binding IncludeSubfolders}" />
+
+                <CheckBox Content="Friendly view"
+                          VerticalAlignment="Center"
+                          Margin="0,0,16,0"
+                          IsEnabled="{Binding HasFriendlyView}"
+                          IsChecked="{Binding IsFriendlyView}" />
+
+                <CheckBox Content="Dark mode"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding IsDarkMode}" />
+            </WrapPanel>
         </StackPanel>
 
         <StatusBar DockPanel.Dock="Bottom">
@@ -175,7 +413,9 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <DockPanel Grid.Column="0" Margin="0,0,8,0">
+                    <DockPanel Grid.Column="0"
+                               Margin="0,0,8,0"
+                               Background="{Binding EditorBackground}">
                         <ComboBox DockPanel.Dock="Top"
                                   ItemsSource="{Binding FriendlyCollections}"
                                   SelectedItem="{Binding SelectedFriendlyCollection}"
@@ -187,11 +427,16 @@
                                  DisplayMemberPath="Display" />
                     </DockPanel>
 
-                    <ScrollViewer Grid.Column="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding FriendlyGroups}" />
-                    </ScrollViewer>
+                    <Border Grid.Column="1"
+                            Background="{Binding EditorBackground}"
+                            BorderBrush="#555555"
+                            BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Background="{Binding EditorBackground}">
+                            <ItemsControl ItemsSource="{Binding FriendlyGroups}" />
+                        </ScrollViewer>
+                    </Border>
                 </Grid>
 
                 <avalonedit:TextEditor x:Name="XmlEditor"

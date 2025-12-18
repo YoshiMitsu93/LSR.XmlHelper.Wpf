@@ -121,23 +121,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             get => _xmlText;
             set
             {
-                if (!SetProperty(ref _xmlText, value))
+                if (_xmlText == value)
                     return;
 
-                if (!_suppressDirtyTracking && !string.IsNullOrWhiteSpace(_xmlText))
-                {
+                _xmlText = value;
+                OnPropertyChanged();
+
+                if (!_suppressDirtyTracking)
                     IsDirty = true;
-                    Status = "Edited.";
-                }
-                else
-                {
-                    Status = string.IsNullOrWhiteSpace(_xmlText) ? "Ready." : Status;
-                }
 
-                if (!_suppressFriendlyRebuild)
+                if (_suppressFriendlyRebuild)
+                    return;
+
+                if (IsFriendlyView)
                     ScheduleFriendlyRebuild();
-
-                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -216,8 +213,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             get => _isFriendlyView;
             set
             {
-                var next = value && HasFriendlyView;
-                if (!SetProperty(ref _isFriendlyView, next))
+                if (!SetProperty(ref _isFriendlyView, value))
                     return;
 
                 _settings.IsFriendlyView = _isFriendlyView;
@@ -486,12 +482,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 SelectedFriendlyEntry = null;
                 ClearFriendlyFields();
 
-                if (_isFriendlyView)
-                {
-                    _isFriendlyView = false;
-                    OnPropertyChanged(nameof(IsFriendlyView));
-                }
-
                 return;
             }
 
@@ -504,12 +494,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             SelectedFriendlyCollection = primaryVm ?? FriendlyCollections.FirstOrDefault();
             HasFriendlyView = FriendlyCollections.Count > 0;
-
-            if (!HasFriendlyView && _isFriendlyView)
-            {
-                _isFriendlyView = false;
-                OnPropertyChanged(nameof(IsFriendlyView));
-            }
         }
 
         private void ClearFriendlyFields()
@@ -782,36 +766,100 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void Save()
         {
-            _ = TrySaveCurrent();
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            if (!IsDirty)
+            {
+                Status = "No changes to save.";
+                return;
+            }
+
+            var path = GetSelectedFilePath();
+            if (path is null)
+            {
+                SaveAs();
+                return;
+            }
+
+            var existed = File.Exists(path);
+            var backupDir = existed
+                ? new LSR.XmlHelper.Core.Services.XmlHelperRootService().GetOrCreateSubfolder(path, "BackupXMLs")
+                : null;
+
+            var (ok, err) = _saver.Save(path, XmlText);
+            if (!ok)
+            {
+                System.Windows.MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+                return;
+            }
+
+            IsDirty = false;
+
+            if (existed && backupDir is not null)
+            {
+                Status = $"Saved: {Path.GetFileName(path)} | Backup: {backupDir}";
+                System.Windows.MessageBox.Show($"Backup created:\n{backupDir}", "Backup created", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                Status = $"Saved: {Path.GetFileName(path)}";
+            }
         }
 
         private void SaveAs()
         {
-            _ = TrySaveAsCurrent();
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            if (!IsDirty)
+            {
+                Status = "No changes to save.";
+                return;
+            }
+
+            var current = GetSelectedFilePath();
+
+            var dlg = new WpfSaveFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Save XML As",
+                FileName = current is null ? "document.xml" : Path.GetFileName(current),
+                InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    : _rootFolder
+            };
+
+            if (dlg.ShowDialog() != true || string.IsNullOrWhiteSpace(dlg.FileName))
+                return;
+
+            var existed = File.Exists(dlg.FileName);
+            var backupDir = existed
+                ? new LSR.XmlHelper.Core.Services.XmlHelperRootService().GetOrCreateSubfolder(dlg.FileName, "BackupXMLs")
+                : null;
+
+            var (ok, err) = _saver.Save(dlg.FileName, XmlText);
+            if (!ok)
+            {
+                System.Windows.MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+                return;
+            }
+
+            IsDirty = false;
+
+            if (existed && backupDir is not null)
+            {
+                Status = $"Saved: {Path.GetFileName(dlg.FileName)} | Backup: {backupDir}";
+                System.Windows.MessageBox.Show($"Backup created:\n{backupDir}", "Backup created", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
+            }
         }
 
         private void Clear()
         {
-            if (!TryConfirmDiscardOrSaveIfDirty())
-                return;
-
             CancelPendingLoad();
             SelectedXmlFile = null;
             SelectedTreeNode = null;
-
-            _suppressDirtyTracking = true;
-            try
-            {
-                XmlText = "";
-            }
-            finally
-            {
-                _suppressDirtyTracking = false;
-            }
-
-            IsDirty = false;
+            XmlText = "";
             Status = "Ready.";
         }
 
@@ -968,6 +1016,23 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 currentFolder?.Children.Add(new XmlFileNode(parts[^1], fullPath));
             }
+
+            SortTree(XmlTree);
+        }
+
+        private static void SortTree(System.Collections.ObjectModel.ObservableCollection<XmlExplorerNode> nodes)
+        {
+            var ordered = nodes
+                .OrderBy(n => n.IsFile)
+                .ThenBy(n => n.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            nodes.Clear();
+            foreach (var n in ordered)
+                nodes.Add(n);
+
+            foreach (var folder in nodes.OfType<XmlFolderNode>())
+                SortTree(folder.Children);
         }
 
         private void CancelPendingLoad()
@@ -991,10 +1056,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             CancelPendingLoad();
             _loadCts = new CancellationTokenSource();
 
+            var token = _loadCts.Token;
             var name = Path.GetFileName(path);
+
             Status = $"Loading: {name}";
 
-            var result = await _loader.LoadAsync(path, _loadCts.Token);
+            var result = await _loader.LoadAsync(path, token);
 
             if (!result.Success)
             {
@@ -1007,18 +1074,47 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            _suppressDirtyTracking = true;
             try
             {
+                _suppressDirtyTracking = true;
+                _suppressFriendlyRebuild = true;
+
                 XmlText = result.Text ?? "";
+
+                IsDirty = false;
             }
             finally
             {
                 _suppressDirtyTracking = false;
+                _suppressFriendlyRebuild = false;
             }
 
-            IsDirty = false;
+            await RebuildFriendlyFromCurrentXmlAsync(token);
+
             Status = $"Opened: {name}";
+        }
+
+        private async Task RebuildFriendlyFromCurrentXmlAsync(CancellationToken token)
+        {
+            var xml = XmlText ?? "";
+
+            XmlFriendlyDocument? doc = null;
+
+            try
+            {
+                doc = await Task.Run(() =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    return _friendly.TryBuild(xml);
+                }, token);
+            }
+            catch
+            {
+                doc = null;
+            }
+
+            _friendlyDocument = doc;
+            RefreshFriendlyFromXml();
         }
 
         private void ApplySettingsToState()
