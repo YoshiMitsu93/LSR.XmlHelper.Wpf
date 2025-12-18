@@ -1,5 +1,4 @@
-﻿// LSR.XmlHelper.Wpf\ViewModels\MainWindowViewModel.cs
-using LSR.XmlHelper.Core.Services;
+﻿using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Services;
 using System;
@@ -16,6 +15,7 @@ using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
+using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace LSR.XmlHelper.Wpf.ViewModels
 {
@@ -35,10 +35,18 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private CancellationTokenSource? _loadCts;
 
+        private CancellationTokenSource? _friendlyBuildCts;
+        private int _xmlVersion;
+        private bool _suppressFriendlyRebuild;
+
+        private bool _suppressDirtyTracking;
+
         private string _title = "LSR XML Helper";
         private string _status = "Ready.";
         private string _xmlText = "";
         private string? _rootFolder;
+
+        private bool _isDirty;
 
         private XmlFileListItem? _selectedXmlFile;
         private XmlExplorerNode? _selectedTreeNode;
@@ -102,17 +110,34 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             set => SetProperty(ref _status, value);
         }
 
+        public bool IsDirty
+        {
+            get => _isDirty;
+            private set => SetProperty(ref _isDirty, value);
+        }
+
         public string XmlText
         {
             get => _xmlText;
             set
             {
-                if (SetProperty(ref _xmlText, value))
+                if (!SetProperty(ref _xmlText, value))
+                    return;
+
+                if (!_suppressDirtyTracking && !string.IsNullOrWhiteSpace(_xmlText))
                 {
-                    Status = string.IsNullOrWhiteSpace(_xmlText) ? "Ready." : "Edited.";
-                    RefreshFriendlyFromXml();
-                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                    IsDirty = true;
+                    Status = "Edited.";
                 }
+                else
+                {
+                    Status = string.IsNullOrWhiteSpace(_xmlText) ? "Ready." : Status;
+                }
+
+                if (!_suppressFriendlyRebuild)
+                    ScheduleFriendlyRebuild();
+
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -192,7 +217,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             set
             {
                 var next = value && HasFriendlyView;
-                SetProperty(ref _isFriendlyView, next);
+                if (!SetProperty(ref _isFriendlyView, next))
+                    return;
+
+                _settings.IsFriendlyView = _isFriendlyView;
+                SaveSettings();
             }
         }
 
@@ -268,6 +297,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             get => _selectedXmlFile;
             set
             {
+                if (ReferenceEquals(value, _selectedXmlFile))
+                    return;
+
+                if (value is not null && !TryConfirmDiscardOrSaveIfDirty())
+                {
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                    return;
+                }
+
                 if (!SetProperty(ref _selectedXmlFile, value))
                     return;
 
@@ -286,6 +324,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             get => _selectedTreeNode;
             set
             {
+                if (ReferenceEquals(value, _selectedTreeNode))
+                    return;
+
+                if (value is not null && value.IsFile && value.FullPath is not null && !TryConfirmDiscardOrSaveIfDirty())
+                {
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                    return;
+                }
+
                 if (!SetProperty(ref _selectedTreeNode, value))
                     return;
 
@@ -306,10 +353,130 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
 
+        public bool TryConfirmClose()
+        {
+            return TryConfirmDiscardOrSaveIfDirty();
+        }
+
+        private bool TryConfirmDiscardOrSaveIfDirty()
+        {
+            if (!IsDirty || string.IsNullOrWhiteSpace(XmlText))
+                return true;
+
+            var result = MessageBox.Show(
+                "You have unsaved changes.\n\nSave before continuing?",
+                "Unsaved changes",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Cancel)
+                return false;
+
+            if (result == MessageBoxResult.No)
+                return true;
+
+            var ok = TrySaveCurrent();
+            return ok;
+        }
+
+        private bool TrySaveCurrent()
+        {
+            var path = GetSelectedFilePath();
+            if (path is null)
+            {
+                return TrySaveAsCurrent();
+            }
+
+            var (ok, err) = _saver.Save(path, XmlText);
+            if (!ok)
+            {
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+                return false;
+            }
+
+            IsDirty = false;
+            Status = $"Saved: {Path.GetFileName(path)}";
+            return true;
+        }
+
+        private bool TrySaveAsCurrent()
+        {
+            var current = GetSelectedFilePath();
+
+            var dlg = new WpfSaveFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                Title = "Save XML As",
+                FileName = current is null ? "document.xml" : Path.GetFileName(current),
+                InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    : _rootFolder
+            };
+
+            if (dlg.ShowDialog() != true || string.IsNullOrWhiteSpace(dlg.FileName))
+                return false;
+
+            var (ok, err) = _saver.Save(dlg.FileName, XmlText);
+            if (!ok)
+            {
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Save failed.";
+                return false;
+            }
+
+            IsDirty = false;
+            Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
+            return true;
+        }
+
+        private void ScheduleFriendlyRebuild()
+        {
+            var myVersion = Interlocked.Increment(ref _xmlVersion);
+
+            try
+            {
+                _friendlyBuildCts?.Cancel();
+                _friendlyBuildCts?.Dispose();
+            }
+            catch
+            {
+            }
+
+            _friendlyBuildCts = new CancellationTokenSource();
+            var token = _friendlyBuildCts.Token;
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    var doc = _friendly.TryBuild(XmlText);
+
+                    token.ThrowIfCancellationRequested();
+
+                    return (Version: myVersion, Doc: doc);
+                }
+                catch
+                {
+                    return (Version: myVersion, Doc: (XmlFriendlyDocument?)null);
+                }
+            }, token).ContinueWith(t =>
+            {
+                if (t.IsCanceled || t.IsFaulted)
+                    return;
+
+                if (t.Result.Version != _xmlVersion)
+                    return;
+
+                _friendlyDocument = t.Result.Doc;
+                RefreshFriendlyFromXml();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
         private void RefreshFriendlyFromXml()
         {
-            _friendlyDocument = _friendly.TryBuild(XmlText);
-
             if (_friendlyDocument is null)
             {
                 HasFriendlyView = false;
@@ -329,7 +496,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             var cols = _friendlyDocument.Collections.Select(c => new XmlFriendlyCollectionViewModel(c)).ToList();
-
             FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
 
             var primary = _friendlyDocument.PrimaryCollectionKey;
@@ -337,7 +503,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 string.Equals(c.Collection.Title, primary, StringComparison.OrdinalIgnoreCase));
 
             SelectedFriendlyCollection = primaryVm ?? FriendlyCollections.FirstOrDefault();
-
             HasFriendlyView = FriendlyCollections.Count > 0;
 
             if (!HasFriendlyView && _isFriendlyView)
@@ -445,24 +610,24 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                         lookupBuckets[lookupGroup] = itemsByName;
                     }
 
-                    if (!itemsByName.TryGetValue(itemName, out var rows))
+                    if (!itemsByName.TryGetValue(itemName, out var list))
                     {
-                        rows = new List<XmlFriendlyLookupItemViewModel>();
-                        itemsByName[itemName] = rows;
+                        list = new List<XmlFriendlyLookupItemViewModel>();
+                        itemsByName[itemName] = list;
                     }
 
-                    rows.Add(new XmlFriendlyLookupItemViewModel(itemName, leaf, f));
+                    list.Add(new XmlFriendlyLookupItemViewModel(itemName, leaf, f));
                     continue;
                 }
 
                 var normalGroup = GetGroupTitle(f.Name);
-                if (!normalBuckets.TryGetValue(normalGroup, out var list))
+                if (!normalBuckets.TryGetValue(normalGroup, out var normalList))
                 {
-                    list = new List<XmlFriendlyFieldViewModel>();
-                    normalBuckets[normalGroup] = list;
+                    normalList = new List<XmlFriendlyFieldViewModel>();
+                    normalBuckets[normalGroup] = normalList;
                 }
 
-                list.Add(f);
+                normalList.Add(f);
             }
 
             var output = new List<object>();
@@ -544,17 +709,40 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (entry is null)
                 return;
 
-            if (!entry.TrySetField(field.Name, field.Value, out var error))
+            if (!entry.TrySetField(field.Name, field.Value, out _))
                 return;
 
             if (_friendlyDocument is null)
                 return;
 
             var updatedXml = _friendly.ToXml(_friendlyDocument);
-            XmlText = updatedXml;
+            SetXmlTextFromFriendly(updatedXml);
 
+            IsDirty = true;
             Status = "Edited.";
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+
+        private void SetXmlTextFromFriendly(string xml)
+        {
+            _suppressFriendlyRebuild = true;
+            try
+            {
+                _suppressDirtyTracking = true;
+                try
+                {
+                    if (SetProperty(ref _xmlText, xml))
+                        OnPropertyChanged(nameof(XmlText));
+                }
+                finally
+                {
+                    _suppressDirtyTracking = false;
+                }
+            }
+            finally
+            {
+                _suppressFriendlyRebuild = false;
+            }
         }
 
         private string? GetSelectedFilePath()
@@ -594,132 +782,114 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void Save()
         {
-            var path = GetSelectedFilePath();
-            if (path is null)
-            {
-                SaveAs();
-                return;
-            }
-
-            var (ok, err) = _saver.Save(path, XmlText);
-            if (!ok)
-            {
-                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Save failed.";
-                return;
-            }
-
-            Status = $"Saved: {Path.GetFileName(path)}";
+            _ = TrySaveCurrent();
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         private void SaveAs()
         {
-            var current = GetSelectedFilePath();
-
-            var dlg = new WpfSaveFileDialog
-            {
-                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
-                Title = "Save XML As",
-                FileName = current is null ? "document.xml" : Path.GetFileName(current),
-                InitialDirectory = string.IsNullOrWhiteSpace(_rootFolder)
-                    ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-                    : _rootFolder
-            };
-
-            if (dlg.ShowDialog() != true || string.IsNullOrWhiteSpace(dlg.FileName))
-                return;
-
-            var (ok, err) = _saver.Save(dlg.FileName, XmlText);
-            if (!ok)
-            {
-                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Save failed.";
-                return;
-            }
-
-            Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
+            _ = TrySaveAsCurrent();
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         private void Clear()
         {
+            if (!TryConfirmDiscardOrSaveIfDirty())
+                return;
+
             CancelPendingLoad();
             SelectedXmlFile = null;
             SelectedTreeNode = null;
-            XmlText = "";
+
+            _suppressDirtyTracking = true;
+            try
+            {
+                XmlText = "";
+            }
+            finally
+            {
+                _suppressDirtyTracking = false;
+            }
+
+            IsDirty = false;
             Status = "Ready.";
         }
 
         private void OpenFolder()
         {
+            if (!TryConfirmDiscardOrSaveIfDirty())
+                return;
+
             string? picked = null;
 
-            try
+            using (var dlg = new WinForms.FolderBrowserDialog())
             {
-                using var dialog = new WinForms.FolderBrowserDialog
-                {
-                    Description = "Pick the folder that contains your XML files",
-                    ShowNewFolderButton = false
-                };
+                dlg.Description = "Select folder containing XML files";
+                dlg.ShowNewFolderButton = false;
 
-                if (dialog.ShowDialog() == WinForms.DialogResult.OK &&
-                    !string.IsNullOrWhiteSpace(dialog.SelectedPath))
-                {
-                    picked = dialog.SelectedPath;
-                }
-            }
-            catch
-            {
-                picked = null;
+                if (!string.IsNullOrWhiteSpace(_rootFolder) && Directory.Exists(_rootFolder))
+                    dlg.SelectedPath = _rootFolder;
+
+                var result = dlg.ShowDialog();
+                if (result == WinForms.DialogResult.OK)
+                    picked = dlg.SelectedPath;
             }
 
-            if (string.IsNullOrWhiteSpace(picked))
+            if (string.IsNullOrWhiteSpace(picked) || !Directory.Exists(picked))
                 return;
 
             _rootFolder = picked;
-
-            _settings.LastFolder = _rootFolder;
+            _settings.LastFolder = picked;
             SaveSettings();
 
             RefreshFileViews(resetEditorAndSelection: true);
-
             Title = $"LSR XML Helper - {_rootFolder}";
-            Status = "Ready.";
         }
 
         private void RefreshFileViews(bool resetEditorAndSelection)
         {
-            var previouslySelectedPath = resetEditorAndSelection ? null : GetSelectedFilePath();
-
             XmlFiles.Clear();
             XmlTree.Clear();
 
+            var previouslySelectedPath = GetSelectedFilePath();
+
             if (resetEditorAndSelection)
             {
-                CancelPendingLoad();
                 SelectedXmlFile = null;
                 SelectedTreeNode = null;
-                XmlText = "";
+
+                _suppressDirtyTracking = true;
+                try
+                {
+                    XmlText = "";
+                }
+                finally
+                {
+                    _suppressDirtyTracking = false;
+                }
+
+                IsDirty = false;
             }
 
-            if (string.IsNullOrWhiteSpace(_rootFolder))
+            if (string.IsNullOrWhiteSpace(_rootFolder) || !Directory.Exists(_rootFolder))
+            {
+                Status = "Pick a folder.";
                 return;
-
-            var include = ViewMode == XmlListViewMode.Folders || IncludeSubfolders;
+            }
 
             IReadOnlyList<string> paths;
-
             try
             {
-                paths = _discovery.GetXmlFiles(_rootFolder, include);
+                paths = _discovery.GetXmlFiles(_rootFolder, IncludeSubfolders);
             }
             catch (Exception ex)
             {
+                Status = "Failed to scan folder.";
                 MessageBox.Show(ex.Message, "Folder scan failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                Status = "Folder scan failed.";
                 return;
             }
 
-            foreach (var p in paths.OrderBy(p => p, StringComparer.OrdinalIgnoreCase))
+            foreach (var p in paths)
             {
                 var display = string.IsNullOrWhiteSpace(_rootFolder)
                     ? p
@@ -746,7 +916,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             if (ViewMode == XmlListViewMode.Flat)
             {
-                var match = XmlFiles.FirstOrDefault(x => string.Equals(x.FullPath, previouslySelectedPath, StringComparison.OrdinalIgnoreCase));
+                var match = XmlFiles.FirstOrDefault(x =>
+                    string.Equals(x.FullPath, previouslySelectedPath, StringComparison.OrdinalIgnoreCase));
+
                 if (match is not null)
                     SelectedXmlFile = match;
             }
@@ -835,7 +1007,17 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            XmlText = result.Text ?? "";
+            _suppressDirtyTracking = true;
+            try
+            {
+                XmlText = result.Text ?? "";
+            }
+            finally
+            {
+                _suppressDirtyTracking = false;
+            }
+
+            IsDirty = false;
             Status = $"Opened: {name}";
         }
 

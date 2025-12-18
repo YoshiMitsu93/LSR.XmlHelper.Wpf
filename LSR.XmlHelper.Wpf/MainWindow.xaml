@@ -15,6 +15,11 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
 
+        <!-- Ensures mouse wheel over DataGrids scrolls the outer ScrollViewer (Friendly View right panel). -->
+        <Style TargetType="{x:Type DataGrid}">
+            <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
+        </Style>
+
         <DataTemplate DataType="{x:Type vm:XmlFriendlyFieldGroupViewModel}">
             <Expander Header="{Binding Title}"
                       IsExpanded="{Binding IsExpanded}"

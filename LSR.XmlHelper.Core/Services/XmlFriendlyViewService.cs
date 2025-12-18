@@ -1,4 +1,7 @@
-﻿using System.Xml.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace LSR.XmlHelper.Core.Services
 {
@@ -23,41 +26,64 @@ namespace LSR.XmlHelper.Core.Services
             if (root is null)
                 return null;
 
-            var collections = new List<XmlFriendlyCollection>();
-
-            var directChildren = root.Elements().ToList();
-            if (directChildren.Count == 0)
+            var rootChildren = root.Elements().ToList();
+            if (rootChildren.Count == 0)
                 return null;
 
-            var grouped = directChildren
-                .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            var collections = new List<XmlFriendlyCollection>();
+            var directEntries = new List<XElement>();
 
-            foreach (var g in grouped)
+            foreach (var child in rootChildren)
             {
-                var entries = new List<XmlFriendlyEntry>();
-                var index = 0;
-
-                foreach (var element in g)
+                var grandchildren = child.Elements().ToList();
+                if (grandchildren.Count < 2)
                 {
-                    index++;
-
-                    var key = ResolveKey(element, index);
-                    var display = ResolveDisplay(element, key);
-
-                    var fields = FlattenFields(element);
-
-                    entries.Add(new XmlFriendlyEntry(key, display, element, fields));
+                    directEntries.Add(child);
+                    continue;
                 }
 
-                var title = g.Key;
-                collections.Add(new XmlFriendlyCollection(title, entries));
+                var groupedGrand = grandchildren
+                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var hasRepeatingGroup = groupedGrand.Any(g => g.Count() >= 2);
+                if (!hasRepeatingGroup)
+                {
+                    directEntries.Add(child);
+                    continue;
+                }
+
+                foreach (var g in groupedGrand.Where(g => g.Count() >= 2))
+                {
+                    var title = groupedGrand.Count == 1
+                        ? child.Name.LocalName
+                        : $"{child.Name.LocalName}/{g.Key}";
+
+                    var entries = BuildEntries(g.ToList());
+                    collections.Add(new XmlFriendlyCollection(title, entries));
+                }
             }
 
-            var primaryKey = grouped
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key)
-                .FirstOrDefault() ?? grouped[0].Key;
+            if (directEntries.Count > 0)
+            {
+                var groupedDirect = directEntries
+                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var g in groupedDirect)
+                {
+                    var entries = BuildEntries(g.ToList());
+                    collections.Add(new XmlFriendlyCollection(g.Key, entries));
+                }
+            }
+
+            if (collections.Count == 0)
+                return null;
+
+            var primaryKey = collections
+                .OrderByDescending(c => c.Entries.Count)
+                .Select(c => c.Title)
+                .FirstOrDefault() ?? collections[0].Title;
 
             return new XmlFriendlyDocument(doc, collections, primaryKey);
         }
@@ -67,7 +93,25 @@ namespace LSR.XmlHelper.Core.Services
             return document.Document.ToString(SaveOptions.DisableFormatting);
         }
 
-        private static Dictionary<string, XmlFriendlyField> FlattenFields(XElement element)
+        private static List<XmlFriendlyEntry> BuildEntries(List<XElement> elements)
+        {
+            var entries = new List<XmlFriendlyEntry>(elements.Count);
+            var index = 0;
+
+            foreach (var element in elements)
+            {
+                index++;
+
+                var key = ResolveKey(element, index);
+                var display = ResolveDisplay(element, key);
+
+                entries.Add(new XmlFriendlyEntry(key, display, element));
+            }
+
+            return entries;
+        }
+
+        internal static Dictionary<string, XmlFriendlyField> FlattenFields(XElement element)
         {
             var result = new Dictionary<string, XmlFriendlyField>(StringComparer.OrdinalIgnoreCase);
 
@@ -86,8 +130,15 @@ namespace LSR.XmlHelper.Core.Services
 
                 if (children.Count == 0)
                 {
-                    if (!string.IsNullOrEmpty(prefix))
+                    if (string.IsNullOrEmpty(prefix))
+                    {
+                        var key = el.Name.LocalName;
+                        result[key] = new XmlFriendlyField(key, el.Value, el);
+                    }
+                    else
+                    {
                         result[prefix] = new XmlFriendlyField(prefix, el.Value, el);
+                    }
 
                     return;
                 }
@@ -129,30 +180,11 @@ namespace LSR.XmlHelper.Core.Services
 
         private static string ResolveKey(XElement element, int index)
         {
-            var keyCandidates = new[]
-            {
-                "ID",
-                "Id",
-                "Key",
-                "Name",
-                "Type",
-                "Hash",
-                "Guid"
-            };
-
-            foreach (var candidate in keyCandidates)
-            {
-                var child = element.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
-                if (child is not null && !string.IsNullOrWhiteSpace(child.Value))
-                    return child.Value.Trim();
-
-                var attr = element.Attributes().FirstOrDefault(a => string.Equals(a.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
-                if (attr is not null && !string.IsNullOrWhiteSpace(attr.Value))
-                    return attr.Value.Trim();
-            }
+            var best = FindBestIdentifier(element, preferNameLike: false);
+            if (!string.IsNullOrWhiteSpace(best))
+                return best;
 
             var anyIdLike = element.Elements()
-                .Select(e => e)
                 .FirstOrDefault(e =>
                     e.Name.LocalName.EndsWith("ID", StringComparison.OrdinalIgnoreCase) &&
                     !string.IsNullOrWhiteSpace(e.Value));
@@ -165,46 +197,215 @@ namespace LSR.XmlHelper.Core.Services
 
         private static string ResolveDisplay(XElement element, string fallback)
         {
-            var displayCandidates = new[]
-            {
-                "Name",
-                "DisplayName",
-                "Title",
-                "Label",
-                "ModelName",
-                "GroupName",
-                "TypeName",
-                "ModItemName"
-            };
+            var bestName = FindBestIdentifier(element, preferNameLike: true);
+            if (!string.IsNullOrWhiteSpace(bestName))
+                return bestName;
 
-            foreach (var candidate in displayCandidates)
-            {
-                var child = element.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
-                if (child is not null && !string.IsNullOrWhiteSpace(child.Value))
-                    return child.Value.Trim();
-
-                var attr = element.Attributes().FirstOrDefault(a => string.Equals(a.Name.LocalName, candidate, StringComparison.OrdinalIgnoreCase));
-                if (attr is not null && !string.IsNullOrWhiteSpace(attr.Value))
-                    return attr.Value.Trim();
-            }
-
-            var anyNameLike = element.Elements()
-                .FirstOrDefault(e =>
-                    e.Name.LocalName.EndsWith("Name", StringComparison.OrdinalIgnoreCase) &&
-                    !string.IsNullOrWhiteSpace(e.Value));
-
-            if (anyNameLike is not null)
-                return anyNameLike.Value.Trim();
-
-            var anyIdLike = element.Elements()
-                .FirstOrDefault(e =>
-                    e.Name.LocalName.EndsWith("ID", StringComparison.OrdinalIgnoreCase) &&
-                    !string.IsNullOrWhiteSpace(e.Value));
-
-            if (anyIdLike is not null)
-                return anyIdLike.Value.Trim();
+            var bestId = FindBestIdentifier(element, preferNameLike: false);
+            if (!string.IsNullOrWhiteSpace(bestId))
+                return bestId;
 
             return fallback;
+        }
+
+        private static string? FindBestIdentifier(XElement element, bool preferNameLike)
+        {
+            static IEnumerable<(string name, string value)> EnumerateCandidates(XElement el)
+            {
+                foreach (var a in el.Attributes())
+                {
+                    var name = a.Name.LocalName;
+                    var value = a.Value;
+                    if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(value))
+                        yield return (name, value.Trim());
+                }
+
+                foreach (var c in el.Elements())
+                {
+                    if (c.HasElements)
+                        continue;
+
+                    var name = c.Name.LocalName;
+                    var value = c.Value;
+                    if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(value))
+                        yield return (name, value.Trim());
+                }
+
+                if (!el.HasElements)
+                {
+                    var value = el.Value;
+                    if (!string.IsNullOrWhiteSpace(value))
+                        yield return (el.Name.LocalName, value.Trim());
+                }
+            }
+
+            static bool LooksNumeric(string v)
+            {
+                if (string.IsNullOrWhiteSpace(v))
+                    return true;
+
+                var hasDigit = false;
+                foreach (var ch in v)
+                {
+                    if (char.IsDigit(ch))
+                    {
+                        hasDigit = true;
+                        continue;
+                    }
+
+                    if (ch == '.' || ch == '-' || ch == '+' || ch == ',')
+                        continue;
+
+                    return false;
+                }
+
+                return hasDigit;
+            }
+
+            static bool LooksLikeNiceName(string v)
+            {
+                if (string.IsNullOrWhiteSpace(v))
+                    return false;
+
+                if (!v.Any(char.IsLetter))
+                    return false;
+
+                if (v.Length < 2 || v.Length > 120)
+                    return false;
+
+                return true;
+            }
+
+            static int NamePriority(string fieldUpper, bool preferName)
+            {
+                if (preferName)
+                {
+                    if (fieldUpper == "FULLNAME")
+                        return 5000;
+                    if (fieldUpper == "DISPLAYNAME")
+                        return 4500;
+                    if (fieldUpper == "NAME")
+                        return 4000;
+                    if (fieldUpper == "TITLE")
+                        return 3800;
+                    if (fieldUpper == "DESCRIPTION")
+                        return 3600;
+                    if (fieldUpper == "LABEL")
+                        return 3400;
+                    if (fieldUpper == "GROUPNAME")
+                        return 3300;
+                    if (fieldUpper == "MODITEMNAME")
+                        return 3200;
+
+                    if (fieldUpper.EndsWith("DISPLAYNAME", StringComparison.Ordinal))
+                        return 3000;
+                    if (fieldUpper.EndsWith("FULLNAME", StringComparison.Ordinal))
+                        return 2950;
+                    if (fieldUpper.EndsWith("NAME", StringComparison.Ordinal))
+                        return 2800;
+                    if (fieldUpper.EndsWith("TITLE", StringComparison.Ordinal))
+                        return 2700;
+                    if (fieldUpper.EndsWith("DESCRIPTION", StringComparison.Ordinal))
+                        return 2600;
+
+                    if (fieldUpper == "AGENCYID" || fieldUpper.EndsWith("AGENCYID", StringComparison.Ordinal))
+                        return 3500;
+
+                    if (fieldUpper == "INTERNALGAMENAME" || fieldUpper.EndsWith("INTERNALGAMENAME", StringComparison.Ordinal))
+                        return -2500;
+
+                    if (fieldUpper == "ZONEINTERNALGAMENAME" || fieldUpper.EndsWith("ZONEINTERNALGAMENAME", StringComparison.Ordinal))
+                        return -2500;
+
+                    if (fieldUpper == "TYPENAME" || fieldUpper.EndsWith("TYPENAME", StringComparison.Ordinal))
+                        return -2000;
+
+                    if (fieldUpper == "MEASUREMENTNAME" || fieldUpper.EndsWith("MEASUREMENTNAME", StringComparison.Ordinal))
+                        return -1800;
+
+                    if (fieldUpper.Contains("TEMPERATURE", StringComparison.Ordinal) ||
+                        fieldUpper.Contains("WINDSPEED", StringComparison.Ordinal) ||
+                        fieldUpper.Contains("WINDDIRECTION", StringComparison.Ordinal) ||
+                        fieldUpper.Contains("DATETIME", StringComparison.Ordinal))
+                        return -1600;
+
+                    if (fieldUpper == "ID" || fieldUpper.EndsWith("ID", StringComparison.Ordinal) || fieldUpper.Contains("KEY", StringComparison.Ordinal))
+                        return 800;
+                }
+                else
+                {
+                    if (fieldUpper == "ID")
+                        return 5000;
+                    if (fieldUpper.EndsWith("ID", StringComparison.Ordinal))
+                        return 4200;
+                    if (fieldUpper == "KEY" || fieldUpper.EndsWith("KEY", StringComparison.Ordinal))
+                        return 3800;
+                    if (fieldUpper.Contains("GUID", StringComparison.Ordinal))
+                        return 3400;
+                    if (fieldUpper.Contains("HASH", StringComparison.Ordinal))
+                        return 3200;
+
+                    if (fieldUpper == "TYPENAME" || fieldUpper.EndsWith("TYPENAME", StringComparison.Ordinal))
+                        return -1200;
+
+                    if (fieldUpper == "MEASUREMENTNAME" || fieldUpper.EndsWith("MEASUREMENTNAME", StringComparison.Ordinal))
+                        return -1200;
+                }
+
+                return 0;
+            }
+
+            static int Score(string fieldName, string value, bool preferName)
+            {
+                if (string.IsNullOrWhiteSpace(fieldName) || string.IsNullOrWhiteSpace(value))
+                    return int.MinValue;
+
+                if (value.Length > 500)
+                    return -5000;
+
+                var fieldUpper = fieldName.ToUpperInvariant();
+                var score = 0;
+
+                score += NamePriority(fieldUpper, preferName);
+
+                if (preferName)
+                {
+                    if (LooksLikeNiceName(value))
+                        score += 600;
+
+                    if (LooksNumeric(value))
+                        score -= 900;
+                }
+                else
+                {
+                    if (LooksNumeric(value))
+                        score += 150;
+                }
+
+                if (value.Length >= 3 && value.Length <= 120)
+                    score += 50;
+
+                if (fieldUpper.StartsWith("IS", StringComparison.Ordinal))
+                    score -= 800;
+
+                if (fieldUpper.Contains("ENABLED", StringComparison.Ordinal) ||
+                    fieldUpper.Contains("DISABLED", StringComparison.Ordinal) ||
+                    fieldUpper.Contains("FLAGS", StringComparison.Ordinal))
+                    score -= 800;
+
+                return score;
+            }
+
+            (string value, int score) best = ("", int.MinValue);
+
+            foreach (var (name, value) in EnumerateCandidates(element))
+            {
+                var s = Score(name, value, preferNameLike);
+                if (s > best.score)
+                    best = (value, s);
+            }
+
+            return string.IsNullOrWhiteSpace(best.value) ? null : best.value;
         }
     }
 
@@ -236,18 +437,27 @@ namespace LSR.XmlHelper.Core.Services
 
     public sealed class XmlFriendlyEntry
     {
-        public XmlFriendlyEntry(string key, string display, XElement element, Dictionary<string, XmlFriendlyField> fields)
+        private Dictionary<string, XmlFriendlyField>? _fields;
+
+        public XmlFriendlyEntry(string key, string display, XElement element)
         {
             Key = key;
             Display = display;
             Element = element;
-            Fields = fields;
         }
 
         public string Key { get; }
         public string Display { get; }
         public XElement Element { get; }
-        public Dictionary<string, XmlFriendlyField> Fields { get; }
+
+        public Dictionary<string, XmlFriendlyField> Fields
+        {
+            get
+            {
+                _fields ??= XmlFriendlyViewService.FlattenFields(Element);
+                return _fields;
+            }
+        }
 
         public bool TrySetField(string fieldPath, string newValue, out string? error)
         {

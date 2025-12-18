@@ -2,6 +2,7 @@
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Search;
 using LSR.XmlHelper.Wpf.ViewModels;
+using System.ComponentModel;
 using System.Windows;
 
 namespace LSR.XmlHelper.Wpf
@@ -20,6 +21,17 @@ namespace LSR.XmlHelper.Wpf
             }
 
             DataContext = new MainWindowViewModel();
+
+            Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object? sender, CancelEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (!vm.TryConfirmClose())
+                e.Cancel = true;
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
