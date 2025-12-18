@@ -62,14 +62,18 @@ namespace LSR.XmlHelper.Core.Services
             return friendly.Document.ToString(SaveOptions.DisableFormatting);
         }
 
-        private List<XmlFriendlyCollection> DiscoverCollections(XDocument doc)
+        List<XmlFriendlyCollection> DiscoverCollections(XDocument doc)
         {
             var root = doc.Root!;
             var collectionsByTitle = new Dictionary<string, XmlFriendlyCollection>(StringComparer.OrdinalIgnoreCase);
 
             void AddOrMergeCollection(string title, IEnumerable<XElement> elements)
             {
-                var entries = elements.Select(e => BuildEntry(e, FindAncestorContext(e))).ToList();
+                var list = elements.ToList();
+                if (list.Count == 0)
+                    return;
+
+                var entries = list.Select(e => BuildEntry(e, FindAncestorContext(e))).ToList();
 
                 if (collectionsByTitle.TryGetValue(title, out var existing))
                 {
@@ -80,75 +84,99 @@ namespace LSR.XmlHelper.Core.Services
                 collectionsByTitle[title] = new XmlFriendlyCollection(title, entries);
             }
 
-            void Visit(XElement node, string path, bool isDirectRootChild)
+            static bool IsEntryCandidate(XElement e)
             {
-                var children = node.Elements().ToList();
-                if (children.Count == 0)
+                if (!e.HasElements)
+                    return false;
+
+                return e.Elements().Any(c => c.HasElements) || e.Elements().Any(c => !string.IsNullOrWhiteSpace(c.Value));
+            }
+
+            var rootChildren = root.Elements().ToList();
+
+            foreach (var g in rootChildren.GroupBy(e => e.Name.LocalName))
+            {
+                var groupElements = g.ToList();
+                if (groupElements.Count >= 2 && groupElements.All(IsEntryCandidate))
                 {
-                    return;
+                    var title = $"{root.Name.LocalName}/{g.Key}";
+                    AddOrMergeCollection(title, groupElements);
                 }
+            }
 
-                var groups = children.GroupBy(e => e.Name.LocalName).ToList();
+            if (collectionsByTitle.Count == 0 && rootChildren.Count == 1)
+            {
+                var wrapper = rootChildren[0];
+                var wrapperChildren = wrapper.Elements().ToList();
 
-                foreach (var g in groups)
+                foreach (var g in wrapperChildren.GroupBy(e => e.Name.LocalName))
                 {
                     var groupElements = g.ToList();
-                    if (groupElements.Count >= 2)
+                    if (groupElements.Count >= 2 && groupElements.All(IsEntryCandidate))
                     {
-                        var title = $"{path}/{g.Key}";
+                        var title = $"{root.Name.LocalName}/{wrapper.Name.LocalName}/{g.Key}";
                         AddOrMergeCollection(title, groupElements);
                     }
-                    else if (isDirectRootChild)
+                }
+            }
+
+            if (collectionsByTitle.Count == 0)
+            {
+                foreach (var child in root.Elements())
+                {
+                    var children = child.Elements().ToList();
+                    foreach (var g in children.GroupBy(e => e.Name.LocalName))
                     {
-                        var only = groupElements[0];
-                        if (only.HasElements || !string.IsNullOrWhiteSpace(only.Value))
+                        var groupElements = g.ToList();
+                        if (groupElements.Count >= 2 && groupElements.All(IsEntryCandidate))
                         {
-                            var title = $"{path}/{g.Key}";
+                            var title = $"{root.Name.LocalName}/{child.Name.LocalName}/{g.Key}";
                             AddOrMergeCollection(title, groupElements);
                         }
                     }
                 }
-
-                foreach (var child in children)
-                {
-                    Visit(child, $"{path}/{child.Name.LocalName}", isDirectRootChild: false);
-                }
             }
 
-            var rootPath = root.Name.LocalName;
-
-            foreach (var child in root.Elements().ToList())
-            {
-                Visit(child, $"{rootPath}/{child.Name.LocalName}", isDirectRootChild: true);
-            }
-
-            var ordered = collectionsByTitle.Values
+            return collectionsByTitle.Values
                 .OrderByDescending(c => c.Entries.Count)
                 .ThenBy(c => c.Title, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-
-            return ordered;
         }
 
-        private XmlFriendlyEntry BuildEntry(XElement element, string? parentContext)
+        private XmlFriendlyEntry BuildEntry(XElement element, string contextPath)
         {
-            var key = ResolveKey(element);
-            var display = ResolveDisplay(element);
+            var fields = BuildFields(element);
 
-            if (!string.IsNullOrWhiteSpace(parentContext))
+            var childCollections = new List<LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection>();
+
+            foreach (var container in element.Elements())
             {
-                var trimmed = display.Trim();
-                if (string.Equals(trimmed, element.Name.LocalName, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(trimmed, "string", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(trimmed, "value", StringComparison.OrdinalIgnoreCase))
+                var repeatedGroups = container.Elements()
+                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .Where(g => g.Count() >= 2)
+                    .ToList();
+
+                foreach (var g in repeatedGroups)
                 {
-                    display = $"{parentContext} / {trimmed}";
+                    var items = g.ToList();
+
+                    var allHaveIdOrName = items.All(i =>
+                        i.Elements().Any(e => string.Equals(e.Name.LocalName, "ID", StringComparison.OrdinalIgnoreCase)) ||
+                        i.Elements().Any(e => string.Equals(e.Name.LocalName, "Name", StringComparison.OrdinalIgnoreCase)));
+
+                    if (!allHaveIdOrName)
+                        continue;
+
+                    var collectionName = container.Name.LocalName;
+
+                    if (childCollections.Any(c => string.Equals(c.Name, collectionName, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+
+                    childCollections.Add(new LSR.XmlHelper.Core.Models.XmlFriendlyChildCollection(collectionName, items));
                 }
             }
 
-            var fields = BuildFields(element);
-
-            return new XmlFriendlyEntry(key, display, element, fields);
+            return new XmlFriendlyEntry(element, contextPath, fields, childCollections);
         }
 
         private string ResolveKey(XElement element)
@@ -278,6 +306,56 @@ namespace LSR.XmlHelper.Core.Services
                 dict[$"{key} ({i})"] = leaf;
             }
 
+            static XElement CreateSyntheticValue(string name, string value)
+            {
+                var el = new XElement(name, value ?? string.Empty);
+                el.SetAttributeValue("__synthetic", "true");
+                return el;
+            }
+
+            static string BuildLookupSummary(XElement container, int maxItems)
+            {
+                var items = container.Elements().ToList();
+                if (items.Count == 0)
+                    return string.Empty;
+
+                var parts = new List<string>(Math.Min(items.Count, maxItems));
+
+                foreach (var item in items.Take(maxItems))
+                {
+                    var id = item.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, "ID", StringComparison.OrdinalIgnoreCase))?.Value?.Trim();
+                    var name = item.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, "Name", StringComparison.OrdinalIgnoreCase))?.Value?.Trim();
+
+                    if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(name))
+                    {
+                        parts.Add($"{id}: {name}");
+                        continue;
+                    }
+
+                    if (!item.HasElements)
+                    {
+                        var v = (item.Value ?? string.Empty).Trim();
+                        if (!string.IsNullOrWhiteSpace(v))
+                            parts.Add(v);
+                        continue;
+                    }
+
+                    var fallback = item.Name.LocalName;
+                    var display = item.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, "Name", StringComparison.OrdinalIgnoreCase))?.Value?.Trim();
+                    if (!string.IsNullOrWhiteSpace(display))
+                        fallback = display;
+
+                    parts.Add(fallback);
+                }
+
+                var summary = string.Join(", ", parts);
+
+                if (items.Count > maxItems)
+                    summary = $"{summary}, ...";
+
+                return summary;
+            }
+
             void Walk(XElement node, string path)
             {
                 foreach (var child in node.Elements())
@@ -293,8 +371,13 @@ namespace LSR.XmlHelper.Core.Services
                         var count = child.Elements().Count();
                         if (count > 0)
                         {
-                            var synthetic = new XElement(child.Name, count.ToString());
-                            AddField($"{childPath}/Count", synthetic);
+                            AddField($"{childPath}/Count", CreateSyntheticValue("Count", count.ToString()));
+
+                            var summary = BuildLookupSummary(child, maxItems: 30);
+                            if (!string.IsNullOrWhiteSpace(summary))
+                            {
+                                AddField($"{childPath}/Summary", CreateSyntheticValue("Summary", summary));
+                            }
                         }
                         continue;
                     }
@@ -402,6 +485,13 @@ namespace LSR.XmlHelper.Core.Services
             if (!Fields.TryGetValue(fieldKey, out var el))
             {
                 error = $"Field '{fieldKey}' was not found.";
+                return false;
+            }
+
+            var isSynthetic = string.Equals(el.Attribute("__synthetic")?.Value, "true", StringComparison.OrdinalIgnoreCase);
+            if (isSynthetic)
+            {
+                error = $"Field '{fieldKey}' is read-only.";
                 return false;
             }
 

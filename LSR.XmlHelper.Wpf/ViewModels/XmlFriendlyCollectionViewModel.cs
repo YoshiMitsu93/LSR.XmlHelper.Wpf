@@ -1,21 +1,20 @@
-﻿using LSR.XmlHelper.Core.Services;
+﻿using LSR.XmlHelper.Core.Models;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace LSR.XmlHelper.Wpf.ViewModels
 {
-    public sealed class XmlFriendlyCollectionViewModel
+    public sealed class XmlFriendlyChildCollectionViewModel
     {
-        public XmlFriendlyCollectionViewModel(XmlFriendlyCollection collection)
+        public XmlFriendlyChildCollectionViewModel(XmlFriendlyChildCollection model)
         {
-            Collection = collection;
-            Entries = new ObservableCollection<XmlFriendlyEntryViewModel>(
-                collection.Entries.Select(e => new XmlFriendlyEntryViewModel(e)));
+            Name = model.Name;
+            Items = new ObservableCollection<XmlFriendlyChildItemViewModel>(
+                model.Items.Select(i => new XmlFriendlyChildItemViewModel(i)));
         }
 
-        public XmlFriendlyCollection Collection { get; }
-        public string Title => Collection.Title;
+        public string Name { get; }
 
-        public ObservableCollection<XmlFriendlyEntryViewModel> Entries { get; }
+        public ObservableCollection<XmlFriendlyChildItemViewModel> Items { get; }
     }
 }
