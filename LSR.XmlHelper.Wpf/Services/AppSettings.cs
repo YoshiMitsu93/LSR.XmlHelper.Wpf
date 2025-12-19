@@ -13,5 +13,7 @@ namespace LSR.XmlHelper.Wpf.Services
         public bool IsDarkMode { get; set; } = true;
 
         public bool IsFriendlyView { get; set; } = true;
+
+        public AppearanceSettings Appearance { get; set; } = new AppearanceSettings();
     }
 }

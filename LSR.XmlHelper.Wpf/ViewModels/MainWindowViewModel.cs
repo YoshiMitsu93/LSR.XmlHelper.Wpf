@@ -1,6 +1,7 @@
 ﻿using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Services;
+using LSR.XmlHelper.Wpf.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,9 +22,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
-        private static readonly Media.Brush DarkEditorBackground = CreateFrozenBrush("#1E1E1E");
-        private static readonly Media.Brush DarkEditorForeground = CreateFrozenBrush("#D4D4D4");
-
         private readonly XmlDocumentService _xml;
         private readonly XmlFileDiscoveryService _discovery;
         private readonly XmlFileLoaderService _loader;
@@ -32,6 +30,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private readonly AppSettingsService _settingsService;
         private AppSettings _settings;
+
+        private readonly AppearanceService _appearance;
 
         private CancellationTokenSource? _loadCts;
 
@@ -81,6 +81,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             ApplySettingsToState();
 
+            _appearance = new AppearanceService(_settings.Appearance, _isDarkMode);
+
             XmlFiles = new ObservableCollection<XmlFileListItem>();
             XmlTree = new ObservableCollection<XmlExplorerNode>();
 
@@ -91,12 +93,18 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
             ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
 
+            OpenAppearanceCommand = new RelayCommand(OpenAppearance);
+
             if (!string.IsNullOrWhiteSpace(_rootFolder))
             {
                 RefreshFileViews(resetEditorAndSelection: true);
                 Title = $"LSR XML Helper - {_rootFolder}";
             }
         }
+
+        public AppearanceService Appearance => _appearance;
+
+        public RelayCommand OpenAppearanceCommand { get; }
 
         public string Title
         {
@@ -232,13 +240,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _settings.IsDarkMode = value;
                 SaveSettings();
 
-                OnPropertyChanged(nameof(EditorBackground));
-                OnPropertyChanged(nameof(EditorForeground));
+                _appearance.IsDarkMode = value;
             }
         }
-
-        public Media.Brush EditorBackground => IsDarkMode ? DarkEditorBackground : Media.Brushes.White;
-        public Media.Brush EditorForeground => IsDarkMode ? DarkEditorForeground : Media.Brushes.Black;
 
         public ObservableCollection<XmlFriendlyCollectionViewModel> FriendlyCollections
         {
@@ -349,6 +353,19 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
 
+        private void OpenAppearance()
+        {
+            var vm = new AppearanceWindowViewModel(_settingsService, _settings, _appearance, _isDarkMode);
+
+            var win = new AppearanceWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
+        }
+
         public bool TryConfirmClose()
         {
             return TryConfirmDiscardOrSaveIfDirty();
@@ -379,9 +396,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         {
             var path = GetSelectedFilePath();
             if (path is null)
-            {
                 return TrySaveAsCurrent();
-            }
 
             var (ok, err) = _saver.Save(path, XmlText);
             if (!ok)
@@ -447,11 +462,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 try
                 {
                     token.ThrowIfCancellationRequested();
-
                     var doc = _friendly.TryBuild(XmlText);
-
                     token.ThrowIfCancellationRequested();
-
                     return (Version: myVersion, Doc: doc);
                 }
                 catch
@@ -630,9 +642,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 var rows = new List<XmlFriendlyLookupItemViewModel>();
 
                 foreach (var item in lookupGroup.Value.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
-                {
                     rows.AddRange(item.Value.OrderBy(x => x.Field, StringComparer.OrdinalIgnoreCase));
-                }
 
                 output.Add(new XmlFriendlyLookupGroupViewModel(
                     lookupGroup.Key,
@@ -700,23 +710,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
 
             var updatedXml = _friendly.ToXml(_friendlyDocument);
-            SetXmlTextFromFriendly(updatedXml);
 
-            IsDirty = true;
-            Status = "Edited.";
-            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
-        }
-
-        private void SetXmlTextFromFriendly(string xml)
-        {
             _suppressFriendlyRebuild = true;
             try
             {
                 _suppressDirtyTracking = true;
                 try
                 {
-                    if (SetProperty(ref _xmlText, xml))
-                        OnPropertyChanged(nameof(XmlText));
+                    _xmlText = updatedXml;
+                    OnPropertyChanged(nameof(XmlText));
                 }
                 finally
                 {
@@ -727,6 +729,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             {
                 _suppressFriendlyRebuild = false;
             }
+
+            IsDirty = true;
+            Status = "Edited.";
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         private string? GetSelectedFilePath()
@@ -781,13 +787,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var existed = File.Exists(path);
             var backupDir = existed
-                ? new LSR.XmlHelper.Core.Services.XmlHelperRootService().GetOrCreateSubfolder(path, "BackupXMLs")
+                ? new XmlHelperRootService().GetOrCreateSubfolder(path, "BackupXMLs")
                 : null;
 
             var (ok, err) = _saver.Save(path, XmlText);
             if (!ok)
             {
-                System.Windows.MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 Status = "Save failed.";
                 return;
             }
@@ -797,7 +803,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (existed && backupDir is not null)
             {
                 Status = $"Saved: {Path.GetFileName(path)} | Backup: {backupDir}";
-                System.Windows.MessageBox.Show($"Backup created:\n{backupDir}", "Backup created", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Backup created:\n{backupDir}", "Backup created", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
@@ -830,13 +836,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var existed = File.Exists(dlg.FileName);
             var backupDir = existed
-                ? new LSR.XmlHelper.Core.Services.XmlHelperRootService().GetOrCreateSubfolder(dlg.FileName, "BackupXMLs")
+                ? new XmlHelperRootService().GetOrCreateSubfolder(dlg.FileName, "BackupXMLs")
                 : null;
 
             var (ok, err) = _saver.Save(dlg.FileName, XmlText);
             if (!ok)
             {
-                System.Windows.MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(err ?? "Save failed.", "Save failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 Status = "Save failed.";
                 return;
             }
@@ -846,7 +852,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (existed && backupDir is not null)
             {
                 Status = $"Saved: {Path.GetFileName(dlg.FileName)} | Backup: {backupDir}";
-                System.Windows.MessageBox.Show($"Backup created:\n{backupDir}", "Backup created", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Backup created:\n{backupDir}", "Backup created", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
@@ -907,14 +913,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 SelectedTreeNode = null;
 
                 _suppressDirtyTracking = true;
-                try
-                {
-                    XmlText = "";
-                }
-                finally
-                {
-                    _suppressDirtyTracking = false;
-                }
+                try { XmlText = ""; }
+                finally { _suppressDirtyTracking = false; }
 
                 IsDirty = false;
             }
@@ -1020,7 +1020,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SortTree(XmlTree);
         }
 
-        private static void SortTree(System.Collections.ObjectModel.ObservableCollection<XmlExplorerNode> nodes)
+        private static void SortTree(ObservableCollection<XmlExplorerNode> nodes)
         {
             var ordered = nodes
                 .OrderBy(n => n.IsFile)
@@ -1080,7 +1080,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _suppressFriendlyRebuild = true;
 
                 XmlText = result.Text ?? "";
-
                 IsDirty = false;
             }
             finally
@@ -1090,14 +1089,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             await RebuildFriendlyFromCurrentXmlAsync(token);
-
             Status = $"Opened: {name}";
         }
 
         private async Task RebuildFriendlyFromCurrentXmlAsync(CancellationToken token)
         {
             var xml = XmlText ?? "";
-
             XmlFriendlyDocument? doc = null;
 
             try
@@ -1131,20 +1128,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void SaveSettings()
         {
-            try
-            {
-                _settingsService.Save(_settings);
-            }
-            catch
-            {
-            }
-        }
-
-        private static Media.Brush CreateFrozenBrush(string hex)
-        {
-            var brush = (Media.Brush)new Media.BrushConverter().ConvertFromString(hex)!;
-            brush.Freeze();
-            return brush;
+            try { _settingsService.Save(_settings); }
+            catch { }
         }
     }
 }

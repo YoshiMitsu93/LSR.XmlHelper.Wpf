@@ -9,7 +9,11 @@
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="450"
-        Width="900">
+        Width="900"
+        FontFamily="{Binding Appearance.UiFontFamily}"
+        FontSize="{Binding Appearance.UiFontSize}"
+        FontWeight="{Binding Appearance.UiFontWeight}"
+        FontStyle="{Binding Appearance.UiFontStyle}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -17,100 +21,56 @@
 
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="BorderBrush" Value="#555555" />
+            <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
             <Setter Property="GridLinesVisibility" Value="All" />
             <Setter Property="HeadersVisibility" Value="Column" />
         </Style>
 
         <Style TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="BorderBrush" Value="#555555" />
+            <Setter Property="Background" Value="{Binding Appearance.GridHeaderBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.GridHeaderTextBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
         </Style>
 
         <Style TargetType="{x:Type DataGridRow}">
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
-
+            <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
             <Style.Triggers>
-                <!-- DM -->
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="#252525" />
-                </MultiDataTrigger>
-
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
-                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="#2F2F2F" />
-                </MultiDataTrigger>
-
-                <!-- LM -->
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="#EAEAEA" />
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
-                    <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
-                </MultiDataTrigger>
-
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
-                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
-                    <Setter Property="TextElement.Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
-                </MultiDataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{Binding Appearance.GridRowHoverBackgroundBrush}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding Appearance.GridRowSelectedBackgroundBrush}" />
+                </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type DataGridCell}">
-            <Setter Property="BorderBrush" Value="#555555" />
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+                    <Setter Property="Background" Value="{Binding Appearance.GridCellSelectedBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{Binding Appearance.GridCellSelectedTextBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type Expander}">
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.TextBrush}" />
         </Style>
 
         <Style TargetType="{x:Type TreeView}">
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.TreeTextBrush}" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
 
         <Style x:Key="XmlTreeItemStyle" TargetType="{x:Type TreeViewItem}">
-            <Setter Property="Foreground"
-            Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="2,1" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -130,30 +90,30 @@
                             </Grid.RowDefinitions>
 
                             <Border Grid.Row="0"
-                            Grid.ColumnSpan="2"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="2"
-                            SnapsToDevicePixels="True"
-                            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}}"
-                            HorizontalAlignment="Left" />
+                                    Grid.ColumnSpan="2"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="2"
+                                    SnapsToDevicePixels="True"
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                    HorizontalAlignment="Left" />
 
                             <ToggleButton x:Name="Expander"
-                                  Grid.Row="0"
-                                  Grid.Column="0"
-                                  Width="16"
-                                  Height="16"
-                                  Margin="0,0,2,0"
-                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-                                  ClickMode="Press"
-                                  Focusable="False"
-                                  Background="Transparent"
-                                  BorderThickness="0">
+                                          Grid.Row="0"
+                                          Grid.Column="0"
+                                          Width="16"
+                                          Height="16"
+                                          Margin="0,0,2,0"
+                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press"
+                                          Focusable="False"
+                                          Background="Transparent"
+                                          BorderThickness="0">
                                 <Path x:Name="Arrow"
-                              Width="8"
-                              Height="8"
-                              Fill="{TemplateBinding Foreground}"
-                              Data="M 0 0 L 8 4 L 0 8 Z"
-                              RenderTransformOrigin="0.5,0.5">
+                                      Width="8"
+                                      Height="8"
+                                      Fill="{TemplateBinding Foreground}"
+                                      Data="M 0 0 L 8 4 L 0 8 Z"
+                                      RenderTransformOrigin="0.5,0.5">
                                     <Path.RenderTransform>
                                         <RotateTransform Angle="0" />
                                     </Path.RenderTransform>
@@ -161,19 +121,19 @@
                             </ToggleButton>
 
                             <ContentPresenter Grid.Row="0"
-                                      Grid.Column="1"
-                                      Margin="{TemplateBinding Padding}"
-                                      ContentSource="Header"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Center"
-                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                      TextElement.Foreground="{TemplateBinding Foreground}" />
+                                              Grid.Column="1"
+                                              Margin="{TemplateBinding Padding}"
+                                              ContentSource="Header"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Center"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
 
                             <ItemsPresenter x:Name="ItemsHost"
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Margin="18,0,0,0"
-                                    Visibility="Collapsed" />
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Margin="18,0,0,0"
+                                            Visibility="Collapsed" />
 
                         </Grid>
 
@@ -200,196 +160,37 @@
             </Setter>
 
             <Style.Triggers>
-                <!-- DM -->
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="#252525" />
-                </MultiDataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
 
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
-                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="#2F2F2F" />
-                </MultiDataTrigger>
-
-                <!-- LM -->
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="#EAEAEA" />
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
-                </MultiDataTrigger>
-
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
-                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
-                </MultiDataTrigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type ComboBoxItem}">
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding Appearance.BackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.TextBrush}" />
             <Setter Property="Padding" Value="6,3" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                        <Border x:Name="Bd"
-                                Background="{TemplateBinding Background}">
-                            <ContentPresenter Margin="{TemplateBinding Padding}"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Left"
-                                              RecognizesAccessKey="True"
-                                              TextElement.Foreground="{TemplateBinding Foreground}" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <!-- DM -->
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
-                                    <Condition Binding="{Binding IsHighlighted, RelativeSource={RelativeSource Self}}" Value="True" />
-                                </MultiDataTrigger.Conditions>
-                                <Setter TargetName="Bd" Property="Background" Value="#2A2A2A" />
-                            </MultiDataTrigger>
-
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True" />
-                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
-                                </MultiDataTrigger.Conditions>
-                                <Setter TargetName="Bd" Property="Background" Value="#2F2F2F" />
-                            </MultiDataTrigger>
-
-                            <!-- LM -->
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
-                                    <Condition Binding="{Binding IsHighlighted, RelativeSource={RelativeSource Self}}" Value="True" />
-                                </MultiDataTrigger.Conditions>
-                                <Setter TargetName="Bd" Property="Background" Value="#EAEAEA" />
-                                <Setter Property="Foreground" Value="Black" />
-                            </MultiDataTrigger>
-
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="False" />
-                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
-                                </MultiDataTrigger.Conditions>
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
-                            </MultiDataTrigger>
-
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.55" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding DataContext.EditorForeground, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="BorderBrush" Value="#555555" />
+            <Setter Property="Background" Value="{Binding Appearance.BackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.TextBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="8,4" />
             <Setter Property="MinHeight" Value="26" />
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ComboBox}">
-                        <Grid>
-                            <Border x:Name="Outer"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    SnapsToDevicePixels="True">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="28" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <ContentPresenter x:Name="ContentSite"
-                                                      Margin="{TemplateBinding Padding}"
-                                                      VerticalAlignment="Center"
-                                                      HorizontalAlignment="Left"
-                                                      Content="{TemplateBinding SelectionBoxItem}"
-                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                                      RecognizesAccessKey="True" />
-
-                                    <ToggleButton x:Name="DropDownToggle"
-                                                  Grid.Column="1"
-                                                  Focusable="False"
-                                                  IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
-                                                  Background="{TemplateBinding Background}"
-                                                  BorderBrush="{TemplateBinding BorderBrush}"
-                                                  BorderThickness="0">
-                                        <Grid>
-                                            <Path Width="10"
-                                                  Height="6"
-                                                  Stretch="Fill"
-                                                  Fill="{TemplateBinding Foreground}"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"
-                                                  Data="M 0 0 L 10 0 L 5 6 Z" />
-                                        </Grid>
-                                    </ToggleButton>
-                                </Grid>
-                            </Border>
-
-                            <Popup x:Name="Popup"
-                                   Placement="Bottom"
-                                   IsOpen="{TemplateBinding IsDropDownOpen}"
-                                   AllowsTransparency="True"
-                                   Focusable="False"
-                                   PopupAnimation="Fade">
-                                <Border x:Name="DropDownBorder"
-                                        Background="{TemplateBinding Background}"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        SnapsToDevicePixels="True">
-                                    <ScrollViewer Margin="0" SnapsToDevicePixels="True">
-                                        <ItemsPresenter />
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.55" />
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="Outer" Property="BorderBrush" Value="#7A7A7A" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <Style TargetType="{x:Type ScrollViewer}">
-            <Setter Property="Background"
-                    Value="{Binding DataContext.EditorBackground, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding Appearance.BackgroundBrush}" />
         </Style>
 
         <HierarchicalDataTemplate DataType="{x:Type vm:XmlFolderNode}" ItemsSource="{Binding Children}">
@@ -453,7 +254,8 @@
         </DataTemplate>
     </Window.Resources>
 
-    <DockPanel LastChildFill="True">
+    <DockPanel LastChildFill="True"
+               Background="{Binding Appearance.BackgroundBrush}">
 
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
@@ -498,6 +300,10 @@
                           IsCheckable="True"
                           IsChecked="{Binding IsFlatMode}" />
                 <Separator />
+                <MenuItem Header="_Appearance..."
+                          ToolTip="Customize fonts and colors."
+                          Command="{Binding OpenAppearanceCommand}" />
+                <Separator />
                 <MenuItem Header="Include _subfolders"
                           ToolTip="Include XML files from subfolders when scanning."
                           IsCheckable="True"
@@ -532,79 +338,21 @@
 
         <StackPanel DockPanel.Dock="Top" Margin="8" Orientation="Vertical">
             <WrapPanel>
-                <Button Content="Open Folder"
-                        ToolTip="Pick the folder that contains your XML files."
-                        MinWidth="100"
-                        Margin="0,0,8,0"
-                        Command="{Binding OpenCommand}" />
-
-                <Button Content="Format"
-                        ToolTip="Format (pretty-print) the XML."
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        Command="{Binding FormatCommand}" />
-
-                <Button Content="Validate"
-                        ToolTip="Validate that the XML is well-formed."
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        Command="{Binding ValidateCommand}" />
-
-                <Button Content="Save"
-                        ToolTip="Save changes to the current XML file (backup is created when saving edits)."
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        IsEnabled="{Binding IsDirty}"
-                        Command="{Binding SaveCommand}" />
-
-                <Button Content="Save As..."
-                        ToolTip="Save changes to a new file path."
-                        MinWidth="90"
-                        Margin="0,0,8,0"
-                        IsEnabled="{Binding IsDirty}"
-                        Command="{Binding SaveAsCommand}" />
-
-                <Button Content="Clear"
-                        ToolTip="Clear the current selection and editor."
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        Command="{Binding ClearCommand}" />
+                <Button Content="Open Folder" MinWidth="100" Margin="0,0,8,0" Command="{Binding OpenCommand}" />
+                <Button Content="Format" MinWidth="70" Margin="0,0,8,0" Command="{Binding FormatCommand}" />
+                <Button Content="Validate" MinWidth="70" Margin="0,0,8,0" Command="{Binding ValidateCommand}" />
+                <Button Content="Save" MinWidth="70" Margin="0,0,8,0" IsEnabled="{Binding IsDirty}" Command="{Binding SaveCommand}" />
+                <Button Content="Save As..." MinWidth="90" Margin="0,0,8,0" IsEnabled="{Binding IsDirty}" Command="{Binding SaveAsCommand}" />
+                <Button Content="Clear" MinWidth="70" Margin="0,0,8,0" Command="{Binding ClearCommand}" />
             </WrapPanel>
 
             <WrapPanel Margin="0,6,0,0">
-                <TextBlock Text="View:"
-                           VerticalAlignment="Center"
-                           Margin="0,0,6,0" />
-
-                <RadioButton Content="Folders"
-                             ToolTip="Show files in a folder tree."
-                             VerticalAlignment="Center"
-                             Margin="0,0,8,0"
-                             IsChecked="{Binding IsFoldersMode}" />
-
-                <RadioButton Content="Flat"
-                             ToolTip="Show all XML files in a single list."
-                             VerticalAlignment="Center"
-                             Margin="0,0,16,0"
-                             IsChecked="{Binding IsFlatMode}" />
-
-                <CheckBox Content="Include subfolders"
-                          ToolTip="Include XML files from subfolders when scanning."
-                          VerticalAlignment="Center"
-                          Margin="0,0,16,0"
-                          IsChecked="{Binding IncludeSubfolders}" />
-
-                <CheckBox Content="Friendly view"
-                          ToolTip="Toggle the structured editor view for supported XML formats."
-                          VerticalAlignment="Center"
-                          Margin="0,0,16,0"
-                          IsEnabled="{Binding HasFriendlyView}"
-                          IsChecked="{Binding IsFriendlyView}" />
-
-                <CheckBox Content="Dark mode"
-                          ToolTip="Toggle dark theme for the editor and friendly view."
-                          VerticalAlignment="Center"
-                          IsChecked="{Binding IsDarkMode}" />
+                <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <RadioButton Content="Folders" VerticalAlignment="Center" Margin="0,0,8,0" IsChecked="{Binding IsFoldersMode}" />
+                <RadioButton Content="Flat" VerticalAlignment="Center" Margin="0,0,16,0" IsChecked="{Binding IsFlatMode}" />
+                <CheckBox Content="Include subfolders" VerticalAlignment="Center" Margin="0,0,16,0" IsChecked="{Binding IncludeSubfolders}" />
+                <CheckBox Content="Friendly view" VerticalAlignment="Center" Margin="0,0,16,0" IsEnabled="{Binding HasFriendlyView}" IsChecked="{Binding IsFriendlyView}" />
+                <CheckBox Content="Dark mode" VerticalAlignment="Center" IsChecked="{Binding IsDarkMode}" />
             </WrapPanel>
         </StackPanel>
 
@@ -621,10 +369,10 @@
 
             <Border Grid.Column="0"
                     BorderThickness="1"
-                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                    BorderBrush="{Binding Appearance.GridBorderBrush}"
                     Padding="6"
-                    Background="{Binding EditorBackground}">
-                <Grid Background="{Binding EditorBackground}">
+                    Background="{Binding Appearance.BackgroundBrush}">
+                <Grid Background="{Binding Appearance.BackgroundBrush}">
                     <TreeView ItemsSource="{Binding XmlTree}"
                               ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
                               HorizontalContentAlignment="Stretch"
@@ -654,7 +402,7 @@
 
                     <DockPanel Grid.Column="0"
                                Margin="0,0,8,0"
-                               Background="{Binding EditorBackground}">
+                               Background="{Binding Appearance.BackgroundBrush}">
                         <ComboBox DockPanel.Dock="Top"
                                   ItemsSource="{Binding FriendlyCollections}"
                                   SelectedItem="{Binding SelectedFriendlyCollection}"
@@ -667,12 +415,12 @@
                     </DockPanel>
 
                     <Border Grid.Column="1"
-                            Background="{Binding EditorBackground}"
-                            BorderBrush="#555555"
+                            Background="{Binding Appearance.BackgroundBrush}"
+                            BorderBrush="{Binding Appearance.GridBorderBrush}"
                             BorderThickness="1">
                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled"
-                                      Background="{Binding EditorBackground}">
+                                      Background="{Binding Appearance.BackgroundBrush}">
                             <ItemsControl ItemsSource="{Binding FriendlyGroups}" />
                         </ScrollViewer>
                     </Border>
@@ -681,12 +429,14 @@
                 <avalonedit:TextEditor x:Name="XmlEditor"
                                        Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
                                        ShowLineNumbers="True"
-                                       FontFamily="Consolas"
-                                       FontSize="13"
+                                       FontFamily="{Binding Appearance.EditorFontFamily}"
+                                       FontSize="{Binding Appearance.EditorFontSize}"
+                                       FontWeight="{Binding Appearance.EditorFontWeight}"
+                                       FontStyle="{Binding Appearance.EditorFontStyle}"
                                        HorizontalScrollBarVisibility="Auto"
                                        VerticalScrollBarVisibility="Auto"
-                                       Background="{Binding EditorBackground}"
-                                       Foreground="{Binding EditorForeground}"
+                                       Background="{Binding Appearance.BackgroundBrush}"
+                                       Foreground="{Binding Appearance.TextBrush}"
                                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
             </Grid>
         </Grid>
