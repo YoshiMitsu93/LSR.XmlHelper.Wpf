@@ -35,6 +35,51 @@ namespace LSR.XmlHelper.Wpf
             vm.SelectedTreeNode = e.NewValue as XmlExplorerNode;
         }
 
+        private void FriendlyGrid_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key != System.Windows.Input.Key.Enter)
+                return;
+
+            if (sender is not System.Windows.Controls.DataGrid grid)
+                return;
+
+            if (grid.CurrentColumn == null)
+                return;
+
+            if (grid.CurrentColumn.IsReadOnly || grid.IsReadOnly)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (grid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell, true))
+            {
+                grid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
+                e.Handled = true;
+                return;
+            }
+
+            grid.BeginEdit();
+            e.Handled = true;
+        }
+
+        private void TreeView_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key != System.Windows.Input.Key.Enter)
+                return;
+
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (vm.SelectedXmlFile != null)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            e.Handled = true;
+        }
+
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Close();
