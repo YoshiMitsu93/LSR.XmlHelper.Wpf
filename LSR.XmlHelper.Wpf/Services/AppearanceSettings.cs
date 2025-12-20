@@ -1,5 +1,4 @@
-﻿using LSR.XmlHelper.Wpf.Services;
-using System;
+﻿using System;
 
 namespace LSR.XmlHelper.Wpf.Services
 {
@@ -25,6 +24,12 @@ namespace LSR.XmlHelper.Wpf.Services
 
         public string Text { get; set; } = "#FFD4D4D4";
         public string Background { get; set; } = "#FF1E1E1E";
+
+        public string EditorText { get; set; } = "#FFD4D4D4";
+        public string EditorBackground { get; set; } = "#FF1E1E1E";
+
+        public string MenuBackground { get; set; } = "#FF1E1E1E";
+        public string MenuText { get; set; } = "#FFD4D4D4";
 
         public string TreeText { get; set; } = "#FFD4D4D4";
         public string TreeBackground { get; set; } = "#FF1E1E1E";
@@ -61,6 +66,12 @@ namespace LSR.XmlHelper.Wpf.Services
                 Text = "#FFD4D4D4",
                 Background = "#FF1E1E1E",
 
+                EditorText = "#FFD4D4D4",
+                EditorBackground = "#FF1E1E1E",
+
+                MenuBackground = "#FF1E1E1E",
+                MenuText = "#FFD4D4D4",
+
                 TreeText = "#FFD4D4D4",
                 TreeBackground = "#FF1E1E1E",
                 TreeItemHoverBackground = "#FF252525",
@@ -96,6 +107,12 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 Text = "#FF000000",
                 Background = "#FFFFFFFF",
+
+                EditorText = "#FF000000",
+                EditorBackground = "#FFFFFFFF",
+
+                MenuBackground = "#FFF5F5F5",
+                MenuText = "#FF000000",
 
                 TreeText = "#FF000000",
                 TreeBackground = "#FFFFFFFF",

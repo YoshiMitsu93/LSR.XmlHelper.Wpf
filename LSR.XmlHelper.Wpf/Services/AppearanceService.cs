@@ -50,6 +50,12 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush TextBrush => CreateFrozenBrush(Active.Text);
         public WpfBrush BackgroundBrush => CreateFrozenBrush(Active.Background);
 
+        public WpfBrush EditorTextBrush => CreateFrozenBrush(Active.EditorText);
+        public WpfBrush EditorBackgroundBrush => CreateFrozenBrush(Active.EditorBackground);
+
+        public WpfBrush MenuBackgroundBrush => CreateFrozenBrush(Active.MenuBackground);
+        public WpfBrush MenuTextBrush => CreateFrozenBrush(Active.MenuText);
+
         public WpfBrush TreeTextBrush => CreateFrozenBrush(Active.TreeText);
         public WpfBrush TreeBackgroundBrush => CreateFrozenBrush(Active.TreeBackground);
         public WpfBrush TreeItemHoverBackgroundBrush => CreateFrozenBrush(Active.TreeItemHoverBackground);
@@ -97,6 +103,12 @@ namespace LSR.XmlHelper.Wpf.Services
 
             OnPropertyChanged(nameof(TextBrush));
             OnPropertyChanged(nameof(BackgroundBrush));
+
+            OnPropertyChanged(nameof(EditorTextBrush));
+            OnPropertyChanged(nameof(EditorBackgroundBrush));
+
+            OnPropertyChanged(nameof(MenuBackgroundBrush));
+            OnPropertyChanged(nameof(MenuTextBrush));
 
             OnPropertyChanged(nameof(TreeTextBrush));
             OnPropertyChanged(nameof(TreeBackgroundBrush));

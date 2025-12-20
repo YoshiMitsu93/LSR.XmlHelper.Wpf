@@ -355,7 +355,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenAppearance()
         {
-            var vm = new AppearanceWindowViewModel(_settingsService, _settings, _appearance, _isDarkMode);
+            var vm = new AppearanceWindowViewModel(_settingsService, _settings, _appearance, _isDarkMode, IsFriendlyView);
 
             var win = new AppearanceWindow
             {

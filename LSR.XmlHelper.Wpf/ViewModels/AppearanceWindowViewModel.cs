@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Windows.Forms;
 using System.Windows.Media;
 
 using WpfBrush = System.Windows.Media.Brush;
@@ -19,37 +20,108 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly AppSettings _appSettings;
         private readonly AppearanceService _appearance;
 
+        private readonly AppearanceSettings _originalFromSettings;
         private readonly AppearanceSettings _workingCopy;
-        private readonly bool _isDarkMode;
 
-        public AppearanceWindowViewModel(AppSettingsService settingsService, AppSettings appSettings, AppearanceService appearance, bool isDarkMode)
+        private bool _isEditingDarkMode;
+        private bool _isEditingFriendlyView;
+
+        private bool _isDirty;
+        private bool _suppressPreview;
+
+        public AppearanceWindowViewModel(
+            AppSettingsService settingsService,
+            AppSettings appSettings,
+            AppearanceService appearance,
+            bool isCurrentDarkMode,
+            bool isCurrentFriendlyView)
         {
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
             _appearance = appearance ?? throw new ArgumentNullException(nameof(appearance));
-            _isDarkMode = isDarkMode;
 
-            _workingCopy = CloneAppearance(appSettings.Appearance);
+            _originalFromSettings = CloneAppearance(_appSettings.Appearance);
+            _workingCopy = CloneAppearance(_appSettings.Appearance);
 
             FontFamilies = Fonts.SystemFontFamilies
                 .Select(f => f.Source)
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            LoadFromProfile(_workingCopy.GetActiveProfile(_isDarkMode));
+            _isEditingDarkMode = isCurrentDarkMode;
+            _isEditingFriendlyView = isCurrentFriendlyView;
 
+            LoadFromProfile(GetEditingProfile());
+
+            PickColorCommand = new RelayCommandOfT<string>(PickColor);
             ApplyCommand = new RelayCommand(Apply);
             OkCommand = new RelayCommand(Ok);
             CancelCommand = new RelayCommand(Cancel);
+
+            RaisePreview();
+            ApplyPreviewIfEditingCurrentTheme();
         }
 
         public event EventHandler<bool>? CloseRequested;
 
         public List<string> FontFamilies { get; }
 
+        public RelayCommandOfT<string> PickColorCommand { get; }
+
         public RelayCommand ApplyCommand { get; }
         public RelayCommand OkCommand { get; }
         public RelayCommand CancelCommand { get; }
+
+        public bool IsDirty
+        {
+            get => _isDirty;
+            private set => SetProperty(ref _isDirty, value);
+        }
+
+        public bool IsEditingDarkMode
+        {
+            get => _isEditingDarkMode;
+            set
+            {
+                if (!SetProperty(ref _isEditingDarkMode, value))
+                    return;
+
+                OnPropertyChanged(nameof(IsEditingLightMode));
+                SwitchEditingProfile();
+            }
+        }
+
+        public bool IsEditingLightMode
+        {
+            get => !_isEditingDarkMode;
+            set
+            {
+                if (value)
+                    IsEditingDarkMode = false;
+            }
+        }
+
+        public bool IsEditingFriendlyView
+        {
+            get => _isEditingFriendlyView;
+            set
+            {
+                if (!SetProperty(ref _isEditingFriendlyView, value))
+                    return;
+
+                OnPropertyChanged(nameof(IsEditingRawXml));
+            }
+        }
+
+        public bool IsEditingRawXml
+        {
+            get => !_isEditingFriendlyView;
+            set
+            {
+                if (value)
+                    IsEditingFriendlyView = false;
+            }
+        }
 
         private string _uiFontFamily = "Segoe UI";
         private string _uiFontSize = "12";
@@ -58,6 +130,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private string _text = "#FFD4D4D4";
         private string _background = "#FF1E1E1E";
+
+        private string _editorText = "#FFD4D4D4";
+        private string _editorBackground = "#FF1E1E1E";
+
+        private string _menuText = "#FFD4D4D4";
+        private string _menuBackground = "#FF1E1E1E";
 
         private string _treeText = "#FFD4D4D4";
         private string _treeBackground = "#FF1E1E1E";
@@ -69,27 +147,47 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _gridBorder = "#FF555555";
         private string _gridRowHoverBackground = "#FF252525";
 
-        public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) RaisePreview(); } }
-        public string UiFontSize { get => _uiFontSize; set { if (SetProperty(ref _uiFontSize, value)) RaisePreview(); } }
+        private string _fieldColumnText = "#FFD4D4D4";
+        private string _valueColumnText = "#FFD4D4D4";
+        private string _headerText = "#FFD4D4D4";
 
-        public string EditorFontFamily { get => _editorFontFamily; set { if (SetProperty(ref _editorFontFamily, value)) RaisePreview(); } }
-        public string EditorFontSize { get => _editorFontSize; set { if (SetProperty(ref _editorFontSize, value)) RaisePreview(); } }
+        public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) OnEdited(); } }
+        public string UiFontSize { get => _uiFontSize; set { if (SetProperty(ref _uiFontSize, value)) OnEdited(); } }
 
-        public string Text { get => _text; set { if (SetProperty(ref _text, value)) RaisePreview(); } }
-        public string Background { get => _background; set { if (SetProperty(ref _background, value)) RaisePreview(); } }
+        public string EditorFontFamily { get => _editorFontFamily; set { if (SetProperty(ref _editorFontFamily, value)) OnEdited(); } }
+        public string EditorFontSize { get => _editorFontSize; set { if (SetProperty(ref _editorFontSize, value)) OnEdited(); } }
 
-        public string TreeText { get => _treeText; set { if (SetProperty(ref _treeText, value)) RaisePreview(); } }
-        public string TreeBackground { get => _treeBackground; set { if (SetProperty(ref _treeBackground, value)) RaisePreview(); } }
-        public string TreeItemHoverBackground { get => _treeItemHoverBackground; set { if (SetProperty(ref _treeItemHoverBackground, value)) RaisePreview(); } }
-        public string TreeItemSelectedBackground { get => _treeItemSelectedBackground; set { if (SetProperty(ref _treeItemSelectedBackground, value)) RaisePreview(); } }
+        public string Text { get => _text; set { if (SetProperty(ref _text, value)) OnEdited(); } }
+        public string Background { get => _background; set { if (SetProperty(ref _background, value)) OnEdited(); } }
 
-        public string GridText { get => _gridText; set { if (SetProperty(ref _gridText, value)) RaisePreview(); } }
-        public string GridBackground { get => _gridBackground; set { if (SetProperty(ref _gridBackground, value)) RaisePreview(); } }
-        public string GridBorder { get => _gridBorder; set { if (SetProperty(ref _gridBorder, value)) RaisePreview(); } }
-        public string GridRowHoverBackground { get => _gridRowHoverBackground; set { if (SetProperty(ref _gridRowHoverBackground, value)) RaisePreview(); } }
+        public string EditorText { get => _editorText; set { if (SetProperty(ref _editorText, value)) OnEdited(); } }
+        public string EditorBackground { get => _editorBackground; set { if (SetProperty(ref _editorBackground, value)) OnEdited(); } }
+
+        public string MenuText { get => _menuText; set { if (SetProperty(ref _menuText, value)) OnEdited(); } }
+        public string MenuBackground { get => _menuBackground; set { if (SetProperty(ref _menuBackground, value)) OnEdited(); } }
+
+        public string TreeText { get => _treeText; set { if (SetProperty(ref _treeText, value)) OnEdited(); } }
+        public string TreeBackground { get => _treeBackground; set { if (SetProperty(ref _treeBackground, value)) OnEdited(); } }
+        public string TreeItemHoverBackground { get => _treeItemHoverBackground; set { if (SetProperty(ref _treeItemHoverBackground, value)) OnEdited(); } }
+        public string TreeItemSelectedBackground { get => _treeItemSelectedBackground; set { if (SetProperty(ref _treeItemSelectedBackground, value)) OnEdited(); } }
+
+        public string GridText { get => _gridText; set { if (SetProperty(ref _gridText, value)) OnEdited(); } }
+        public string GridBackground { get => _gridBackground; set { if (SetProperty(ref _gridBackground, value)) OnEdited(); } }
+        public string GridBorder { get => _gridBorder; set { if (SetProperty(ref _gridBorder, value)) OnEdited(); } }
+        public string GridRowHoverBackground { get => _gridRowHoverBackground; set { if (SetProperty(ref _gridRowHoverBackground, value)) OnEdited(); } }
+
+        public string FieldColumnText { get => _fieldColumnText; set { if (SetProperty(ref _fieldColumnText, value)) OnEdited(); } }
+        public string ValueColumnText { get => _valueColumnText; set { if (SetProperty(ref _valueColumnText, value)) OnEdited(); } }
+        public string HeaderText { get => _headerText; set { if (SetProperty(ref _headerText, value)) OnEdited(); } }
 
         public WpfBrush PreviewTextBrush => TryParseBrush(Text);
         public WpfBrush PreviewBackgroundBrush => TryParseBrush(Background);
+
+        public WpfBrush PreviewEditorTextBrush => TryParseBrush(EditorText);
+        public WpfBrush PreviewEditorBackgroundBrush => TryParseBrush(EditorBackground);
+
+        public WpfBrush PreviewMenuTextBrush => TryParseBrush(MenuText);
+        public WpfBrush PreviewMenuBackgroundBrush => TryParseBrush(MenuBackground);
 
         public WpfBrush PreviewTreeTextBrush => TryParseBrush(TreeText);
         public WpfBrush PreviewTreeBackgroundBrush => TryParseBrush(TreeBackground);
@@ -101,34 +199,22 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewGridBorderBrush => TryParseBrush(GridBorder);
         public WpfBrush PreviewGridRowHoverBrush => TryParseBrush(GridRowHoverBackground);
 
-        private void RaisePreview()
+        public WpfBrush PreviewFieldColumnTextBrush => TryParseBrush(FieldColumnText);
+        public WpfBrush PreviewValueColumnTextBrush => TryParseBrush(ValueColumnText);
+        public WpfBrush PreviewHeaderTextBrush => TryParseBrush(HeaderText);
+
+        public void RevertPreview()
         {
-            OnPropertyChanged(nameof(PreviewTextBrush));
-            OnPropertyChanged(nameof(PreviewBackgroundBrush));
-
-            OnPropertyChanged(nameof(PreviewTreeTextBrush));
-            OnPropertyChanged(nameof(PreviewTreeBackgroundBrush));
-            OnPropertyChanged(nameof(PreviewTreeHoverBrush));
-            OnPropertyChanged(nameof(PreviewTreeSelectedBrush));
-
-            OnPropertyChanged(nameof(PreviewGridTextBrush));
-            OnPropertyChanged(nameof(PreviewGridBackgroundBrush));
-            OnPropertyChanged(nameof(PreviewGridBorderBrush));
-            OnPropertyChanged(nameof(PreviewGridRowHoverBrush));
+            _appearance.ReplaceSettings(CloneAppearance(_originalFromSettings));
         }
 
-        private void Apply()
+        public bool TryCommit()
         {
-            var profile = _workingCopy.GetActiveProfile(_isDarkMode);
+            var profile = GetEditingProfile();
             WriteToProfile(profile);
 
-            _appSettings.Appearance = _workingCopy;
-            _appearance.ReplaceSettings(_workingCopy);
-        }
-
-        private void Ok()
-        {
-            Apply();
+            _appSettings.Appearance = CloneAppearance(_workingCopy);
+            _appearance.ReplaceSettings(CloneAppearance(_workingCopy));
 
             try
             {
@@ -138,6 +224,45 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             {
             }
 
+            IsDirty = false;
+            return true;
+        }
+
+        private void PickColor(string? key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
+            var currentHex = GetColorByKey(key);
+            var initial = TryParseDrawingColor(currentHex, out var c) ? c : System.Drawing.Color.White;
+
+            using var dlg = new ColorDialog
+            {
+                FullOpen = true,
+                Color = initial
+            };
+
+            if (dlg.ShowDialog() != DialogResult.OK)
+                return;
+
+            var hex = $"#{dlg.Color.A:X2}{dlg.Color.R:X2}{dlg.Color.G:X2}{dlg.Color.B:X2}";
+            SetColorByKey(key, hex);
+        }
+
+        private void Apply()
+        {
+            var profile = GetEditingProfile();
+            WriteToProfile(profile);
+
+            _appSettings.Appearance = CloneAppearance(_workingCopy);
+            _appearance.ReplaceSettings(CloneAppearance(_workingCopy));
+
+            IsDirty = false;
+        }
+
+        private void Ok()
+        {
+            TryCommit();
             CloseRequested?.Invoke(this, true);
         }
 
@@ -146,46 +271,110 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             CloseRequested?.Invoke(this, false);
         }
 
-        private void LoadFromProfile(AppearanceProfileSettings p)
+        private void SwitchEditingProfile()
         {
-            _uiFontFamily = p.UiFontFamily;
-            _uiFontSize = p.UiFontSize.ToString(CultureInfo.InvariantCulture);
+            var profile = GetEditingProfile();
+            LoadFromProfile(profile);
 
-            _editorFontFamily = p.EditorFontFamily;
-            _editorFontSize = p.EditorFontSize.ToString(CultureInfo.InvariantCulture);
+            ApplyPreviewIfEditingCurrentTheme();
+        }
 
-            _text = p.Text;
-            _background = p.Background;
-
-            _treeText = p.TreeText;
-            _treeBackground = p.TreeBackground;
-            _treeItemHoverBackground = p.TreeItemHoverBackground;
-            _treeItemSelectedBackground = p.TreeItemSelectedBackground;
-
-            _gridText = p.GridText;
-            _gridBackground = p.GridBackground;
-            _gridBorder = p.GridBorder;
-            _gridRowHoverBackground = p.GridRowHoverBackground;
-
-            OnPropertyChanged(nameof(UiFontFamily));
-            OnPropertyChanged(nameof(UiFontSize));
-            OnPropertyChanged(nameof(EditorFontFamily));
-            OnPropertyChanged(nameof(EditorFontSize));
-
-            OnPropertyChanged(nameof(Text));
-            OnPropertyChanged(nameof(Background));
-
-            OnPropertyChanged(nameof(TreeText));
-            OnPropertyChanged(nameof(TreeBackground));
-            OnPropertyChanged(nameof(TreeItemHoverBackground));
-            OnPropertyChanged(nameof(TreeItemSelectedBackground));
-
-            OnPropertyChanged(nameof(GridText));
-            OnPropertyChanged(nameof(GridBackground));
-            OnPropertyChanged(nameof(GridBorder));
-            OnPropertyChanged(nameof(GridRowHoverBackground));
+        private void OnEdited()
+        {
+            IsDirty = true;
 
             RaisePreview();
+
+            if (_suppressPreview)
+                return;
+
+            var profile = GetEditingProfile();
+            WriteToProfile(profile);
+
+            ApplyPreviewIfEditingCurrentTheme();
+        }
+
+        private void ApplyPreviewIfEditingCurrentTheme()
+        {
+            if (_appearance.IsDarkMode != IsEditingDarkMode)
+                return;
+
+            _appearance.ReplaceSettings(CloneAppearance(_workingCopy));
+        }
+
+        private AppearanceProfileSettings GetEditingProfile()
+        {
+            return _workingCopy.GetActiveProfile(IsEditingDarkMode);
+        }
+
+        private void LoadFromProfile(AppearanceProfileSettings p)
+        {
+            _suppressPreview = true;
+            try
+            {
+                _uiFontFamily = p.UiFontFamily;
+                _uiFontSize = p.UiFontSize.ToString(CultureInfo.InvariantCulture);
+
+                _editorFontFamily = p.EditorFontFamily;
+                _editorFontSize = p.EditorFontSize.ToString(CultureInfo.InvariantCulture);
+
+                _text = p.Text;
+                _background = p.Background;
+
+                _editorText = p.EditorText;
+                _editorBackground = p.EditorBackground;
+
+                _menuText = p.MenuText;
+                _menuBackground = p.MenuBackground;
+
+                _treeText = p.TreeText;
+                _treeBackground = p.TreeBackground;
+                _treeItemHoverBackground = p.TreeItemHoverBackground;
+                _treeItemSelectedBackground = p.TreeItemSelectedBackground;
+
+                _gridText = p.GridText;
+                _gridBackground = p.GridBackground;
+                _gridBorder = p.GridBorder;
+                _gridRowHoverBackground = p.GridRowHoverBackground;
+
+                _fieldColumnText = p.FieldColumnText;
+                _valueColumnText = p.ValueColumnText;
+                _headerText = p.HeaderText;
+
+                OnPropertyChanged(nameof(UiFontFamily));
+                OnPropertyChanged(nameof(UiFontSize));
+                OnPropertyChanged(nameof(EditorFontFamily));
+                OnPropertyChanged(nameof(EditorFontSize));
+
+                OnPropertyChanged(nameof(Text));
+                OnPropertyChanged(nameof(Background));
+
+                OnPropertyChanged(nameof(EditorText));
+                OnPropertyChanged(nameof(EditorBackground));
+
+                OnPropertyChanged(nameof(MenuText));
+                OnPropertyChanged(nameof(MenuBackground));
+
+                OnPropertyChanged(nameof(TreeText));
+                OnPropertyChanged(nameof(TreeBackground));
+                OnPropertyChanged(nameof(TreeItemHoverBackground));
+                OnPropertyChanged(nameof(TreeItemSelectedBackground));
+
+                OnPropertyChanged(nameof(GridText));
+                OnPropertyChanged(nameof(GridBackground));
+                OnPropertyChanged(nameof(GridBorder));
+                OnPropertyChanged(nameof(GridRowHoverBackground));
+
+                OnPropertyChanged(nameof(FieldColumnText));
+                OnPropertyChanged(nameof(ValueColumnText));
+                OnPropertyChanged(nameof(HeaderText));
+
+                RaisePreview();
+            }
+            finally
+            {
+                _suppressPreview = false;
+            }
         }
 
         private void WriteToProfile(AppearanceProfileSettings p)
@@ -199,6 +388,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.Text = NormalizeColor(Text, p.Text);
             p.Background = NormalizeColor(Background, p.Background);
 
+            p.EditorText = NormalizeColor(EditorText, p.EditorText);
+            p.EditorBackground = NormalizeColor(EditorBackground, p.EditorBackground);
+
+            p.MenuText = NormalizeColor(MenuText, p.MenuText);
+            p.MenuBackground = NormalizeColor(MenuBackground, p.MenuBackground);
+
             p.TreeText = NormalizeColor(TreeText, p.TreeText);
             p.TreeBackground = NormalizeColor(TreeBackground, p.TreeBackground);
             p.TreeItemHoverBackground = NormalizeColor(TreeItemHoverBackground, p.TreeItemHoverBackground);
@@ -208,14 +403,129 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.GridBackground = NormalizeColor(GridBackground, p.GridBackground);
             p.GridBorder = NormalizeColor(GridBorder, p.GridBorder);
             p.GridRowHoverBackground = NormalizeColor(GridRowHoverBackground, p.GridRowHoverBackground);
+
+            p.FieldColumnText = NormalizeColor(FieldColumnText, p.FieldColumnText);
+            p.ValueColumnText = NormalizeColor(ValueColumnText, p.ValueColumnText);
+            p.HeaderText = NormalizeColor(HeaderText, p.HeaderText);
+        }
+
+        private void RaisePreview()
+        {
+            OnPropertyChanged(nameof(PreviewTextBrush));
+            OnPropertyChanged(nameof(PreviewBackgroundBrush));
+
+            OnPropertyChanged(nameof(PreviewEditorTextBrush));
+            OnPropertyChanged(nameof(PreviewEditorBackgroundBrush));
+
+            OnPropertyChanged(nameof(PreviewMenuTextBrush));
+            OnPropertyChanged(nameof(PreviewMenuBackgroundBrush));
+
+            OnPropertyChanged(nameof(PreviewTreeTextBrush));
+            OnPropertyChanged(nameof(PreviewTreeBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewTreeHoverBrush));
+            OnPropertyChanged(nameof(PreviewTreeSelectedBrush));
+
+            OnPropertyChanged(nameof(PreviewGridTextBrush));
+            OnPropertyChanged(nameof(PreviewGridBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGridBorderBrush));
+            OnPropertyChanged(nameof(PreviewGridRowHoverBrush));
+
+            OnPropertyChanged(nameof(PreviewFieldColumnTextBrush));
+            OnPropertyChanged(nameof(PreviewValueColumnTextBrush));
+            OnPropertyChanged(nameof(PreviewHeaderTextBrush));
+        }
+
+        private string GetColorByKey(string key)
+        {
+            return key switch
+            {
+                nameof(Text) => Text,
+                nameof(Background) => Background,
+
+                nameof(EditorText) => EditorText,
+                nameof(EditorBackground) => EditorBackground,
+
+                nameof(MenuText) => MenuText,
+                nameof(MenuBackground) => MenuBackground,
+
+                nameof(TreeText) => TreeText,
+                nameof(TreeBackground) => TreeBackground,
+                nameof(TreeItemHoverBackground) => TreeItemHoverBackground,
+                nameof(TreeItemSelectedBackground) => TreeItemSelectedBackground,
+
+                nameof(GridBackground) => GridBackground,
+                nameof(GridText) => GridText,
+                nameof(GridBorder) => GridBorder,
+                nameof(GridRowHoverBackground) => GridRowHoverBackground,
+
+                nameof(FieldColumnText) => FieldColumnText,
+                nameof(ValueColumnText) => ValueColumnText,
+                nameof(HeaderText) => HeaderText,
+
+                _ => "#FFFFFFFF"
+            };
+        }
+
+        private void SetColorByKey(string key, string hex)
+        {
+            switch (key)
+            {
+                case nameof(Text): Text = hex; break;
+                case nameof(Background): Background = hex; break;
+
+                case nameof(EditorText): EditorText = hex; break;
+                case nameof(EditorBackground): EditorBackground = hex; break;
+
+                case nameof(MenuText): MenuText = hex; break;
+                case nameof(MenuBackground): MenuBackground = hex; break;
+
+                case nameof(TreeText): TreeText = hex; break;
+                case nameof(TreeBackground): TreeBackground = hex; break;
+                case nameof(TreeItemHoverBackground): TreeItemHoverBackground = hex; break;
+                case nameof(TreeItemSelectedBackground): TreeItemSelectedBackground = hex; break;
+
+                case nameof(GridBackground): GridBackground = hex; break;
+                case nameof(GridText): GridText = hex; break;
+                case nameof(GridBorder): GridBorder = hex; break;
+                case nameof(GridRowHoverBackground): GridRowHoverBackground = hex; break;
+
+                case nameof(FieldColumnText): FieldColumnText = hex; break;
+                case nameof(ValueColumnText): ValueColumnText = hex; break;
+                case nameof(HeaderText): HeaderText = hex; break;
+            }
+        }
+
+        private static bool TryParseDrawingColor(string? hex, out System.Drawing.Color c)
+        {
+            c = default;
+
+            if (string.IsNullOrWhiteSpace(hex))
+                return false;
+
+            try
+            {
+                var obj = WpfColorConverter.ConvertFromString(hex);
+                if (obj is WpfColor wc)
+                {
+                    c = System.Drawing.Color.FromArgb(wc.A, wc.R, wc.G, wc.B);
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
         }
 
         private static double TryParseDouble(string? s, double fallback)
         {
             if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var v))
                 return v;
+
             if (double.TryParse(s, NumberStyles.Float, CultureInfo.CurrentCulture, out v))
                 return v;
+
             return fallback;
         }
 
@@ -223,6 +533,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         {
             if (TryParseColor(s, out _))
                 return s!;
+
             return fallback;
         }
 
@@ -284,6 +595,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 Text = p.Text,
                 Background = p.Background,
+
+                EditorText = p.EditorText,
+                EditorBackground = p.EditorBackground,
+
+                MenuText = p.MenuText,
+                MenuBackground = p.MenuBackground,
 
                 TreeText = p.TreeText,
                 TreeBackground = p.TreeBackground,

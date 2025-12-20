@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows;
 
 namespace LSR.XmlHelper.Wpf.Views
@@ -26,6 +27,39 @@ namespace LSR.XmlHelper.Wpf.Views
                 vm.CloseRequested -= VmOnCloseRequested;
 
             base.OnClosed(e);
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (DataContext is ViewModels.AppearanceWindowViewModel vm && vm.IsDirty)
+            {
+                var result = System.Windows.MessageBox.Show(
+                    "You have uncommitted appearance changes.\n\nApply changes before closing?",
+                    "Unapplied changes",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    vm.TryCommit();
+                }
+                else
+                {
+                    vm.RevertPreview();
+                }
+            }
+            else if (DataContext is ViewModels.AppearanceWindowViewModel vm2)
+            {
+                vm2.RevertPreview();
+            }
+
+            base.OnClosing(e);
         }
 
         private void VmOnCloseRequested(object? sender, bool dialogResult)
