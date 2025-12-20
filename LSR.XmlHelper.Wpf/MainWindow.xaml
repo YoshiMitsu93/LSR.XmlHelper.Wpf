@@ -19,6 +19,79 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
 
+        <Style TargetType="{x:Type Menu}">
+            <Setter Property="Background" Value="{Binding Appearance.MenuBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.MenuTextBrush}" />
+        </Style>
+
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="Foreground" Value="{Binding Appearance.MenuTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.MenuBackgroundBrush}" />
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type MenuItem}">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border x:Name="HeaderBorder"
+                                    Background="{TemplateBinding Background}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter ContentSource="Header"
+                                                  RecognizesAccessKey="True"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left" />
+                            </Border>
+
+                            <Popup x:Name="Popup"
+                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{Binding DataContext.Appearance.MenuBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        BorderBrush="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        BorderThickness="1"
+                                        SnapsToDevicePixels="True">
+                                    <ScrollViewer CanContentScroll="True"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel IsItemsHost="True"
+                                                    KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder"
+                                        Property="Background"
+                                        Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+
+                            <Trigger Property="IsSubmenuOpen" Value="True">
+                                <Setter TargetName="HeaderBorder"
+                                        Property="Background"
+                                        Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+
+                            <Trigger Property="Role" Value="SubmenuHeader">
+                                <Setter TargetName="Popup" Property="Placement" Value="Right" />
+                            </Trigger>
+
+                            <Trigger Property="Role" Value="SubmenuItem">
+                                <Setter Property="Foreground"
+                                        Value="{Binding DataContext.Appearance.MenuTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
             <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
@@ -172,15 +245,43 @@
             </Style.Triggers>
         </Style>
 
+        <Style TargetType="{x:Type ListBox}">
+            <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.HeaderTextBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4,2" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="{x:Type ComboBoxItem}">
-            <Setter Property="Background" Value="{Binding Appearance.BackgroundBrush}" />
-            <Setter Property="Foreground" Value="{Binding Appearance.TreeTextBrush}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Padding" Value="6,3" />
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type ComboBox}">
-            <Setter Property="Background" Value="{Binding Appearance.BackgroundBrush}" />
-            <Setter Property="Foreground" Value="{Binding Appearance.TreeTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.HeaderTextBrush}" />
             <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="8,4" />
@@ -371,8 +472,8 @@
                     BorderThickness="1"
                     BorderBrush="{Binding Appearance.GridBorderBrush}"
                     Padding="6"
-                    Background="{Binding Appearance.BackgroundBrush}">
-                <Grid Background="{Binding Appearance.BackgroundBrush}">
+                    Background="{Binding Appearance.TreeBackgroundBrush}">
+                <Grid Background="{Binding Appearance.TreeBackgroundBrush}">
                     <TreeView ItemsSource="{Binding XmlTree}"
                               ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
                               HorizontalContentAlignment="Stretch"
@@ -402,7 +503,7 @@
 
                     <DockPanel Grid.Column="0"
                                Margin="0,0,8,0"
-                               Background="{Binding Appearance.BackgroundBrush}">
+                               Background="{Binding Appearance.TreeBackgroundBrush}">
                         <ComboBox DockPanel.Dock="Top"
                                   ItemsSource="{Binding FriendlyCollections}"
                                   SelectedItem="{Binding SelectedFriendlyCollection}"
@@ -437,8 +538,10 @@
                                        VerticalScrollBarVisibility="Auto"
                                        Background="{Binding Appearance.EditorBackgroundBrush}"
                                        Foreground="{Binding Appearance.EditorTextBrush}"
+                                       infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
+                                       infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
                                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
             </Grid>
         </Grid>
     </DockPanel>
-</Window>
+</Window> 
