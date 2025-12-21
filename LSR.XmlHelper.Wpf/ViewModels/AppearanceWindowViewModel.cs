@@ -110,6 +110,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     return;
 
                 OnPropertyChanged(nameof(IsEditingRawXml));
+                SwitchEditingProfile();
             }
         }
 
@@ -296,8 +297,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void ApplyPreviewIfEditingCurrentTheme()
         {
-            if (_appearance.IsDarkMode != IsEditingDarkMode)
-                return;
+            _appearance.IsDarkMode = IsEditingDarkMode;
+            _appearance.IsFriendlyView = IsEditingFriendlyView;
 
             _appearance.ReplaceSettings(CloneAppearance(_workingCopy));
         }
@@ -307,7 +308,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             return _workingCopy.GetActiveProfile(IsEditingDarkMode);
         }
 
-        private void LoadFromProfile(AppearanceProfileSettings p)
+        void LoadFromProfile(AppearanceProfileSettings p)
         {
             _suppressPreview = true;
             try
@@ -327,10 +328,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _menuText = p.MenuText;
                 _menuBackground = p.MenuBackground;
 
-                _treeText = p.TreeText;
-                _treeBackground = p.TreeBackground;
-                _treeItemHoverBackground = p.TreeItemHoverBackground;
-                _treeItemSelectedBackground = p.TreeItemSelectedBackground;
+                if (_isEditingFriendlyView)
+                {
+                    _treeText = p.FriendlyTreeText;
+                    _treeBackground = p.FriendlyTreeBackground;
+                    _treeItemHoverBackground = p.FriendlyTreeItemHoverBackground;
+                    _treeItemSelectedBackground = p.FriendlyTreeItemSelectedBackground;
+                }
+                else
+                {
+                    _treeText = p.RawTreeText;
+                    _treeBackground = p.RawTreeBackground;
+                    _treeItemHoverBackground = p.RawTreeItemHoverBackground;
+                    _treeItemSelectedBackground = p.RawTreeItemSelectedBackground;
+                }
 
                 _gridText = p.GridText;
                 _gridBackground = p.GridBackground;
@@ -343,6 +354,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 OnPropertyChanged(nameof(UiFontFamily));
                 OnPropertyChanged(nameof(UiFontSize));
+
                 OnPropertyChanged(nameof(EditorFontFamily));
                 OnPropertyChanged(nameof(EditorFontSize));
 
@@ -377,7 +389,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
         }
 
-        private void WriteToProfile(AppearanceProfileSettings p)
+        void WriteToProfile(AppearanceProfileSettings p)
         {
             p.UiFontFamily = UiFontFamily ?? "Segoe UI";
             p.UiFontSize = TryParseDouble(UiFontSize, 12);
@@ -394,10 +406,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.MenuText = NormalizeColor(MenuText, p.MenuText);
             p.MenuBackground = NormalizeColor(MenuBackground, p.MenuBackground);
 
-            p.TreeText = NormalizeColor(TreeText, p.TreeText);
-            p.TreeBackground = NormalizeColor(TreeBackground, p.TreeBackground);
-            p.TreeItemHoverBackground = NormalizeColor(TreeItemHoverBackground, p.TreeItemHoverBackground);
-            p.TreeItemSelectedBackground = NormalizeColor(TreeItemSelectedBackground, p.TreeItemSelectedBackground);
+            if (_isEditingFriendlyView)
+            {
+                p.FriendlyTreeText = NormalizeColor(TreeText, p.FriendlyTreeText);
+                p.FriendlyTreeBackground = NormalizeColor(TreeBackground, p.FriendlyTreeBackground);
+                p.FriendlyTreeItemHoverBackground = NormalizeColor(TreeItemHoverBackground, p.FriendlyTreeItemHoverBackground);
+                p.FriendlyTreeItemSelectedBackground = NormalizeColor(TreeItemSelectedBackground, p.FriendlyTreeItemSelectedBackground);
+            }
+            else
+            {
+                p.RawTreeText = NormalizeColor(TreeText, p.RawTreeText);
+                p.RawTreeBackground = NormalizeColor(TreeBackground, p.RawTreeBackground);
+                p.RawTreeItemHoverBackground = NormalizeColor(TreeItemHoverBackground, p.RawTreeItemHoverBackground);
+                p.RawTreeItemSelectedBackground = NormalizeColor(TreeItemSelectedBackground, p.RawTreeItemSelectedBackground);
+            }
 
             p.GridText = NormalizeColor(GridText, p.GridText);
             p.GridBackground = NormalizeColor(GridBackground, p.GridBackground);
@@ -607,6 +629,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 TreeItemHoverBackground = p.TreeItemHoverBackground,
                 TreeItemSelectedBackground = p.TreeItemSelectedBackground,
 
+                RawTreeText = p.RawTreeText,
+                RawTreeBackground = p.RawTreeBackground,
+                RawTreeItemHoverBackground = p.RawTreeItemHoverBackground,
+                RawTreeItemSelectedBackground = p.RawTreeItemSelectedBackground,
+
+                FriendlyTreeText = p.FriendlyTreeText,
+                FriendlyTreeBackground = p.FriendlyTreeBackground,
+                FriendlyTreeItemHoverBackground = p.FriendlyTreeItemHoverBackground,
+                FriendlyTreeItemSelectedBackground = p.FriendlyTreeItemSelectedBackground,
+
                 GridText = p.GridText,
                 GridBackground = p.GridBackground,
                 GridBorder = p.GridBorder,
@@ -614,8 +646,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 GridHeaderText = p.GridHeaderText,
                 GridRowHoverBackground = p.GridRowHoverBackground,
                 GridRowSelectedBackground = p.GridRowSelectedBackground,
-                GridCellSelectedBackground = p.GridCellSelectedBackground,
-                GridCellSelectedText = p.GridCellSelectedText,
+
                 FieldColumnText = p.FieldColumnText,
                 ValueColumnText = p.ValueColumnText,
                 HeaderText = p.HeaderText
@@ -623,3 +654,4 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         }
     }
 }
+

@@ -225,6 +225,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     return;
 
                 _settings.IsFriendlyView = _isFriendlyView;
+                _appearance.IsFriendlyView = _isFriendlyView;
+
                 SaveSettings();
             }
         }
@@ -237,10 +239,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _isDarkMode, value))
                     return;
 
-                _settings.IsDarkMode = value;
-                SaveSettings();
+                _settings.IsDarkMode = _isDarkMode;
+                _appearance.IsDarkMode = _isDarkMode;
 
-                _appearance.IsDarkMode = value;
+                SaveSettings();
             }
         }
 
