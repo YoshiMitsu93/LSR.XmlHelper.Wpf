@@ -30,6 +30,16 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="SectionHeader" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,14,0,8" />
+        </Style>
+
+        <Style x:Key="SubHeader" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,6,0,6" />
+        </Style>
     </Window.Resources>
 
     <Grid Margin="12">
@@ -56,237 +66,376 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Vertical">
 
-                <TextBlock Text="Fonts" FontWeight="Bold" Margin="0,0,0,8" />
+                <TextBlock Text="Fonts" Style="{StaticResource SectionHeader}" />
 
-                <Grid Margin="0,0,0,14">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="80" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                <StackPanel Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Friendly view UI" Style="{StaticResource SubHeader}" />
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="UI Font" VerticalAlignment="Center"
-                               ToolTip="Font used by the general application UI." />
-                    <ComboBox Grid.Row="0" Grid.Column="1"
-                              ItemsSource="{Binding FontFamilies}"
-                              SelectedItem="{Binding UiFontFamily}"
-                              IsEditable="True" />
-                    <TextBox Grid.Row="0" Grid.Column="2"
-                             Text="{Binding UiFontSize}"
-                             VerticalContentAlignment="Center" />
+                        <TextBlock Grid.Column="0"
+                                   Text="UI Font"
+                                   VerticalAlignment="Center"
+                                   ToolTip="Font used by the general application UI." />
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding FontFamilies}"
+                                  SelectedItem="{Binding UiFontFamily}"
+                                  IsEditable="True"
+                                  ToolTip="Font used by the general application UI." />
+                        <TextBox Grid.Column="2"
+                                 Text="{Binding UiFontSize}"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Font size used by the general application UI." />
+                    </Grid>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Editor Font" VerticalAlignment="Center"
-                               ToolTip="Font used by the raw XML editor." />
-                    <ComboBox Grid.Row="2" Grid.Column="1"
-                              ItemsSource="{Binding FontFamilies}"
-                              SelectedItem="{Binding EditorFontFamily}"
-                              IsEditable="True" />
-                    <TextBox Grid.Row="2" Grid.Column="2"
-                             Text="{Binding EditorFontSize}"
-                             VerticalContentAlignment="Center" />
-                </Grid>
+                <StackPanel Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Raw XML editor" Style="{StaticResource SubHeader}" />
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Colors (Hex: #AARRGGBB or #RRGGBB)" FontWeight="Bold" Margin="0,0,0,8" />
+                        <TextBlock Grid.Column="0"
+                                   Text="Editor Font"
+                                   VerticalAlignment="Center"
+                                   ToolTip="Font used by the raw XML editor." />
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding FontFamilies}"
+                                  SelectedItem="{Binding EditorFontFamily}"
+                                  IsEditable="True"
+                                  ToolTip="Font used by the raw XML editor." />
+                        <TextBox Grid.Column="2"
+                                 Text="{Binding EditorFontSize}"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Font size used by the raw XML editor." />
+                    </Grid>
+                </StackPanel>
 
-                <!-- RAW XML OPTIONS ONLY -->
-                <Grid Margin="0,0,0,14"
-                      Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="240" />
-                        <ColumnDefinition Width="200" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <TextBlock Text="Colors (Hex: #AARRGGBB or #RRGGBB)" Style="{StaticResource SectionHeader}" />
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                <!-- RAW XML -->
+                <StackPanel Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Editor Text" VerticalAlignment="Center"
-                               ToolTip="Text color inside the raw XML editor." />
-                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EditorText}" />
-                    <Button Grid.Row="0" Grid.Column="2"
-                            Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewEditorTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="EditorText"
-                            Height="22" />
+                    <TextBlock Text="Editor" Style="{StaticResource SubHeader}" />
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Editor Background" VerticalAlignment="Center"
-                               ToolTip="Background color inside the raw XML editor." />
-                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding EditorBackground}" />
-                    <Button Grid.Row="2" Grid.Column="2"
-                            Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewEditorBackgroundBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="EditorBackground"
-                            Height="22" />
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Menu Text" VerticalAlignment="Center"
-                               ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
-                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding MenuText}" />
-                    <Button Grid.Row="4" Grid.Column="2"
-                            Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewMenuTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="MenuText"
-                            Height="22" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Editor Text" VerticalAlignment="Center"
+                                   ToolTip="Text color inside the raw XML editor." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EditorText}"
+                                 ToolTip="Text color inside the raw XML editor." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewEditorTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="EditorText"
+                                Height="22"
+                                ToolTip="Text color inside the raw XML editor." />
 
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Menu Background" VerticalAlignment="Center"
-                               ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
-                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding MenuBackground}" />
-                    <Button Grid.Row="6" Grid.Column="2"
-                            Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewMenuBackgroundBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="MenuBackground"
-                            Height="22" />
-                </Grid>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Editor Background" VerticalAlignment="Center"
+                                   ToolTip="Background color inside the raw XML editor." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding EditorBackground}"
+                                 ToolTip="Background color inside the raw XML editor." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewEditorBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="EditorBackground"
+                                Height="22"
+                                ToolTip="Background color inside the raw XML editor." />
+                    </Grid>
 
-                <!-- FRIENDLY VIEW OPTIONS ONLY -->
-                <Grid Margin="0,0,0,14"
-                      Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="240" />
-                        <ColumnDefinition Width="200" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Menu" Style="{StaticResource SubHeader}" />
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="6" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Tree Text" VerticalAlignment="Center"
-                               ToolTip="Text color for the file list/tree and the friendly selectors list." />
-                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeText}" />
-                    <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewTreeTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="TreeText"
-                            Height="22" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Menu Text" VerticalAlignment="Center"
+                                   ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MenuText}"
+                                 ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewMenuTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="MenuText"
+                                Height="22"
+                                ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Tree Background" VerticalAlignment="Center"
-                               ToolTip="Background for the file list/tree and friendly selectors list." />
-                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeBackground}" />
-                    <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewTreeBackgroundBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="TreeBackground"
-                            Height="22" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Menu Background" VerticalAlignment="Center"
+                                   ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MenuBackground}"
+                                 ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewMenuBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="MenuBackground"
+                                Height="22"
+                                ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
+                    </Grid>
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Tree Hover Background" VerticalAlignment="Center"
-                               ToolTip="Hover background for items in the file list/tree." />
-                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TreeItemHoverBackground}" />
-                    <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewTreeHoverBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="TreeItemHoverBackground"
-                            Height="22" />
+                    <TextBlock Text="Tree / Lists" Style="{StaticResource SubHeader}" />
 
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Tree Selected Background" VerticalAlignment="Center"
-                               ToolTip="Selected background for items in the file list/tree." />
-                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TreeItemSelectedBackground}" />
-                    <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewTreeSelectedBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="TreeItemSelectedBackground"
-                            Height="22" />
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Grid Background" VerticalAlignment="Center"
-                               ToolTip="Background for friendly view tables." />
-                    <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GridBackground}" />
-                    <Button Grid.Row="8" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewGridBackgroundBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="GridBackground"
-                            Height="22" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Tree Text" VerticalAlignment="Center"
+                                   ToolTip="Text color for file/folder lists and friendly selectors." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeText}"
+                                 ToolTip="Text color for file/folder lists and friendly selectors." />
+                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeText"
+                                Height="22"
+                                ToolTip="Text color for file/folder lists and friendly selectors." />
 
-                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Grid Text" VerticalAlignment="Center"
-                               ToolTip="Default text color inside friendly view tables." />
-                    <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding GridText}" />
-                    <Button Grid.Row="10" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewGridTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="GridText"
-                            Height="22" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Tree Background" VerticalAlignment="Center"
+                                   ToolTip="Background for file/folder lists and friendly selectors." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeBackground}"
+                                 ToolTip="Background for file/folder lists and friendly selectors." />
+                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeBackground"
+                                Height="22"
+                                ToolTip="Background for file/folder lists and friendly selectors." />
 
-                    <TextBlock Grid.Row="12" Grid.Column="0" Text="Grid Border" VerticalAlignment="Center"
-                               ToolTip="Gridline/border color for friendly view tables." />
-                    <TextBox Grid.Row="12" Grid.Column="1" Text="{Binding GridBorder}" />
-                    <Button Grid.Row="12" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewGridBorderBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="GridBorder"
-                            Height="22" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Hover Background" VerticalAlignment="Center"
+                                   ToolTip="Hover highlight used across the app (menus, lists, tree, dropdowns)." />
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TreeItemHoverBackground}"
+                                 ToolTip="Hover highlight used across the app (menus, lists, tree, dropdowns)." />
+                        <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeHoverBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemHoverBackground"
+                                Height="22"
+                                ToolTip="Hover highlight used across the app (menus, lists, tree, dropdowns)." />
 
-                    <TextBlock Grid.Row="14" Grid.Column="0" Text="Grid Row Hover Background" VerticalAlignment="Center"
-                               ToolTip="Row hover background for friendly view tables." />
-                    <TextBox Grid.Row="14" Grid.Column="1" Text="{Binding GridRowHoverBackground}" />
-                    <Button Grid.Row="14" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewGridRowHoverBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="GridRowHoverBackground"
-                            Height="22" />
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Selected Background" VerticalAlignment="Center"
+                                   ToolTip="Selected highlight used across the app (tree, lists, active menu)." />
+                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TreeItemSelectedBackground}"
+                                 ToolTip="Selected highlight used across the app (tree, lists, active menu)." />
+                        <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeSelectedBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemSelectedBackground"
+                                Height="22"
+                                ToolTip="Selected highlight used across the app (tree, lists, active menu)." />
+                    </Grid>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="16" Grid.Column="0" Text="Field Column Text" VerticalAlignment="Center"
-                               ToolTip="Text color for the left column (Field) in friendly view tables." />
-                    <TextBox Grid.Row="16" Grid.Column="1" Text="{Binding FieldColumnText}" />
-                    <Button Grid.Row="16" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewFieldColumnTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="FieldColumnText"
-                            Height="22" />
+                <!-- FRIENDLY VIEW -->
+                <StackPanel Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
 
-                    <TextBlock Grid.Row="18" Grid.Column="0" Text="Value Column Text" VerticalAlignment="Center"
-                               ToolTip="Text color for the right column (Value) in friendly view tables." />
-                    <TextBox Grid.Row="18" Grid.Column="1" Text="{Binding ValueColumnText}" />
-                    <Button Grid.Row="18" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewValueColumnTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="ValueColumnText"
-                            Height="22" />
+                    <TextBlock Text="Tree / Selectors" Style="{StaticResource SubHeader}" />
 
-                    <TextBlock Grid.Row="20" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
-                               ToolTip="Text color for friendly view selectors (Agency dropdown + entries list)." />
-                    <TextBox Grid.Row="20" Grid.Column="1" Text="{Binding HeaderText}" />
-                    <Button Grid.Row="20" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-                            Background="{Binding PreviewHeaderTextBrush}"
-                            Command="{Binding PickColorCommand}"
-                            CommandParameter="HeaderText"
-                            Height="22" />
-                </Grid>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Tree Text" VerticalAlignment="Center"
+                                   ToolTip="Text color for file list/tree and friendly selectors." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeText}"
+                                 ToolTip="Text color for file list/tree and friendly selectors." />
+                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeText"
+                                Height="22"
+                                ToolTip="Text color for file list/tree and friendly selectors." />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Tree Background" VerticalAlignment="Center"
+                                   ToolTip="Background for file list/tree and friendly selectors." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeBackground}"
+                                 ToolTip="Background for file list/tree and friendly selectors." />
+                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeBackground"
+                                Height="22"
+                                ToolTip="Background for file list/tree and friendly selectors." />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Hover Background" VerticalAlignment="Center"
+                                   ToolTip="Hover highlight used across the app (menus, lists, tree, dropdowns)." />
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TreeItemHoverBackground}"
+                                 ToolTip="Hover highlight used across the app (menus, lists, tree, dropdowns)." />
+                        <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeHoverBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemHoverBackground"
+                                Height="22"
+                                ToolTip="Hover highlight used across the app (menus, lists, tree, dropdowns)." />
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Selected Background" VerticalAlignment="Center"
+                                   ToolTip="Selected highlight used across the app (tree, lists, active menu)." />
+                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TreeItemSelectedBackground}"
+                                 ToolTip="Selected highlight used across the app (tree, lists, active menu)." />
+                        <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeSelectedBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemSelectedBackground"
+                                Height="22"
+                                ToolTip="Selected highlight used across the app (tree, lists, active menu)." />
+
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
+                                   ToolTip="Text color for friendly selectors (Dropdown + entries list)." />
+                        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding HeaderText}"
+                                 ToolTip="Text color for friendly selectors (Dropdown + entries list)." />
+                        <Button Grid.Row="8" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewHeaderTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="HeaderText"
+                                Height="22"
+                                ToolTip="Text color for friendly selectors (Dropdown + entries list)." />
+                    </Grid>
+
+                    <TextBlock Text="Grid" Style="{StaticResource SubHeader}" />
+
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Grid Background" VerticalAlignment="Center"
+                                   ToolTip="Background for friendly view tables." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GridBackground}"
+                                 ToolTip="Background for friendly view tables." />
+                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridBackground"
+                                Height="22"
+                                ToolTip="Background for friendly view tables." />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Grid Text" VerticalAlignment="Center"
+                                   ToolTip="Default text color inside friendly view tables." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding GridText}"
+                                 ToolTip="Default text color inside friendly view tables." />
+                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridText"
+                                Height="22"
+                                ToolTip="Default text color inside friendly view tables." />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Grid Border" VerticalAlignment="Center"
+                                   ToolTip="Gridline/border color for friendly view tables and borders." />
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding GridBorder}"
+                                 ToolTip="Gridline/border color for friendly view tables and borders." />
+                        <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridBorderBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridBorder"
+                                Height="22"
+                                ToolTip="Gridline/border color for friendly view tables and borders." />
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Grid Row Hover Background" VerticalAlignment="Center"
+                                   ToolTip="Row hover background for friendly view tables." />
+                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding GridRowHoverBackground}"
+                                 ToolTip="Row hover background for friendly view tables." />
+                        <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridRowHoverBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridRowHoverBackground"
+                                Height="22"
+                                ToolTip="Row hover background for friendly view tables." />
+
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Field Column Text" VerticalAlignment="Center"
+                                   ToolTip="Text color for left-side columns (Field / Item) in friendly view tables." />
+                        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding FieldColumnText}"
+                                 ToolTip="Text color for left-side columns (Field / Item) in friendly view tables." />
+                        <Button Grid.Row="8" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewFieldColumnTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="FieldColumnText"
+                                Height="22"
+                                ToolTip="Text color for left-side columns (Field / Item) in friendly view tables." />
+
+                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Value Column Text" VerticalAlignment="Center"
+                                   ToolTip="Text color for Value columns in friendly view tables." />
+                        <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding ValueColumnText}"
+                                 ToolTip="Text color for Value columns in friendly view tables." />
+                        <Button Grid.Row="10" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewValueColumnTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="ValueColumnText"
+                                Height="22"
+                                ToolTip="Text color for Value columns in friendly view tables." />
+                    </Grid>
+                </StackPanel>
 
             </StackPanel>
         </ScrollViewer>

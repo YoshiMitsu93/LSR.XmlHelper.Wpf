@@ -14,11 +14,13 @@ namespace LSR.XmlHelper.Wpf.Services
     {
         private readonly AppearanceSettings _settings;
         private bool _isDarkMode;
+        private bool _isFriendlyView;
 
-        public AppearanceService(AppearanceSettings settings, bool isDarkMode)
+        public AppearanceService(AppearanceSettings settings, bool isDarkMode, bool isFriendlyView)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _isDarkMode = isDarkMode;
+            _isFriendlyView = isFriendlyView;
         }
 
         public AppearanceSettings Settings => _settings;
@@ -29,6 +31,18 @@ namespace LSR.XmlHelper.Wpf.Services
             set
             {
                 if (!SetProperty(ref _isDarkMode, value))
+                    return;
+
+                RaiseAllAppearanceChanged();
+            }
+        }
+
+        public bool IsFriendlyView
+        {
+            get => _isFriendlyView;
+            set
+            {
+                if (!SetProperty(ref _isFriendlyView, value))
                     return;
 
                 RaiseAllAppearanceChanged();
@@ -56,10 +70,10 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush MenuBackgroundBrush => CreateFrozenBrush(Active.MenuBackground);
         public WpfBrush MenuTextBrush => CreateFrozenBrush(Active.MenuText);
 
-        public WpfBrush TreeTextBrush => CreateFrozenBrush(Active.TreeText);
-        public WpfBrush TreeBackgroundBrush => CreateFrozenBrush(Active.TreeBackground);
-        public WpfBrush TreeItemHoverBackgroundBrush => CreateFrozenBrush(Active.TreeItemHoverBackground);
-        public WpfBrush TreeItemSelectedBackgroundBrush => CreateFrozenBrush(Active.TreeItemSelectedBackground);
+        public WpfBrush TreeTextBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeText : Active.RawTreeText);
+        public WpfBrush TreeBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeBackground : Active.RawTreeBackground);
+        public WpfBrush TreeItemHoverBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeItemHoverBackground : Active.RawTreeItemHoverBackground);
+        public WpfBrush TreeItemSelectedBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeItemSelectedBackground : Active.RawTreeItemSelectedBackground);
 
         public WpfBrush GridTextBrush => CreateFrozenBrush(Active.GridText);
         public WpfBrush GridBackgroundBrush => CreateFrozenBrush(Active.GridBackground);

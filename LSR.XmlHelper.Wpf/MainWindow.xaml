@@ -122,10 +122,15 @@
 
         <Style TargetType="{x:Type DataGridCell}">
             <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
-            <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding Appearance.GridCellSelectedBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{Binding Appearance.GridCellSelectedTextBrush}" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
                     <Setter Property="Background" Value="{Binding Appearance.GridCellSelectedBackgroundBrush}" />
                     <Setter Property="Foreground" Value="{Binding Appearance.GridCellSelectedTextBrush}" />
                 </Trigger>
@@ -310,20 +315,44 @@
 
         <DataTemplate DataType="{x:Type vm:XmlFriendlyFieldGroupViewModel}">
             <Expander Header="{Binding Title}"
-                      IsExpanded="{Binding IsExpanded}"
-                      Margin="0,0,0,6">
+              IsExpanded="{Binding IsExpanded}"
+              Margin="0,0,0,6">
                 <DataGrid ItemsSource="{Binding Fields}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False">
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionUnit="CellOrRowHeader">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Field"
-                                            Binding="{Binding Name}"
-                                            IsReadOnly="True"
-                                            Width="260" />
+                                    Binding="{Binding Name}"
+                                    IsReadOnly="True"
+                                    Width="260">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <DataGridTextColumn Header="Value"
-                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                            Width="*" />
+                                    Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                    Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            <DataGridTextColumn.EditingElementStyle>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </Style>
+                            </DataGridTextColumn.EditingElementStyle>
+                        </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Expander>
@@ -331,28 +360,61 @@
 
         <DataTemplate DataType="{x:Type vm:XmlFriendlyLookupGroupViewModel}">
             <Expander Header="{Binding Title}"
-                      IsExpanded="{Binding IsExpanded}"
-                      Margin="0,0,0,6">
+              IsExpanded="{Binding IsExpanded}"
+              Margin="0,0,0,6">
                 <DataGrid ItemsSource="{Binding Items}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False">
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionUnit="CellOrRowHeader">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Item"
-                                            Binding="{Binding Item}"
-                                            IsReadOnly="True"
-                                            Width="220" />
+                                    Binding="{Binding Item}"
+                                    IsReadOnly="True"
+                                    Width="220">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <DataGridTextColumn Header="Field"
-                                            Binding="{Binding Field}"
-                                            IsReadOnly="True"
-                                            Width="160" />
+                                    Binding="{Binding Field}"
+                                    IsReadOnly="True"
+                                    Width="160">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <DataGridTextColumn Header="Value"
-                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                            Width="*" />
+                                    Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                    Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                            <DataGridTextColumn.EditingElementStyle>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Foreground"
+                                    Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </Style>
+                            </DataGridTextColumn.EditingElementStyle>
+                        </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Expander>
         </DataTemplate>
+        
     </Window.Resources>
 
     <DockPanel LastChildFill="True"
@@ -439,23 +501,80 @@
 
         <StackPanel DockPanel.Dock="Top" Margin="8" Orientation="Vertical">
             <WrapPanel>
-                <Button Content="Open Folder" MinWidth="100" Margin="0,0,8,0" Command="{Binding OpenCommand}" />
-                <Button Content="Format" MinWidth="70" Margin="0,0,8,0" Command="{Binding FormatCommand}" />
-                <Button Content="Validate" MinWidth="70" Margin="0,0,8,0" Command="{Binding ValidateCommand}" />
-                <Button Content="Save" MinWidth="70" Margin="0,0,8,0" IsEnabled="{Binding IsDirty}" Command="{Binding SaveCommand}" />
-                <Button Content="Save As..." MinWidth="90" Margin="0,0,8,0" IsEnabled="{Binding IsDirty}" Command="{Binding SaveAsCommand}" />
-                <Button Content="Clear" MinWidth="70" Margin="0,0,8,0" Command="{Binding ClearCommand}" />
+                <Button Content="Open Folder"
+                MinWidth="100"
+                Margin="0,0,8,0"
+                ToolTip="Pick the folder that contains your XML files."
+                Command="{Binding OpenCommand}" />
+
+                <Button Content="Format"
+                MinWidth="70"
+                Margin="0,0,8,0"
+                ToolTip="Format (pretty-print) the XML."
+                Command="{Binding FormatCommand}" />
+
+                <Button Content="Validate"
+                MinWidth="70"
+                Margin="0,0,8,0"
+                ToolTip="Validate that the XML is well-formed."
+                Command="{Binding ValidateCommand}" />
+
+                <Button Content="Save"
+                MinWidth="70"
+                Margin="0,0,8,0"
+                ToolTip="Save changes to the current XML file (backup is created when saving edits)."
+                IsEnabled="{Binding IsDirty}"
+                Command="{Binding SaveCommand}" />
+
+                <Button Content="Save As..."
+                MinWidth="90"
+                Margin="0,0,8,0"
+                ToolTip="Save changes to a new file path."
+                IsEnabled="{Binding IsDirty}"
+                Command="{Binding SaveAsCommand}" />
+
+                <Button Content="Clear"
+                MinWidth="70"
+                Margin="0,0,8,0"
+                ToolTip="Clear the current selection and editor."
+                Command="{Binding ClearCommand}" />
             </WrapPanel>
 
             <WrapPanel Margin="0,6,0,0">
                 <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <RadioButton Content="Folders" VerticalAlignment="Center" Margin="0,0,8,0" IsChecked="{Binding IsFoldersMode}" />
-                <RadioButton Content="Flat" VerticalAlignment="Center" Margin="0,0,16,0" IsChecked="{Binding IsFlatMode}" />
-                <CheckBox Content="Include subfolders" VerticalAlignment="Center" Margin="0,0,16,0" IsChecked="{Binding IncludeSubfolders}" />
-                <CheckBox Content="Friendly view" VerticalAlignment="Center" Margin="0,0,16,0" IsEnabled="{Binding HasFriendlyView}" IsChecked="{Binding IsFriendlyView}" />
-                <CheckBox Content="Dark mode" VerticalAlignment="Center" IsChecked="{Binding IsDarkMode}" />
+
+                <RadioButton Content="Folders"
+                     VerticalAlignment="Center"
+                     Margin="0,0,8,0"
+                     ToolTip="Show files in a folder tree."
+                     IsChecked="{Binding IsFoldersMode}" />
+
+                <RadioButton Content="Flat"
+                     VerticalAlignment="Center"
+                     Margin="0,0,16,0"
+                     ToolTip="Show all XML files in a single list."
+                     IsChecked="{Binding IsFlatMode}" />
+
+                <CheckBox Content="Include subfolders"
+                  VerticalAlignment="Center"
+                  Margin="0,0,16,0"
+                  ToolTip="Include XML files from subfolders when scanning."
+                  IsChecked="{Binding IncludeSubfolders}" />
+
+                <CheckBox Content="Friendly view"
+                  VerticalAlignment="Center"
+                  Margin="0,0,16,0"
+                  ToolTip="Toggle the structured editor view for supported XML formats."
+                  IsEnabled="{Binding HasFriendlyView}"
+                  IsChecked="{Binding IsFriendlyView}" />
+
+                <CheckBox Content="Dark mode"
+                  VerticalAlignment="Center"
+                  ToolTip="Toggle dark theme for the editor and friendly view."
+                  IsChecked="{Binding IsDarkMode}" />
             </WrapPanel>
         </StackPanel>
+
 
         <StatusBar DockPanel.Dock="Bottom">
             <TextBlock Text="{Binding Status}" />
@@ -489,10 +608,12 @@
             </Border>
 
             <GridSplitter Grid.Column="1"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          ResizeBehavior="PreviousAndNext"
-                          ResizeDirection="Columns" />
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            ResizeBehavior="PreviousAndNext"
+                            ResizeDirection="Columns"
+                            Background="{Binding Appearance.GridBorderBrush}" />
+                          
 
             <Grid Grid.Column="2">
                 <Grid Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}">
@@ -544,4 +665,4 @@
             </Grid>
         </Grid>
     </DockPanel>
-</Window> 
+</Window>

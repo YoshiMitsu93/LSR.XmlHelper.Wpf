@@ -31,32 +31,37 @@ namespace LSR.XmlHelper.Wpf.Views
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (DataContext is ViewModels.AppearanceWindowViewModel vm && vm.IsDirty)
+            if (DataContext is not ViewModels.AppearanceWindowViewModel vm)
             {
-                var result = System.Windows.MessageBox.Show(
-                    "You have uncommitted appearance changes.\n\nApply changes before closing?",
-                    "Unapplied changes",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Cancel)
-                {
-                    e.Cancel = true;
-                    return;
-                }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    vm.TryCommit();
-                }
-                else
-                {
-                    vm.RevertPreview();
-                }
+                base.OnClosing(e);
+                return;
             }
-            else if (DataContext is ViewModels.AppearanceWindowViewModel vm2)
+
+            if (!vm.IsDirty)
             {
-                vm2.RevertPreview();
+                base.OnClosing(e);
+                return;
+            }
+
+            var result = System.Windows.MessageBox.Show(
+                "You have uncommitted appearance changes.\n\nApply changes before closing?",
+                "Unapplied changes",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Cancel)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            if (result == MessageBoxResult.Yes)
+            {
+                vm.TryCommit();
+            }
+            else
+            {
+                vm.RevertPreview();
             }
 
             base.OnClosing(e);

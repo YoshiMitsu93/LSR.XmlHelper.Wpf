@@ -1,6 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit;
+using System;
 using System.Windows;
-using System.Windows.Media;
 
 namespace LSR.XmlHelper.Wpf.Infrastructure
 {
@@ -42,8 +42,13 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
 
             editor.Background = brush;
 
-            if (editor.TextArea != null)
-                editor.TextArea.Background = brush;
+            ApplyWhenReady(editor, te =>
+            {
+                if (te.TextArea is null)
+                    return;
+
+                te.TextArea.Background = brush;
+            });
         }
 
         private static void OnTextAreaForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -56,8 +61,31 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
 
             editor.Foreground = brush;
 
-            if (editor.TextArea != null)
-                editor.TextArea.Foreground = brush;
+            ApplyWhenReady(editor, te =>
+            {
+                if (te.TextArea is null)
+                    return;
+
+                te.TextArea.Foreground = brush;
+            });
+        }
+
+        private static void ApplyWhenReady(TextEditor editor, Action<TextEditor> apply)
+        {
+            if (editor.IsLoaded)
+            {
+                apply(editor);
+                return;
+            }
+
+            RoutedEventHandler? handler = null;
+            handler = (_, _) =>
+            {
+                editor.Loaded -= handler;
+                apply(editor);
+            };
+
+            editor.Loaded += handler;
         }
     }
 }

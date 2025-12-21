@@ -36,6 +36,64 @@ namespace LSR.XmlHelper.Wpf.Services
         public string TreeItemHoverBackground { get; set; } = "#FF252525";
         public string TreeItemSelectedBackground { get; set; } = "#FF2F2F2F";
 
+        private string? _rawTreeText;
+        private string? _rawTreeBackground;
+        private string? _rawTreeItemHoverBackground;
+        private string? _rawTreeItemSelectedBackground;
+
+        private string? _friendlyTreeText;
+        private string? _friendlyTreeBackground;
+        private string? _friendlyTreeItemHoverBackground;
+        private string? _friendlyTreeItemSelectedBackground;
+
+        public string RawTreeText
+        {
+            get => string.IsNullOrWhiteSpace(_rawTreeText) ? TreeText : _rawTreeText;
+            set => _rawTreeText = value;
+        }
+
+        public string RawTreeBackground
+        {
+            get => string.IsNullOrWhiteSpace(_rawTreeBackground) ? TreeBackground : _rawTreeBackground;
+            set => _rawTreeBackground = value;
+        }
+
+        public string RawTreeItemHoverBackground
+        {
+            get => string.IsNullOrWhiteSpace(_rawTreeItemHoverBackground) ? TreeItemHoverBackground : _rawTreeItemHoverBackground;
+            set => _rawTreeItemHoverBackground = value;
+        }
+
+        public string RawTreeItemSelectedBackground
+        {
+            get => string.IsNullOrWhiteSpace(_rawTreeItemSelectedBackground) ? TreeItemSelectedBackground : _rawTreeItemSelectedBackground;
+            set => _rawTreeItemSelectedBackground = value;
+        }
+
+        public string FriendlyTreeText
+        {
+            get => string.IsNullOrWhiteSpace(_friendlyTreeText) ? TreeText : _friendlyTreeText;
+            set => _friendlyTreeText = value;
+        }
+
+        public string FriendlyTreeBackground
+        {
+            get => string.IsNullOrWhiteSpace(_friendlyTreeBackground) ? TreeBackground : _friendlyTreeBackground;
+            set => _friendlyTreeBackground = value;
+        }
+
+        public string FriendlyTreeItemHoverBackground
+        {
+            get => string.IsNullOrWhiteSpace(_friendlyTreeItemHoverBackground) ? TreeItemHoverBackground : _friendlyTreeItemHoverBackground;
+            set => _friendlyTreeItemHoverBackground = value;
+        }
+
+        public string FriendlyTreeItemSelectedBackground
+        {
+            get => string.IsNullOrWhiteSpace(_friendlyTreeItemSelectedBackground) ? TreeItemSelectedBackground : _friendlyTreeItemSelectedBackground;
+            set => _friendlyTreeItemSelectedBackground = value;
+        }
+
         public string GridText { get; set; } = "#FFD4D4D4";
         public string GridBackground { get; set; } = "#FF1E1E1E";
         public string GridBorder { get; set; } = "#FF555555";
