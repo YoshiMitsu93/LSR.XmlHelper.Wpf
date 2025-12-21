@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Rendering;
 using System;
 using System.Windows;
 
@@ -32,6 +33,13 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
         public static System.Windows.Media.Brush GetTextAreaForeground(DependencyObject element) =>
             (System.Windows.Media.Brush)element.GetValue(TextAreaForegroundProperty);
 
+        private static readonly DependencyProperty TextViewBackgroundRendererProperty =
+            DependencyProperty.RegisterAttached(
+                "TextViewBackgroundRenderer",
+                typeof(SolidTextViewBackgroundRenderer),
+                typeof(AvalonEditThemeBehavior),
+                new PropertyMetadata(null));
+
         private static void OnTextAreaBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not TextEditor editor)
@@ -48,6 +56,31 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
                     return;
 
                 te.TextArea.Background = brush;
+
+                var textView = te.TextArea.TextView;
+                if (textView is null)
+                    return;
+
+                var renderer = (SolidTextViewBackgroundRenderer?)editor.GetValue(TextViewBackgroundRendererProperty);
+                if (renderer is null)
+                {
+                    renderer = new SolidTextViewBackgroundRenderer(brush);
+                    editor.SetValue(TextViewBackgroundRendererProperty, renderer);
+                }
+                else
+                {
+                    renderer.SetBrush(brush);
+                }
+
+                if (!textView.BackgroundRenderers.Contains(renderer))
+                {
+                    if (textView.BackgroundRenderers is System.Collections.Generic.IList<IBackgroundRenderer> list)
+                        list.Insert(0, renderer);
+                    else
+                        textView.BackgroundRenderers.Add(renderer);
+                }
+
+                textView.InvalidateVisual();
             });
         }
 
@@ -86,6 +119,29 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
             };
 
             editor.Loaded += handler;
+        }
+
+        private sealed class SolidTextViewBackgroundRenderer : IBackgroundRenderer
+        {
+            private System.Windows.Media.Brush _brush;
+
+            public SolidTextViewBackgroundRenderer(System.Windows.Media.Brush brush)
+            {
+                _brush = brush;
+            }
+
+            public KnownLayer Layer => KnownLayer.Background;
+
+            public void SetBrush(System.Windows.Media.Brush brush)
+            {
+                _brush = brush;
+            }
+
+            public void Draw(TextView textView, System.Windows.Media.DrawingContext drawingContext)
+            {
+                var rect = new System.Windows.Rect(new System.Windows.Point(0, 0), textView.RenderSize);
+                drawingContext.DrawRectangle(_brush, null, rect);
+            }
         }
     }
 }

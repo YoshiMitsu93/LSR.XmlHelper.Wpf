@@ -81,7 +81,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             ApplySettingsToState();
 
-            _appearance = new AppearanceService(_settings.Appearance, _isDarkMode);
+            _appearance = new AppearanceService(_settings.Appearance, _isDarkMode, _isFriendlyView);
 
             XmlFiles = new ObservableCollection<XmlFileListItem>();
             XmlTree = new ObservableCollection<XmlExplorerNode>();
