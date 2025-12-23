@@ -109,6 +109,8 @@ namespace LSR.XmlHelper.Wpf.Services
 
         public string FieldColumnText { get; set; } = "#FFD4D4D4";
         public string ValueColumnText { get; set; } = "#FFD4D4D4";
+        public string ValueColumnBackground { get; set; } = "#00000000";
+
         public string HeaderText { get; set; } = "#FFD4D4D4";
 
         public static AppearanceProfileSettings CreateDarkDefaults()
@@ -149,6 +151,7 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 FieldColumnText = "#FFD4D4D4",
                 ValueColumnText = "#FFD4D4D4",
+                ValueColumnBackground = "#00000000",
                 HeaderText = "#FFD4D4D4"
             };
         }
@@ -191,6 +194,7 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 FieldColumnText = "#FF000000",
                 ValueColumnText = "#FF000000",
+                ValueColumnBackground = "#00000000",
                 HeaderText = "#FF000000"
             };
         }

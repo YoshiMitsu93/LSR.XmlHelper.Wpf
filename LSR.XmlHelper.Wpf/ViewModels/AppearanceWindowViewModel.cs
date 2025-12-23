@@ -150,6 +150,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private string _fieldColumnText = "#FFD4D4D4";
         private string _valueColumnText = "#FFD4D4D4";
+        private string _valueColumnBackground = "#00000000";
         private string _headerText = "#FFD4D4D4";
 
         public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) OnEdited(); } }
@@ -179,6 +180,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public string FieldColumnText { get => _fieldColumnText; set { if (SetProperty(ref _fieldColumnText, value)) OnEdited(); } }
         public string ValueColumnText { get => _valueColumnText; set { if (SetProperty(ref _valueColumnText, value)) OnEdited(); } }
+        public string ValueColumnBackground { get => _valueColumnBackground; set { if (SetProperty(ref _valueColumnBackground, value)) OnEdited(); } }
         public string HeaderText { get => _headerText; set { if (SetProperty(ref _headerText, value)) OnEdited(); } }
 
         public WpfBrush PreviewTextBrush => TryParseBrush(Text);
@@ -202,6 +204,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public WpfBrush PreviewFieldColumnTextBrush => TryParseBrush(FieldColumnText);
         public WpfBrush PreviewValueColumnTextBrush => TryParseBrush(ValueColumnText);
+        public WpfBrush PreviewValueColumnBackgroundBrush => TryParseBrush(ValueColumnBackground);
         public WpfBrush PreviewHeaderTextBrush => TryParseBrush(HeaderText);
 
         public void RevertPreview()
@@ -350,6 +353,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _fieldColumnText = p.FieldColumnText;
                 _valueColumnText = p.ValueColumnText;
+                _valueColumnBackground = p.ValueColumnBackground;
                 _headerText = p.HeaderText;
 
                 OnPropertyChanged(nameof(UiFontFamily));
@@ -379,6 +383,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 OnPropertyChanged(nameof(FieldColumnText));
                 OnPropertyChanged(nameof(ValueColumnText));
+                OnPropertyChanged(nameof(ValueColumnBackground));
                 OnPropertyChanged(nameof(HeaderText));
 
                 RaisePreview();
@@ -428,6 +433,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             p.FieldColumnText = NormalizeColor(FieldColumnText, p.FieldColumnText);
             p.ValueColumnText = NormalizeColor(ValueColumnText, p.ValueColumnText);
+            p.ValueColumnBackground = NormalizeColor(ValueColumnBackground, p.ValueColumnBackground);
             p.HeaderText = NormalizeColor(HeaderText, p.HeaderText);
         }
 
@@ -454,6 +460,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             OnPropertyChanged(nameof(PreviewFieldColumnTextBrush));
             OnPropertyChanged(nameof(PreviewValueColumnTextBrush));
+            OnPropertyChanged(nameof(PreviewValueColumnBackgroundBrush));
             OnPropertyChanged(nameof(PreviewHeaderTextBrush));
         }
 
@@ -482,6 +489,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 nameof(FieldColumnText) => FieldColumnText,
                 nameof(ValueColumnText) => ValueColumnText,
+                nameof(ValueColumnBackground) => ValueColumnBackground,
                 nameof(HeaderText) => HeaderText,
 
                 _ => "#FFFFFFFF"
@@ -513,6 +521,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 case nameof(FieldColumnText): FieldColumnText = hex; break;
                 case nameof(ValueColumnText): ValueColumnText = hex; break;
+                case nameof(ValueColumnBackground): ValueColumnBackground = hex; break;
                 case nameof(HeaderText): HeaderText = hex; break;
             }
         }
@@ -649,6 +658,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 FieldColumnText = p.FieldColumnText,
                 ValueColumnText = p.ValueColumnText,
+                ValueColumnBackground = p.ValueColumnBackground,
                 HeaderText = p.HeaderText
             };
         }

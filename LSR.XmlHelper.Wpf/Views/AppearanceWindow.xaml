@@ -121,7 +121,6 @@
 
                 <TextBlock Text="Colors (Hex: #AARRGGBB or #RRGGBB)" Style="{StaticResource SectionHeader}" />
 
-                <!-- RAW XML -->
                 <StackPanel Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
 
                     <TextBlock Text="Editor" Style="{StaticResource SubHeader}" />
@@ -203,8 +202,8 @@
                     </Grid>
 
                     <TextBlock Text="Pane 1 - File Tree"
-           Style="{StaticResource SubHeader}"
-           ToolTip="Colors for the left file/folder tree (Pane 1 in the main window)." />
+                               Style="{StaticResource SubHeader}"
+                               ToolTip="Colors for the left file/folder tree (Pane 1 in the main window)." />
 
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
@@ -223,53 +222,57 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Tree Text" VerticalAlignment="Center"
-               ToolTip="Text color for the file/folder tree (Pane 1)." />
+                                   ToolTip="Text color for the file/folder tree (Pane 1)." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeText}"
-             ToolTip="Text color for the file/folder tree (Pane 1)." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeText"
-            Height="22"
-            ToolTip="Text color for the file/folder tree (Pane 1)." />
+                                 ToolTip="Text color for the file/folder tree (Pane 1)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeText"
+                                Height="22"
+                                ToolTip="Text color for the file/folder tree (Pane 1)." />
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Tree Background" VerticalAlignment="Center"
-               ToolTip="Background for the file/folder tree (Pane 1)." />
+                                   ToolTip="Background for the file/folder tree (Pane 1)." />
                         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeBackground}"
-             ToolTip="Background for the file/folder tree (Pane 1)." />
-                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeBackgroundBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeBackground"
-            Height="22"
-            ToolTip="Background for the file/folder tree (Pane 1)." />
+                                 ToolTip="Background for the file/folder tree (Pane 1)." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeBackground"
+                                Height="22"
+                                ToolTip="Background for the file/folder tree (Pane 1)." />
 
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="Hover Background" VerticalAlignment="Center"
-               ToolTip="Hover highlight for tree/list items across the app." />
+                                   ToolTip="Hover highlight for tree/list items across the app." />
                         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TreeItemHoverBackground}"
-             ToolTip="Hover highlight for tree/list items across the app." />
-                        <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeHoverBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeItemHoverBackground"
-            Height="22"
-            ToolTip="Hover highlight for tree/list items across the app." />
+                                 ToolTip="Hover highlight for tree/list items across the app." />
+                        <Button Grid.Row="4" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeHoverBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemHoverBackground"
+                                Height="22"
+                                ToolTip="Hover highlight for tree/list items across the app." />
 
                         <TextBlock Grid.Row="6" Grid.Column="0" Text="Selected Background" VerticalAlignment="Center"
-               ToolTip="Selected highlight for tree/list items across the app." />
+                                   ToolTip="Selected highlight for tree/list items across the app." />
                         <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TreeItemSelectedBackground}"
-             ToolTip="Selected highlight for tree/list items across the app." />
-                        <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeSelectedBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeItemSelectedBackground"
-            Height="22"
-            ToolTip="Selected highlight for tree/list items across the app." />
+                                 ToolTip="Selected highlight for tree/list items across the app." />
+                        <Button Grid.Row="6" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeSelectedBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemSelectedBackground"
+                                Height="22"
+                                ToolTip="Selected highlight for tree/list items across the app." />
                     </Grid>
 
                     <TextBlock Text="Pane 2 - Selector List"
-           Style="{StaticResource SubHeader}"
-           ToolTip="Colors for the middle selector list (Pane 2 in the main window)." />
+                               Style="{StaticResource SubHeader}"
+                               ToolTip="Colors for the middle selector list (Pane 2 in the main window)." />
 
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
@@ -279,33 +282,35 @@
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
-               ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
+                                   ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding HeaderText}"
-             ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewHeaderTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="HeaderText"
-            Height="22"
-            ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
+                                 ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewHeaderTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="HeaderText"
+                                Height="22"
+                                ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
                     </Grid>
                 </StackPanel>
-                
-                <!-- FRIENDLY VIEW -->
+
                 <StackPanel Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
 
                     <TextBlock Text="Tree / Selectors" Style="{StaticResource SubHeader}" />
 
                     <TextBlock Text="Pane 1 - File Tree / File List"
-          Style="{StaticResource SectionHeader}"
-           ToolTip="Colors for the left file/folder tree and file list (Pane 1 in the main window)." />
+                               Style="{StaticResource SectionHeader}"
+                               ToolTip="Colors for the left file/folder tree and file list (Pane 1 in the main window)." />
 
                     <TextBlock Text="Tree &amp; List Items"
-           Style="{StaticResource SubHeader}"
-           ToolTip="Applies to items in the file tree and file list (text, background, hover, selected)." />
+                               Style="{StaticResource SubHeader}"
+                               ToolTip="Applies to items in the file tree and file list (text, background, hover, selected)." />
 
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -324,53 +329,57 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Tree Text" VerticalAlignment="Center"
-               ToolTip="Text color for the left file tree/file list (Pane 1)." />
+                                   ToolTip="Text color for the left file tree/file list (Pane 1)." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeText}"
-             ToolTip="Text color for the left file tree/file list (Pane 1)." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeText"
-            Height="22"
-            ToolTip="Text color for the left file tree/file list (Pane 1)." />
+                                 ToolTip="Text color for the left file tree/file list (Pane 1)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeText"
+                                Height="22"
+                                ToolTip="Text color for the left file tree/file list (Pane 1)." />
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Tree Background" VerticalAlignment="Center"
-               ToolTip="Background for the left file tree/file list (Pane 1)." />
+                                   ToolTip="Background for the left file tree/file list (Pane 1)." />
                         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeBackground}"
-             ToolTip="Background for the left file tree/file list (Pane 1)." />
-                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeBackgroundBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeBackground"
-            Height="22"
-            ToolTip="Background for the left file tree/file list (Pane 1)." />
+                                 ToolTip="Background for the left file tree/file list (Pane 1)." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeBackground"
+                                Height="22"
+                                ToolTip="Background for the left file tree/file list (Pane 1)." />
 
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="Hover Background" VerticalAlignment="Center"
-               ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
+                                   ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
                         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TreeItemHoverBackground}"
-             ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
-                        <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeHoverBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeItemHoverBackground"
-            Height="22"
-            ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
+                                 ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
+                        <Button Grid.Row="4" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeHoverBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemHoverBackground"
+                                Height="22"
+                                ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
 
                         <TextBlock Grid.Row="6" Grid.Column="0" Text="Selected Background" VerticalAlignment="Center"
-               ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
+                                   ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
                         <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TreeItemSelectedBackground}"
-             ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
-                        <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewTreeSelectedBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="TreeItemSelectedBackground"
-            Height="22"
-            ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
+                                 ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
+                        <Button Grid.Row="6" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewTreeSelectedBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="TreeItemSelectedBackground"
+                                Height="22"
+                                ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
                     </Grid>
 
                     <TextBlock Text="Pane 2 - Selector List"
-           Style="{StaticResource SectionHeader}"
-           ToolTip="Colors for the middle selector list and dropdown (Pane 2 in the main window)." />
+                               Style="{StaticResource SectionHeader}"
+                               ToolTip="Colors for the middle selector list and dropdown (Pane 2 in the main window)." />
 
                     <Grid Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
@@ -383,24 +392,25 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
-               ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
+                                   ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding HeaderText}"
-             ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewHeaderTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="HeaderText"
-            Height="22"
-            ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
+                                 ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewHeaderTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="HeaderText"
+                                Height="22"
+                                ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
                     </Grid>
 
                     <TextBlock Text="Pane 3 - Details Grid"
-           Style="{StaticResource SectionHeader}"
-           ToolTip="Colors for the Field/Value details table (Pane 3 in the main window)." />
+                               Style="{StaticResource SectionHeader}"
+                               ToolTip="Colors for the Field/Value details table (Pane 3 in the main window)." />
 
                     <TextBlock Text="General"
-           Style="{StaticResource SubHeader}"
-           ToolTip="Applies to the whole details grid (background, text, borders, row hover)." />
+                               Style="{StaticResource SubHeader}"
+                               ToolTip="Applies to the whole details grid (background, text, borders, row hover)." />
 
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -419,53 +429,57 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Grid Background" VerticalAlignment="Center"
-               ToolTip="Background for the details grid area (Pane 3)." />
+                                   ToolTip="Background for the details grid area (Pane 3)." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GridBackground}"
-             ToolTip="Background for the details grid area (Pane 3)." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewGridBackgroundBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="GridBackground"
-            Height="22"
-            ToolTip="Background for the details grid area (Pane 3)." />
+                                 ToolTip="Background for the details grid area (Pane 3)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridBackground"
+                                Height="22"
+                                ToolTip="Background for the details grid area (Pane 3)." />
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Grid Text" VerticalAlignment="Center"
-               ToolTip="Default text color inside the details grid (Pane 3)." />
+                                   ToolTip="Default text color inside the details grid (Pane 3)." />
                         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding GridText}"
-             ToolTip="Default text color inside the details grid (Pane 3)." />
-                        <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewGridTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="GridText"
-            Height="22"
-            ToolTip="Default text color inside the details grid (Pane 3)." />
+                                 ToolTip="Default text color inside the details grid (Pane 3)." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridText"
+                                Height="22"
+                                ToolTip="Default text color inside the details grid (Pane 3)." />
 
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="Grid Border" VerticalAlignment="Center"
-               ToolTip="Gridline/border color for the details grid (Pane 3)." />
+                                   ToolTip="Gridline/border color for the details grid (Pane 3)." />
                         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding GridBorder}"
-             ToolTip="Gridline/border color for the details grid (Pane 3)." />
-                        <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewGridBorderBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="GridBorder"
-            Height="22"
-            ToolTip="Gridline/border color for the details grid (Pane 3)." />
+                                 ToolTip="Gridline/border color for the details grid (Pane 3)." />
+                        <Button Grid.Row="4" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridBorderBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridBorder"
+                                Height="22"
+                                ToolTip="Gridline/border color for the details grid (Pane 3)." />
 
                         <TextBlock Grid.Row="6" Grid.Column="0" Text="Grid Row Hover Background" VerticalAlignment="Center"
-               ToolTip="Row hover highlight inside the details grid (Pane 3)." />
+                                   ToolTip="Row hover highlight inside the details grid (Pane 3)." />
                         <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding GridRowHoverBackground}"
-             ToolTip="Row hover highlight inside the details grid (Pane 3)." />
-                        <Button Grid.Row="6" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewGridRowHoverBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="GridRowHoverBackground"
-            Height="22"
-            ToolTip="Row hover highlight inside the details grid (Pane 3)." />
+                                 ToolTip="Row hover highlight inside the details grid (Pane 3)." />
+                        <Button Grid.Row="6" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridRowHoverBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridRowHoverBackground"
+                                Height="22"
+                                ToolTip="Row hover highlight inside the details grid (Pane 3)." />
                     </Grid>
 
                     <TextBlock Text="Field Column"
-           Style="{StaticResource SubHeader}"
-           ToolTip="Applies to the Field column (left column) inside the details grid." />
+                               Style="{StaticResource SubHeader}"
+                               ToolTip="Applies to the Field column (left column) inside the details grid." />
 
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -478,20 +492,21 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Field Column Text" VerticalAlignment="Center"
-               ToolTip="Text color for the Field column (left column) in the details grid." />
+                                   ToolTip="Text color for the Field column (left column) in the details grid." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FieldColumnText}"
-             ToolTip="Text color for the Field column (left column) in the details grid." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewFieldColumnTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="FieldColumnText"
-            Height="22"
-            ToolTip="Text color for the Field column (left column) in the details grid." />
+                                 ToolTip="Text color for the Field column (left column) in the details grid." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewFieldColumnTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="FieldColumnText"
+                                Height="22"
+                                ToolTip="Text color for the Field column (left column) in the details grid." />
                     </Grid>
 
                     <TextBlock Text="Value Column"
-           Style="{StaticResource SubHeader}"
-           ToolTip="Applies to the Value column (right column) inside the details grid." />
+                               Style="{StaticResource SubHeader}"
+                               ToolTip="Applies to the Value column (right column) inside the details grid." />
 
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
@@ -501,18 +516,38 @@
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Value Column Text" VerticalAlignment="Center"
-               ToolTip="Text color for the Value column (right column) in the details grid." />
+                                   ToolTip="Text color for the Value column (right column) in the details grid." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ValueColumnText}"
-             ToolTip="Text color for the Value column (right column) in the details grid." />
-                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewValueColumnTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="ValueColumnText"
-            Height="22"
-            ToolTip="Text color for the Value column (right column) in the details grid." />
+                                 ToolTip="Text color for the Value column (right column) in the details grid." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewValueColumnTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="ValueColumnText"
+                                Height="22"
+                                ToolTip="Text color for the Value column (right column) in the details grid." />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                   Text="Value Column Background"
+                                   VerticalAlignment="Center"
+                                   ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
+
+                        <TextBox Grid.Row="2" Grid.Column="1"
+                                 Text="{Binding ValueColumnBackground}"
+                                 ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
+
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewValueColumnBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="ValueColumnBackground"
+                                Height="22"
+                                ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
                     </Grid>
                 </StackPanel>
 

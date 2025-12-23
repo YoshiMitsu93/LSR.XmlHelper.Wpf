@@ -90,6 +90,8 @@ namespace LSR.XmlHelper.Wpf.Services
 
         public WpfBrush FieldColumnTextBrush => CreateFrozenBrush(Active.FieldColumnText);
         public WpfBrush ValueColumnTextBrush => CreateFrozenBrush(Active.ValueColumnText);
+        public WpfBrush ValueColumnBackgroundBrush => CreateFrozenBrush(Active.ValueColumnBackground);
+
         public WpfBrush HeaderTextBrush => CreateFrozenBrush(Active.HeaderText);
 
         public void ReplaceSettings(AppearanceSettings newSettings)
@@ -142,6 +144,7 @@ namespace LSR.XmlHelper.Wpf.Services
 
             OnPropertyChanged(nameof(FieldColumnTextBrush));
             OnPropertyChanged(nameof(ValueColumnTextBrush));
+            OnPropertyChanged(nameof(ValueColumnBackgroundBrush));
             OnPropertyChanged(nameof(HeaderTextBrush));
         }
 
