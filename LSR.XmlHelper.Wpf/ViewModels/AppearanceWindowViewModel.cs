@@ -152,6 +152,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _valueColumnText = "#FFD4D4D4";
         private string _valueColumnBackground = "#00000000";
         private string _headerText = "#FFD4D4D4";
+        private string _selectorBackground = "#FF1E1E1E";
 
         public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) OnEdited(); } }
         public string UiFontSize { get => _uiFontSize; set { if (SetProperty(ref _uiFontSize, value)) OnEdited(); } }
@@ -182,6 +183,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string ValueColumnText { get => _valueColumnText; set { if (SetProperty(ref _valueColumnText, value)) OnEdited(); } }
         public string ValueColumnBackground { get => _valueColumnBackground; set { if (SetProperty(ref _valueColumnBackground, value)) OnEdited(); } }
         public string HeaderText { get => _headerText; set { if (SetProperty(ref _headerText, value)) OnEdited(); } }
+        public string SelectorBackground { get => _selectorBackground; set { if (SetProperty(ref _selectorBackground, value)) OnEdited(); } }
 
         public WpfBrush PreviewTextBrush => TryParseBrush(Text);
         public WpfBrush PreviewBackgroundBrush => TryParseBrush(Background);
@@ -206,6 +208,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewValueColumnTextBrush => TryParseBrush(ValueColumnText);
         public WpfBrush PreviewValueColumnBackgroundBrush => TryParseBrush(ValueColumnBackground);
         public WpfBrush PreviewHeaderTextBrush => TryParseBrush(HeaderText);
+        public WpfBrush PreviewSelectorBackgroundBrush => TryParseBrush(SelectorBackground);
 
         public void RevertPreview()
         {
@@ -355,6 +358,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _valueColumnText = p.ValueColumnText;
                 _valueColumnBackground = p.ValueColumnBackground;
                 _headerText = p.HeaderText;
+                _selectorBackground = p.SelectorBackground;
 
                 OnPropertyChanged(nameof(UiFontFamily));
                 OnPropertyChanged(nameof(UiFontSize));
@@ -385,6 +389,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(ValueColumnText));
                 OnPropertyChanged(nameof(ValueColumnBackground));
                 OnPropertyChanged(nameof(HeaderText));
+                OnPropertyChanged(nameof(SelectorBackground));
 
                 RaisePreview();
             }
@@ -435,6 +440,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.ValueColumnText = NormalizeColor(ValueColumnText, p.ValueColumnText);
             p.ValueColumnBackground = NormalizeColor(ValueColumnBackground, p.ValueColumnBackground);
             p.HeaderText = NormalizeColor(HeaderText, p.HeaderText);
+            p.SelectorBackground = NormalizeColor(SelectorBackground, p.SelectorBackground);
         }
 
         private void RaisePreview()
@@ -462,6 +468,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewValueColumnTextBrush));
             OnPropertyChanged(nameof(PreviewValueColumnBackgroundBrush));
             OnPropertyChanged(nameof(PreviewHeaderTextBrush));
+            OnPropertyChanged(nameof(PreviewSelectorBackgroundBrush));
         }
 
         private string GetColorByKey(string key)
@@ -491,6 +498,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(ValueColumnText) => ValueColumnText,
                 nameof(ValueColumnBackground) => ValueColumnBackground,
                 nameof(HeaderText) => HeaderText,
+                nameof(SelectorBackground) => SelectorBackground,
 
                 _ => "#FFFFFFFF"
             };
@@ -523,6 +531,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 case nameof(ValueColumnText): ValueColumnText = hex; break;
                 case nameof(ValueColumnBackground): ValueColumnBackground = hex; break;
                 case nameof(HeaderText): HeaderText = hex; break;
+                case nameof(SelectorBackground): SelectorBackground = hex; break;
             }
         }
 

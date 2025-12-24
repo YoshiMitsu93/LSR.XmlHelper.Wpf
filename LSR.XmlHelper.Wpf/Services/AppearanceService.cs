@@ -55,44 +55,34 @@ namespace LSR.XmlHelper.Wpf.Services
         public double UiFontSize => Active.UiFontSize;
         public FontWeight UiFontWeight => Active.UiFontBold ? FontWeights.Bold : FontWeights.Normal;
         public WpfFontStyle UiFontStyle => Active.UiFontItalic ? FontStyles.Italic : FontStyles.Normal;
-
         public WpfFontFamily EditorFontFamily => new WpfFontFamily(Active.EditorFontFamily);
         public double EditorFontSize => Active.EditorFontSize;
         public FontWeight EditorFontWeight => Active.EditorFontBold ? FontWeights.Bold : FontWeights.Normal;
         public WpfFontStyle EditorFontStyle => Active.EditorFontItalic ? FontStyles.Italic : FontStyles.Normal;
-
         public WpfBrush TextBrush => CreateFrozenBrush(Active.Text);
         public WpfBrush BackgroundBrush => CreateFrozenBrush(Active.Background);
-
         public WpfBrush EditorTextBrush => CreateFrozenBrush(Active.EditorText);
         public WpfBrush EditorBackgroundBrush => CreateFrozenBrush(Active.EditorBackground);
-
         public WpfBrush MenuBackgroundBrush => CreateFrozenBrush(Active.MenuBackground);
         public WpfBrush MenuTextBrush => CreateFrozenBrush(Active.MenuText);
-
         public WpfBrush TreeTextBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeText : Active.RawTreeText);
         public WpfBrush TreeBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeBackground : Active.RawTreeBackground);
         public WpfBrush TreeItemHoverBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeItemHoverBackground : Active.RawTreeItemHoverBackground);
         public WpfBrush TreeItemSelectedBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeItemSelectedBackground : Active.RawTreeItemSelectedBackground);
-
         public WpfBrush GridTextBrush => CreateFrozenBrush(Active.GridText);
         public WpfBrush GridBackgroundBrush => CreateFrozenBrush(Active.GridBackground);
         public WpfBrush GridBorderBrush => CreateFrozenBrush(Active.GridBorder);
-
         public WpfBrush GridHeaderBackgroundBrush => CreateFrozenBrush(Active.GridHeaderBackground);
         public WpfBrush GridHeaderTextBrush => CreateFrozenBrush(Active.GridHeaderText);
-
         public WpfBrush GridRowHoverBackgroundBrush => CreateFrozenBrush(Active.GridRowHoverBackground);
         public WpfBrush GridRowSelectedBackgroundBrush => CreateFrozenBrush(Active.GridRowSelectedBackground);
-
         public WpfBrush GridCellSelectedBackgroundBrush => CreateFrozenBrush(Active.GridCellSelectedBackground);
         public WpfBrush GridCellSelectedTextBrush => CreateFrozenBrush(Active.GridCellSelectedText);
-
         public WpfBrush FieldColumnTextBrush => CreateFrozenBrush(Active.FieldColumnText);
         public WpfBrush ValueColumnTextBrush => CreateFrozenBrush(Active.ValueColumnText);
         public WpfBrush ValueColumnBackgroundBrush => CreateFrozenBrush(Active.ValueColumnBackground);
-
         public WpfBrush HeaderTextBrush => CreateFrozenBrush(Active.HeaderText);
+        public WpfBrush SelectorBackgroundBrush => CreateFrozenBrush(Active.SelectorBackground);
 
         public void ReplaceSettings(AppearanceSettings newSettings)
         {
@@ -146,6 +136,7 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(ValueColumnTextBrush));
             OnPropertyChanged(nameof(ValueColumnBackgroundBrush));
             OnPropertyChanged(nameof(HeaderTextBrush));
+            OnPropertyChanged(nameof(SelectorBackgroundBrush));
         }
 
         private static WpfBrush CreateFrozenBrush(string hex)

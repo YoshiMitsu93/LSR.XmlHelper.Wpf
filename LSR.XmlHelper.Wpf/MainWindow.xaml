@@ -272,6 +272,30 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="Pane2ListBoxStyle"
+               TargetType="{x:Type ListBox}"
+               BasedOn="{StaticResource {x:Type ListBox}}">
+            <Setter Property="Background" Value="{Binding Appearance.SelectorBackgroundBrush}" />
+        </Style>
+
+        <Style x:Key="Pane2ListBoxItemStyle"
+               TargetType="{x:Type ListBoxItem}"
+               BasedOn="{StaticResource {x:Type ListBoxItem}}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4,2" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
@@ -293,6 +317,26 @@
             <Setter Property="MinHeight" Value="26" />
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+
+        <Style x:Key="Pane2ComboBoxStyle"
+               TargetType="{x:Type ComboBox}"
+               BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Background" Value="{Binding Appearance.SelectorBackgroundBrush}" />
+        </Style>
+
+        <Style x:Key="Pane2ComboBoxItemStyle"
+               TargetType="{x:Type ComboBoxItem}"
+               BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SelectorBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Padding" Value="6,3" />
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background"
+                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type ScrollViewer}">
@@ -614,7 +658,7 @@
                     BorderThickness="1"
                     BorderBrush="{Binding Appearance.GridBorderBrush}"
                     Padding="6"
-                    Background="{Binding Appearance.TreeBackgroundBrush}">
+                    Background="{Binding Appearance.SelectorBackgroundBrush}">
                 <Grid Background="{Binding Appearance.TreeBackgroundBrush}">
                     <TreeView ItemsSource="{Binding XmlTree}"
                               ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
@@ -638,7 +682,7 @@
                           Background="{Binding Appearance.GridBorderBrush}" />
 
             <Grid Grid.Column="2">
-                <Grid Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}">
+                <Grid Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource BoolToVis}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="280" />
                         <ColumnDefinition Width="*" />
@@ -646,16 +690,21 @@
 
                     <DockPanel Grid.Column="0"
                                Margin="0,0,8,0"
-                               Background="{Binding Appearance.TreeBackgroundBrush}">
+                               Background="{Binding Appearance.SelectorBackgroundBrush}">
+
                         <ComboBox DockPanel.Dock="Top"
                                   ItemsSource="{Binding FriendlyCollections}"
                                   SelectedItem="{Binding SelectedFriendlyCollection}"
                                   DisplayMemberPath="Title"
-                                  Margin="0,0,0,8" />
+                                  Margin="0,0,0,8"
+                                  Style="{StaticResource Pane2ComboBoxStyle}"
+                                  ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}" />
 
                         <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
                                  SelectedItem="{Binding SelectedFriendlyEntry}"
-                                 DisplayMemberPath="Display" />
+                                 DisplayMemberPath="Display"
+                                 Style="{StaticResource Pane2ListBoxStyle}"
+                                 ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}" />
                     </DockPanel>
 
                     <Border Grid.Column="1"
@@ -671,7 +720,7 @@
                 </Grid>
 
                 <avalonedit:TextEditor x:Name="XmlEditor"
-                                       Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
+                                       Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
                                        ShowLineNumbers="True"
                                        FontFamily="{Binding Appearance.EditorFontFamily}"
                                        FontSize="{Binding Appearance.EditorFontSize}"

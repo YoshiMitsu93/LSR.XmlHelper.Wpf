@@ -12,6 +12,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <infra:InverseBooleanConverter x:Key="InverseBool" />
 
         <Style x:Key="SwatchButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="Focusable" Value="False" />
@@ -53,14 +54,26 @@
         <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                 <TextBlock Text="Editing:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0" />
-                <RadioButton Content="Dark" GroupName="Theme" IsChecked="{Binding IsEditingDarkMode}" Margin="0,0,10,0" />
-                <RadioButton Content="Light" GroupName="Theme" IsChecked="{Binding IsEditingLightMode}" />
+                <RadioButton Content="Dark"
+             GroupName="Theme"
+             IsChecked="{Binding IsEditingDarkMode, Mode=TwoWay}"
+             Margin="0,0,10,0" />
+
+                <RadioButton Content="Light"
+             GroupName="Theme"
+             IsChecked="{Binding IsEditingDarkMode, Mode=TwoWay, Converter={StaticResource InverseBool}}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Applies to:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0" />
-                <RadioButton Content="Friendly view" GroupName="Target" IsChecked="{Binding IsEditingFriendlyView}" Margin="0,0,10,0" />
-                <RadioButton Content="Raw XML" GroupName="Target" IsChecked="{Binding IsEditingRawXml}" />
+                <RadioButton Content="Friendly view"
+             GroupName="Target"
+             IsChecked="{Binding IsEditingFriendlyView, Mode=TwoWay}"
+             Margin="0,0,10,0" />
+
+                <RadioButton Content="Raw XML"
+             GroupName="Target"
+             IsChecked="{Binding IsEditingFriendlyView, Mode=TwoWay, Converter={StaticResource InverseBool}}" />
             </StackPanel>
         </StackPanel>
 
@@ -121,6 +134,7 @@
 
                 <TextBlock Text="Colors (Hex: #AARRGGBB or #RRGGBB)" Style="{StaticResource SectionHeader}" />
 
+                <!-- RAW XML -->
                 <StackPanel Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
 
                     <TextBlock Text="Editor" Style="{StaticResource SubHeader}" />
@@ -269,37 +283,10 @@
                                 Height="22"
                                 ToolTip="Selected highlight for tree/list items across the app." />
                     </Grid>
-
-                    <TextBlock Text="Pane 2 - Selector List"
-                               Style="{StaticResource SubHeader}"
-                               ToolTip="Colors for the middle selector list (Pane 2 in the main window)." />
-
-                    <Grid Margin="0,0,0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="240" />
-                            <ColumnDefinition Width="200" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="6" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
-                                   ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
-                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding HeaderText}"
-                                 ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
-                        <Button Grid.Row="0" Grid.Column="2"
-                                Style="{StaticResource SwatchButtonStyle}"
-                                Background="{Binding PreviewHeaderTextBrush}"
-                                Command="{Binding PickColorCommand}"
-                                CommandParameter="HeaderText"
-                                Height="22"
-                                ToolTip="Text color for the selector dropdown + item list (Pane 2)." />
-                    </Grid>
+                    
                 </StackPanel>
 
+                <!-- FRIENDLY VIEW -->
                 <StackPanel Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
 
                     <TextBlock Text="Tree / Selectors" Style="{StaticResource SubHeader}" />
@@ -389,6 +376,8 @@
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
@@ -402,6 +391,18 @@
                                 CommandParameter="HeaderText"
                                 Height="22"
                                 ToolTip="Text color for the selector dropdown and selector items list (Pane 2)." />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Selector Background" VerticalAlignment="Center"
+                                   ToolTip="Background for the selector dropdown + selector list (Pane 2). Use #00000000 for transparent." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectorBackground}"
+                                 ToolTip="Background for the selector dropdown + selector list (Pane 2). Use #00000000 for transparent." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewSelectorBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="SelectorBackground"
+                                Height="22"
+                                ToolTip="Background for the selector dropdown + selector list (Pane 2). Use #00000000 for transparent." />
                     </Grid>
 
                     <TextBlock Text="Pane 3 - Details Grid"

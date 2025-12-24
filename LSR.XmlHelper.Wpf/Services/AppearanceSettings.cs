@@ -16,21 +16,16 @@ namespace LSR.XmlHelper.Wpf.Services
         public double UiFontSize { get; set; } = 12;
         public bool UiFontBold { get; set; }
         public bool UiFontItalic { get; set; }
-
         public string EditorFontFamily { get; set; } = "Consolas";
         public double EditorFontSize { get; set; } = 13;
         public bool EditorFontBold { get; set; }
         public bool EditorFontItalic { get; set; }
-
         public string Text { get; set; } = "#FFD4D4D4";
         public string Background { get; set; } = "#FF1E1E1E";
-
         public string EditorText { get; set; } = "#FFD4D4D4";
         public string EditorBackground { get; set; } = "#FF1E1E1E";
-
         public string MenuBackground { get; set; } = "#FF1E1E1E";
         public string MenuText { get; set; } = "#FFD4D4D4";
-
         public string TreeText { get; set; } = "#FFD4D4D4";
         public string TreeBackground { get; set; } = "#FF1E1E1E";
         public string TreeItemHoverBackground { get; set; } = "#FF252525";
@@ -97,21 +92,17 @@ namespace LSR.XmlHelper.Wpf.Services
         public string GridText { get; set; } = "#FFD4D4D4";
         public string GridBackground { get; set; } = "#FF1E1E1E";
         public string GridBorder { get; set; } = "#FF555555";
-
         public string GridHeaderBackground { get; set; } = "#FF1E1E1E";
         public string GridHeaderText { get; set; } = "#FFD4D4D4";
-
         public string GridRowHoverBackground { get; set; } = "#FF252525";
         public string GridRowSelectedBackground { get; set; } = "#FF2F2F2F";
-
         public string GridCellSelectedBackground { get; set; } = "#FF2F2F2F";
         public string GridCellSelectedText { get; set; } = "#FFFFFFFF";
-
         public string FieldColumnText { get; set; } = "#FFD4D4D4";
         public string ValueColumnText { get; set; } = "#FFD4D4D4";
         public string ValueColumnBackground { get; set; } = "#00000000";
-
         public string HeaderText { get; set; } = "#FFD4D4D4";
+        public string SelectorBackground { get; set; } = "#FF1E1E1E";
 
         public static AppearanceProfileSettings CreateDarkDefaults()
         {
@@ -152,7 +143,8 @@ namespace LSR.XmlHelper.Wpf.Services
                 FieldColumnText = "#FFD4D4D4",
                 ValueColumnText = "#FFD4D4D4",
                 ValueColumnBackground = "#00000000",
-                HeaderText = "#FFD4D4D4"
+                HeaderText = "#FFD4D4D4",
+                SelectorBackground = "#FF1E1E1E"
             };
         }
 
@@ -195,7 +187,8 @@ namespace LSR.XmlHelper.Wpf.Services
                 FieldColumnText = "#FF000000",
                 ValueColumnText = "#FF000000",
                 ValueColumnBackground = "#00000000",
-                HeaderText = "#FF000000"
+                HeaderText = "#FF000000",
+                SelectorBackground = "#FFFFFFFF"
             };
         }
     }
