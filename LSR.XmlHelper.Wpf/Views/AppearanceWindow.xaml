@@ -394,7 +394,8 @@
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Selector Background" VerticalAlignment="Center"
                                    ToolTip="Background for the selector dropdown + selector list (Pane 2). Use #00000000 for transparent." />
-                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectorBackground}"
+                        <TextBox Grid.Row="2" Grid.Column="1" 
+                                 Text="{Binding SelectorBackground, UpdateSourceTrigger=PropertyChanged}"
                                  ToolTip="Background for the selector dropdown + selector list (Pane 2). Use #00000000 for transparent." />
                         <Button Grid.Row="2" Grid.Column="2"
                                 Style="{StaticResource SwatchButtonStyle}"

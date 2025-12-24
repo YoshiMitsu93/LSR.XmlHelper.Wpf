@@ -311,7 +311,7 @@
         <Style TargetType="{x:Type ComboBox}">
             <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
             <Setter Property="Foreground" Value="{Binding Appearance.HeaderTextBrush}" />
-            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.BackgroundBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="8,4" />
             <Setter Property="MinHeight" Value="26" />
@@ -340,7 +340,7 @@
         </Style>
 
         <Style TargetType="{x:Type ScrollViewer}">
-            <Setter Property="Background" Value="{Binding Appearance.BackgroundBrush}" />
+            <Setter Property="Background" Value="Transparent" />
         </Style>
 
         <HierarchicalDataTemplate DataType="{x:Type vm:XmlFolderNode}" ItemsSource="{Binding Children}">
@@ -656,9 +656,9 @@
 
             <Border Grid.Column="0"
                     BorderThickness="1"
-                    BorderBrush="{Binding Appearance.GridBorderBrush}"
+                    BorderBrush="{Binding Appearance.BackgroundBrush}"
                     Padding="6"
-                    Background="{Binding Appearance.SelectorBackgroundBrush}">
+                    Background="{Binding Appearance.TreeBackgroundBrush}">
                 <Grid Background="{Binding Appearance.TreeBackgroundBrush}">
                     <TreeView ItemsSource="{Binding XmlTree}"
                               ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
@@ -679,7 +679,7 @@
                           VerticalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"
                           ResizeDirection="Columns"
-                          Background="{Binding Appearance.GridBorderBrush}" />
+                          Background="{Binding Appearance.BackgroundBrush}" />
 
             <Grid Grid.Column="2">
                 <Grid Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource BoolToVis}}">
