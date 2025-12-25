@@ -72,6 +72,7 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush GridTextBrush => CreateFrozenBrush(Active.GridText);
         public WpfBrush GridBackgroundBrush => CreateFrozenBrush(Active.GridBackground);
         public WpfBrush GridBorderBrush => CreateFrozenBrush(Active.GridBorder);
+        public WpfBrush GridLinesBrush => CreateFrozenBrush(Active.GridLines);
         public WpfBrush GridHeaderBackgroundBrush => CreateFrozenBrush(Active.GridHeaderBackground);
         public WpfBrush GridHeaderTextBrush => CreateFrozenBrush(Active.GridHeaderText);
         public WpfBrush GridRowHoverBackgroundBrush => CreateFrozenBrush(Active.GridRowHoverBackground);
@@ -124,6 +125,7 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(GridTextBrush));
             OnPropertyChanged(nameof(GridBackgroundBrush));
             OnPropertyChanged(nameof(GridBorderBrush));
+            OnPropertyChanged(nameof(GridLinesBrush));
             OnPropertyChanged(nameof(GridHeaderBackgroundBrush));
             OnPropertyChanged(nameof(GridHeaderTextBrush));
 

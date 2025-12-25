@@ -668,7 +668,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 FieldColumnText = p.FieldColumnText,
                 ValueColumnText = p.ValueColumnText,
                 ValueColumnBackground = p.ValueColumnBackground,
-                HeaderText = p.HeaderText
+                HeaderText = p.HeaderText,
+                SelectorBackground = p.SelectorBackground
             };
         }
     }

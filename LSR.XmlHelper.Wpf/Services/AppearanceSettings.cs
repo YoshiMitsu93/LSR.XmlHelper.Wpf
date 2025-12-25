@@ -92,6 +92,7 @@ namespace LSR.XmlHelper.Wpf.Services
         public string GridText { get; set; } = "#FFD4D4D4";
         public string GridBackground { get; set; } = "#FF1E1E1E";
         public string GridBorder { get; set; } = "#FF555555";
+        public string GridLines { get; set; } = "#FF555555";
         public string GridHeaderBackground { get; set; } = "#FF1E1E1E";
         public string GridHeaderText { get; set; } = "#FFD4D4D4";
         public string GridRowHoverBackground { get; set; } = "#FF252525";
@@ -131,6 +132,7 @@ namespace LSR.XmlHelper.Wpf.Services
                 GridText = "#FFD4D4D4",
                 GridBackground = "#FF1E1E1E",
                 GridBorder = "#FF555555",
+                GridLines = "#FF555555",
                 GridHeaderBackground = "#FF1E1E1E",
                 GridHeaderText = "#FFD4D4D4",
 

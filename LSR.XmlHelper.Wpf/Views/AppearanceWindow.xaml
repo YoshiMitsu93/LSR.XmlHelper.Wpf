@@ -428,55 +428,69 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="6" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Grid Background" VerticalAlignment="Center"
-                                   ToolTip="Background for the details grid area (Pane 3)." />
+               ToolTip="Background for the details grid (Pane 3)." />
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GridBackground}"
-                                 ToolTip="Background for the details grid area (Pane 3)." />
+             ToolTip="Background for the details grid (Pane 3)." />
                         <Button Grid.Row="0" Grid.Column="2"
-                                Style="{StaticResource SwatchButtonStyle}"
-                                Background="{Binding PreviewGridBackgroundBrush}"
-                                Command="{Binding PickColorCommand}"
-                                CommandParameter="GridBackground"
-                                Height="22"
-                                ToolTip="Background for the details grid area (Pane 3)." />
+            Style="{StaticResource SwatchButtonStyle}"
+            Background="{Binding PreviewGridBackgroundBrush}"
+            Command="{Binding PickColorCommand}"
+            CommandParameter="GridBackground"
+            Height="22"
+            ToolTip="Background for the details grid (Pane 3)." />
 
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Grid Text" VerticalAlignment="Center"
-                                   ToolTip="Default text color inside the details grid (Pane 3)." />
+               ToolTip="Default text color inside the details grid (Pane 3)." />
                         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding GridText}"
-                                 ToolTip="Default text color inside the details grid (Pane 3)." />
+             ToolTip="Default text color inside the details grid (Pane 3)." />
                         <Button Grid.Row="2" Grid.Column="2"
-                                Style="{StaticResource SwatchButtonStyle}"
-                                Background="{Binding PreviewGridTextBrush}"
-                                Command="{Binding PickColorCommand}"
-                                CommandParameter="GridText"
-                                Height="22"
-                                ToolTip="Default text color inside the details grid (Pane 3)." />
+            Style="{StaticResource SwatchButtonStyle}"
+            Background="{Binding PreviewGridTextBrush}"
+            Command="{Binding PickColorCommand}"
+            CommandParameter="GridText"
+            Height="22"
+            ToolTip="Default text color inside the details grid (Pane 3)." />
 
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="Grid Border" VerticalAlignment="Center"
-                                   ToolTip="Gridline/border color for the details grid (Pane 3)." />
+               ToolTip="Outer border color for the details grid (Pane 3)." />
                         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding GridBorder}"
-                                 ToolTip="Gridline/border color for the details grid (Pane 3)." />
+             ToolTip="Outer border color for the details grid (Pane 3)." />
                         <Button Grid.Row="4" Grid.Column="2"
-                                Style="{StaticResource SwatchButtonStyle}"
-                                Background="{Binding PreviewGridBorderBrush}"
-                                Command="{Binding PickColorCommand}"
-                                CommandParameter="GridBorder"
-                                Height="22"
-                                ToolTip="Gridline/border color for the details grid (Pane 3)." />
+            Style="{StaticResource SwatchButtonStyle}"
+            Background="{Binding PreviewGridBorderBrush}"
+            Command="{Binding PickColorCommand}"
+            CommandParameter="GridBorder"
+            Height="22"
+            ToolTip="Outer border color for the details grid (Pane 3)." />
 
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Grid Row Hover Background" VerticalAlignment="Center"
-                                   ToolTip="Row hover highlight inside the details grid (Pane 3)." />
-                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding GridRowHoverBackground}"
-                                 ToolTip="Row hover highlight inside the details grid (Pane 3)." />
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Grid Lines" VerticalAlignment="Center"
+               ToolTip="Internal line color between rows and between Field/Value columns (Pane 3)." />
+                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding GridLines}"
+             ToolTip="Internal line color between rows and between Field/Value columns (Pane 3)." />
                         <Button Grid.Row="6" Grid.Column="2"
-                                Style="{StaticResource SwatchButtonStyle}"
-                                Background="{Binding PreviewGridRowHoverBrush}"
-                                Command="{Binding PickColorCommand}"
-                                CommandParameter="GridRowHoverBackground"
-                                Height="22"
-                                ToolTip="Row hover highlight inside the details grid (Pane 3)." />
+            Style="{StaticResource SwatchButtonStyle}"
+            Background="{Binding PreviewGridLinesBrush}"
+            Command="{Binding PickColorCommand}"
+            CommandParameter="GridLines"
+            Height="22"
+            ToolTip="Internal line color between rows and between Field/Value columns (Pane 3)." />
+
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Grid Row Hover Background" VerticalAlignment="Center"
+               ToolTip="Row hover highlighting inside the details grid (Pane 3)." />
+                        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GridRowHoverBackground}"
+             ToolTip="Row hover highlighting inside the details grid (Pane 3)." />
+                        <Button Grid.Row="8" Grid.Column="2"
+            Style="{StaticResource SwatchButtonStyle}"
+            Background="{Binding PreviewGridRowHoverBrush}"
+            Command="{Binding PickColorCommand}"
+            CommandParameter="GridRowHoverBackground"
+            Height="22"
+            ToolTip="Row hover highlighting inside the details grid (Pane 3)." />
                     </Grid>
 
                     <TextBlock Text="Field Column"
