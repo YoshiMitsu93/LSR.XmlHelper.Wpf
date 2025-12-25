@@ -387,9 +387,15 @@
 
                             <DataGridTextColumn.CellStyle>
                                 <Style TargetType="{x:Type DataGridCell}"
-                                       BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                            BasedOn="{StaticResource {x:Type DataGridCell}}">
                                     <Setter Property="Background"
                                             Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter Property="Background"
+                                            Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
                             </DataGridTextColumn.CellStyle>
 
@@ -456,10 +462,17 @@
 
                             <DataGridTextColumn.CellStyle>
                                 <Style TargetType="{x:Type DataGridCell}"
-                                       BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                            BasedOn="{StaticResource {x:Type DataGridCell}}">
                                     <Setter Property="Background"
                                             Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter Property="Background"
+                                            Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
+
                             </DataGridTextColumn.CellStyle>
 
                             <DataGridTextColumn.ElementStyle>

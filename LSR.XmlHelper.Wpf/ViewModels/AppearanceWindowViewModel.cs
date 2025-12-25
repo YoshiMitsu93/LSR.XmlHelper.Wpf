@@ -146,6 +146,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _gridText = "#FFD4D4D4";
         private string _gridBackground = "#FF1E1E1E";
         private string _gridBorder = "#FF555555";
+        private string _gridLines = "#FF555555";
         private string _gridRowHoverBackground = "#FF252525";
 
         private string _fieldColumnText = "#FFD4D4D4";
@@ -177,6 +178,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string GridText { get => _gridText; set { if (SetProperty(ref _gridText, value)) OnEdited(); } }
         public string GridBackground { get => _gridBackground; set { if (SetProperty(ref _gridBackground, value)) OnEdited(); } }
         public string GridBorder { get => _gridBorder; set { if (SetProperty(ref _gridBorder, value)) OnEdited(); } }
+        public string GridLines { get => _gridLines; set { if (SetProperty(ref _gridLines, value)) OnEdited(); } }
         public string GridRowHoverBackground { get => _gridRowHoverBackground; set { if (SetProperty(ref _gridRowHoverBackground, value)) OnEdited(); } }
 
         public string FieldColumnText { get => _fieldColumnText; set { if (SetProperty(ref _fieldColumnText, value)) OnEdited(); } }
@@ -202,6 +204,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewGridTextBrush => TryParseBrush(GridText);
         public WpfBrush PreviewGridBackgroundBrush => TryParseBrush(GridBackground);
         public WpfBrush PreviewGridBorderBrush => TryParseBrush(GridBorder);
+        public WpfBrush PreviewGridLinesBrush => TryParseBrush(GridLines);
         public WpfBrush PreviewGridRowHoverBrush => TryParseBrush(GridRowHoverBackground);
 
         public WpfBrush PreviewFieldColumnTextBrush => TryParseBrush(FieldColumnText);
@@ -352,6 +355,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _gridText = p.GridText;
                 _gridBackground = p.GridBackground;
                 _gridBorder = p.GridBorder;
+                _gridLines = p.GridLines;
                 _gridRowHoverBackground = p.GridRowHoverBackground;
 
                 _fieldColumnText = p.FieldColumnText;
@@ -383,6 +387,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(GridText));
                 OnPropertyChanged(nameof(GridBackground));
                 OnPropertyChanged(nameof(GridBorder));
+                OnPropertyChanged(nameof(GridLines));
                 OnPropertyChanged(nameof(GridRowHoverBackground));
 
                 OnPropertyChanged(nameof(FieldColumnText));
@@ -434,6 +439,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.GridText = NormalizeColor(GridText, p.GridText);
             p.GridBackground = NormalizeColor(GridBackground, p.GridBackground);
             p.GridBorder = NormalizeColor(GridBorder, p.GridBorder);
+            p.GridLines = NormalizeColor(GridLines, p.GridLines);
             p.GridRowHoverBackground = NormalizeColor(GridRowHoverBackground, p.GridRowHoverBackground);
 
             p.FieldColumnText = NormalizeColor(FieldColumnText, p.FieldColumnText);
@@ -462,6 +468,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewGridTextBrush));
             OnPropertyChanged(nameof(PreviewGridBackgroundBrush));
             OnPropertyChanged(nameof(PreviewGridBorderBrush));
+            OnPropertyChanged(nameof(PreviewGridLinesBrush));
+
             OnPropertyChanged(nameof(PreviewGridRowHoverBrush));
 
             OnPropertyChanged(nameof(PreviewFieldColumnTextBrush));
@@ -492,6 +500,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(GridBackground) => GridBackground,
                 nameof(GridText) => GridText,
                 nameof(GridBorder) => GridBorder,
+                nameof(GridLines) => GridLines,
                 nameof(GridRowHoverBackground) => GridRowHoverBackground,
 
                 nameof(FieldColumnText) => FieldColumnText,
@@ -525,6 +534,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 case nameof(GridBackground): GridBackground = hex; break;
                 case nameof(GridText): GridText = hex; break;
                 case nameof(GridBorder): GridBorder = hex; break;
+                case nameof(GridLines): GridLines = hex; break;
                 case nameof(GridRowHoverBackground): GridRowHoverBackground = hex; break;
 
                 case nameof(FieldColumnText): FieldColumnText = hex; break;
@@ -660,6 +670,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 GridText = p.GridText,
                 GridBackground = p.GridBackground,
                 GridBorder = p.GridBorder,
+                GridLines = p.GridLines,
                 GridHeaderBackground = p.GridHeaderBackground,
                 GridHeaderText = p.GridHeaderText,
                 GridRowHoverBackground = p.GridRowHoverBackground,
