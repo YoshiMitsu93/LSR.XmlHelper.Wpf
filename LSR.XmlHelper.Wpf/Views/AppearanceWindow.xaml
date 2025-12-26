@@ -137,7 +137,7 @@
                 <!-- RAW XML -->
                 <StackPanel Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
 
-                    <TextBlock Text="Editor" Style="{StaticResource SubHeader}" />
+                    <TextBlock Text="Editor" Style="{StaticResource SectionHeader}" />
 
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -176,7 +176,7 @@
                                 ToolTip="Background color inside the raw XML editor." />
                     </Grid>
 
-                    <TextBlock Text="Menu" Style="{StaticResource SubHeader}" />
+                    <TextBlock Text="Top Menu Bar" Style="{StaticResource SectionHeader}" />
 
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -215,8 +215,33 @@
                                 ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
                     </Grid>
 
+                    <TextBlock Text="Top Bar Controls" Style="{StaticResource SectionHeader}" />
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Top Bar Text" VerticalAlignment="Center"
+                                   ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GridText}"
+                                 ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridText"
+                                Height="22"
+                                ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+                    </Grid>
+
                     <TextBlock Text="Pane 1 - File Tree"
-                               Style="{StaticResource SubHeader}"
+                               Style="{StaticResource SectionHeader}"
                                ToolTip="Colors for the left file/folder tree (Pane 1 in the main window)." />
 
                     <Grid Margin="0,0,0,6">
@@ -288,6 +313,70 @@
 
                 <!-- FRIENDLY VIEW -->
                 <StackPanel Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
+                    
+                    <TextBlock Text="Top Menu Bar" Style="{StaticResource SectionHeader}" />
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Menu Text" VerticalAlignment="Center"
+                                   ToolTip="Text colour for the top menu bar (File, Edit, View, Help)." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MenuText}"
+                                 ToolTip="Text colour for the top menu bar (File, Edit, View, Help)." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewMenuTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="MenuText"
+                                Height="22"
+                                ToolTip="Text colour for the top menu bar (File, Edit, View, Help)." />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Menu Background" VerticalAlignment="Center"
+                                   ToolTip="Background colour for the top menu bar (File, Edit, View, Help)." />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MenuBackground}"
+                                 ToolTip="Background colour for the top menu bar (File, Edit, View, Help)." />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewMenuBackgroundBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="MenuBackground"
+                                Height="22"
+                                ToolTip="Background colour for the top menu bar (File, Edit, View, Help)." />
+                    </Grid>
+
+                    <TextBlock Text="Top Bar Controls" Style="{StaticResource SectionHeader}" />
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="240" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Top Bar Text" VerticalAlignment="Center"
+                                   ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GridText}"
+                                 ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Style="{StaticResource SwatchButtonStyle}"
+                                Background="{Binding PreviewGridTextBrush}"
+                                Command="{Binding PickColorCommand}"
+                                CommandParameter="GridText"
+                                Height="22"
+                                ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+                    </Grid>
 
                     <TextBlock Text="Tree / Selectors" Style="{StaticResource SubHeader}" />
 
@@ -443,19 +532,7 @@
             CommandParameter="GridBackground"
             Height="22"
             ToolTip="Background for the details grid (Pane 3)." />
-
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Grid Text" VerticalAlignment="Center"
-               ToolTip="Default text color inside the details grid (Pane 3)." />
-                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding GridText}"
-             ToolTip="Default text color inside the details grid (Pane 3)." />
-                        <Button Grid.Row="2" Grid.Column="2"
-            Style="{StaticResource SwatchButtonStyle}"
-            Background="{Binding PreviewGridTextBrush}"
-            Command="{Binding PickColorCommand}"
-            CommandParameter="GridText"
-            Height="22"
-            ToolTip="Default text color inside the details grid (Pane 3)." />
-
+                        
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="Grid Border" VerticalAlignment="Center"
                ToolTip="Outer border color for the details grid (Pane 3)." />
                         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding GridBorder}"

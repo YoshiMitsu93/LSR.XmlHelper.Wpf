@@ -19,7 +19,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
 
-        <Style TargetType="{x:Type Menu}">
+        <Style TargetType="{x:Type Menu}"> 
             <Setter Property="Background" Value="{Binding Appearance.MenuBackgroundBrush}" />
             <Setter Property="Foreground" Value="{Binding Appearance.MenuTextBrush}" />
         </Style>
@@ -94,47 +94,50 @@
 
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
-            <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
-            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
-            <Setter Property="HorizontalGridLinesBrush" Value="{Binding Appearance.GridLinesBrush}" />
-<Setter Property="VerticalGridLinesBrush" Value="{Binding Appearance.GridLinesBrush}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{Binding DataContext.Appearance.GridLinesBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="VerticalGridLinesBrush" Value="{Binding DataContext.Appearance.GridLinesBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="GridLinesVisibility" Value="All" />
             <Setter Property="HeadersVisibility" Value="Column" />
         </Style>
 
         <Style TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="Background" Value="{Binding Appearance.GridHeaderBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{Binding Appearance.GridHeaderTextBrush}" />
-            <Setter Property="BorderBrush" Value="{Binding Appearance.GridBorderBrush}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
         </Style>
 
         <Style TargetType="{x:Type DataGridRow}">
-            <Setter Property="Background" Value="{Binding Appearance.GridBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{Binding Appearance.GridRowHoverBackgroundBrush}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{Binding Appearance.GridRowSelectedBackgroundBrush}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type DataGridCell}">
-            <Setter Property="BorderBrush" Value="{Binding Appearance.GridLinesBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridLinesBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{Binding Appearance.GridCellSelectedBackgroundBrush}" />
-                    <Setter Property="Foreground" Value="{Binding Appearance.GridCellSelectedTextBrush}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridCellSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridCellSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="Background" Value="{Binding Appearance.GridCellSelectedBackgroundBrush}" />
-                    <Setter Property="Foreground" Value="{Binding Appearance.GridCellSelectedTextBrush}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridCellSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridCellSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -367,7 +370,7 @@
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
-                          SelectionUnit="CellOrRowHeader">
+                          SelectionUnit="FullRow">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Field"
                                             Binding="{Binding Name}"
@@ -430,7 +433,7 @@
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
-                          SelectionUnit="CellOrRowHeader">
+                          SelectionUnit="FullRow">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Item"
                                             Binding="{Binding Item}"
@@ -624,6 +627,18 @@
             </WrapPanel>
 
             <WrapPanel Margin="0,6,0,0">
+                <WrapPanel.Resources>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+                    </Style>
+                    <Style TargetType="{x:Type RadioButton}">
+                        <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+                    </Style>
+                    <Style TargetType="{x:Type CheckBox}">
+                        <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
+                    </Style>
+                </WrapPanel.Resources>
+
                 <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
 
                 <RadioButton Content="Folders"

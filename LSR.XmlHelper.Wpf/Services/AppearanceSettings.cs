@@ -25,6 +25,7 @@ namespace LSR.XmlHelper.Wpf.Services
         public string EditorText { get; set; } = "#FFD4D4D4";
         public string EditorBackground { get; set; } = "#FF1E1E1E";
         public string MenuBackground { get; set; } = "#FF1E1E1E";
+         public string TopBarText { get; set; } = "#FFD4D4D4";
         public string MenuText { get; set; } = "#FFD4D4D4";
         public string TreeText { get; set; } = "#FFD4D4D4";
         public string TreeBackground { get; set; } = "#FF1E1E1E";
