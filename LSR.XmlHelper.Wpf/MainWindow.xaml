@@ -143,7 +143,7 @@
         </Style>
 
         <Style TargetType="{x:Type Expander}">
-            <Setter Property="Foreground" Value="{Binding Appearance.TextBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.GridHeaderTextBrush}" />
         </Style>
 
         <Style TargetType="{x:Type TreeView}">
@@ -301,6 +301,12 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="Pane1FlatListBoxItemStyle"
+       TargetType="{x:Type ListBoxItem}"
+       BasedOn="{StaticResource {x:Type ListBoxItem}}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeTextBrush, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+        </Style>
+
         <Style TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
@@ -327,14 +333,15 @@
         <Style x:Key="Pane2ComboBoxStyle"
                TargetType="{x:Type ComboBox}"
                BasedOn="{StaticResource {x:Type ComboBox}}">
-            <Setter Property="Background" Value="{Binding Appearance.SelectorBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{Binding Appearance.Pane2ComboTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.Pane2ComboBackgroundBrush}" />
         </Style>
 
         <Style x:Key="Pane2ComboBoxItemStyle"
                TargetType="{x:Type ComboBoxItem}"
                BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-            <Setter Property="Background" Value="{Binding DataContext.Appearance.SelectorBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Padding" Value="6,3" />
             <Style.Triggers>
                 <Trigger Property="IsHighlighted" Value="True">
@@ -700,6 +707,7 @@
                     <ListBox ItemsSource="{Binding XmlFiles}"
                              SelectedItem="{Binding SelectedXmlFile}"
                              DisplayMemberPath="DisplayPath"
+                             ItemContainerStyle="{StaticResource Pane1FlatListBoxItemStyle}"
                              Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
                 </Grid>
             </Border>

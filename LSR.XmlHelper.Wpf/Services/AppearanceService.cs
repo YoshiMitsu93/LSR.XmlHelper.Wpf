@@ -84,6 +84,10 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush ValueColumnBackgroundBrush => CreateFrozenBrush(Active.ValueColumnBackground);
         public WpfBrush HeaderTextBrush => CreateFrozenBrush(Active.HeaderText);
         public WpfBrush SelectorBackgroundBrush => CreateFrozenBrush(Active.SelectorBackground);
+        public WpfBrush Pane2ComboTextBrush => CreateFrozenBrush(Active.Pane2ComboText);
+        public WpfBrush Pane2ComboBackgroundBrush => CreateFrozenBrush(Active.Pane2ComboBackground);
+        public WpfBrush Pane2DropdownTextBrush => CreateFrozenBrush(Active.Pane2DropdownText);
+        public WpfBrush Pane2DropdownBackgroundBrush => CreateFrozenBrush(Active.Pane2DropdownBackground);
 
         public void ReplaceSettings(AppearanceSettings newSettings)
         {
@@ -139,6 +143,10 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(ValueColumnBackgroundBrush));
             OnPropertyChanged(nameof(HeaderTextBrush));
             OnPropertyChanged(nameof(SelectorBackgroundBrush));
+            OnPropertyChanged(nameof(Pane2ComboTextBrush));
+            OnPropertyChanged(nameof(Pane2ComboBackgroundBrush));
+            OnPropertyChanged(nameof(Pane2DropdownTextBrush));
+            OnPropertyChanged(nameof(Pane2DropdownBackgroundBrush));
         }
 
         private static WpfBrush CreateFrozenBrush(string hex)

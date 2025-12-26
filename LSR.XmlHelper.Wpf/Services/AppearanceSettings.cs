@@ -105,6 +105,10 @@ namespace LSR.XmlHelper.Wpf.Services
         public string ValueColumnBackground { get; set; } = "#00000000";
         public string HeaderText { get; set; } = "#FFD4D4D4";
         public string SelectorBackground { get; set; } = "#FF1E1E1E";
+        public string Pane2ComboText { get; set; } = "#FFD4D4D4";
+        public string Pane2ComboBackground { get; set; } = "#FF1E1E1E";
+        public string Pane2DropdownText { get; set; } = "#FFD4D4D4";
+        public string Pane2DropdownBackground { get; set; } = "#FF1E1E1E";
 
         public static AppearanceProfileSettings CreateDarkDefaults()
         {

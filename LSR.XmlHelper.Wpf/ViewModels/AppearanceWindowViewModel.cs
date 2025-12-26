@@ -148,12 +148,22 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _gridBorder = "#FF555555";
         private string _gridLines = "#FF555555";
         private string _gridRowHoverBackground = "#FF252525";
+        private string _gridHeaderText = "#FFD4D4D4";
+        private string _gridRowSelectedBackground = "#FF2F2F2F";
+        private string _gridCellSelectedBackground = "#FF2F2F2F";
+        private string _gridCellSelectedText = "#FFD4D4D4";
+        private string _pane3GroupHeaderText = "#FFD4D4D4";
 
         private string _fieldColumnText = "#FFD4D4D4";
         private string _valueColumnText = "#FFD4D4D4";
         private string _valueColumnBackground = "#00000000";
         private string _headerText = "#FFD4D4D4";
         private string _selectorBackground = "#FF1E1E1E";
+        private string _pane2ComboText = "#FFD4D4D4";
+        private string _pane2ComboBackground = "#FF1E1E1E";
+        private string _pane2DropdownText = "#FFD4D4D4";
+        private string _pane2DropdownBackground = "#FF1E1E1E";
+
 
         public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) OnEdited(); } }
         public string UiFontSize { get => _uiFontSize; set { if (SetProperty(ref _uiFontSize, value)) OnEdited(); } }
@@ -180,6 +190,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string GridBorder { get => _gridBorder; set { if (SetProperty(ref _gridBorder, value)) OnEdited(); } }
         public string GridLines { get => _gridLines; set { if (SetProperty(ref _gridLines, value)) OnEdited(); } }
         public string GridRowHoverBackground { get => _gridRowHoverBackground; set { if (SetProperty(ref _gridRowHoverBackground, value)) OnEdited(); } }
+        public string GridHeaderText { get => _gridHeaderText; set { if (SetProperty(ref _gridHeaderText, value)) OnEdited(); } }
+        public string GridRowSelectedBackground { get => _gridRowSelectedBackground; set { if (SetProperty(ref _gridRowSelectedBackground, value)) OnEdited(); } }
+        public string GridCellSelectedBackground { get => _gridCellSelectedBackground; set { if (SetProperty(ref _gridCellSelectedBackground, value)) OnEdited(); } }
+        public string GridCellSelectedText { get => _gridCellSelectedText; set { if (SetProperty(ref _gridCellSelectedText, value)) OnEdited(); } }
 
         public string FieldColumnText { get => _fieldColumnText; set { if (SetProperty(ref _fieldColumnText, value)) OnEdited(); } }
         public string ValueColumnText { get => _valueColumnText; set { if (SetProperty(ref _valueColumnText, value)) OnEdited(); } }
@@ -206,6 +220,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewGridBorderBrush => TryParseBrush(GridBorder);
         public WpfBrush PreviewGridLinesBrush => TryParseBrush(GridLines);
         public WpfBrush PreviewGridRowHoverBrush => TryParseBrush(GridRowHoverBackground);
+        public WpfBrush PreviewGridHeaderTextBrush => TryParseBrush(GridHeaderText);
+        public WpfBrush PreviewGridRowSelectedBackgroundBrush => TryParseBrush(GridRowSelectedBackground);
+        public WpfBrush PreviewGridCellSelectedBackgroundBrush => TryParseBrush(GridCellSelectedBackground);
+        public WpfBrush PreviewGridCellSelectedTextBrush => TryParseBrush(GridCellSelectedText);
 
         public WpfBrush PreviewFieldColumnTextBrush => TryParseBrush(FieldColumnText);
         public WpfBrush PreviewValueColumnTextBrush => TryParseBrush(ValueColumnText);
@@ -357,6 +375,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _gridBorder = p.GridBorder;
                 _gridLines = p.GridLines;
                 _gridRowHoverBackground = p.GridRowHoverBackground;
+                _gridHeaderText = p.GridHeaderText;
+                _gridRowSelectedBackground = p.GridRowSelectedBackground;
+                _gridCellSelectedBackground = p.GridCellSelectedBackground;
+                _gridCellSelectedText = p.GridCellSelectedText;
 
                 _fieldColumnText = p.FieldColumnText;
                 _valueColumnText = p.ValueColumnText;
@@ -389,6 +411,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(GridBorder));
                 OnPropertyChanged(nameof(GridLines));
                 OnPropertyChanged(nameof(GridRowHoverBackground));
+                OnPropertyChanged(nameof(GridHeaderText));
+                OnPropertyChanged(nameof(GridRowSelectedBackground));
+                OnPropertyChanged(nameof(GridCellSelectedBackground));
+                OnPropertyChanged(nameof(GridCellSelectedText));
 
                 OnPropertyChanged(nameof(FieldColumnText));
                 OnPropertyChanged(nameof(ValueColumnText));
@@ -441,6 +467,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.GridBorder = NormalizeColor(GridBorder, p.GridBorder);
             p.GridLines = NormalizeColor(GridLines, p.GridLines);
             p.GridRowHoverBackground = NormalizeColor(GridRowHoverBackground, p.GridRowHoverBackground);
+            p.GridHeaderText = NormalizeColor(GridHeaderText, p.GridHeaderText);
+            p.GridRowSelectedBackground = NormalizeColor(GridRowSelectedBackground, p.GridRowSelectedBackground);
+            p.GridCellSelectedBackground = NormalizeColor(GridCellSelectedBackground, p.GridCellSelectedBackground);
+            p.GridCellSelectedText = NormalizeColor(GridCellSelectedText, p.GridCellSelectedText);
 
             p.FieldColumnText = NormalizeColor(FieldColumnText, p.FieldColumnText);
             p.ValueColumnText = NormalizeColor(ValueColumnText, p.ValueColumnText);
@@ -469,8 +499,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewGridBackgroundBrush));
             OnPropertyChanged(nameof(PreviewGridBorderBrush));
             OnPropertyChanged(nameof(PreviewGridLinesBrush));
-
             OnPropertyChanged(nameof(PreviewGridRowHoverBrush));
+            OnPropertyChanged(nameof(PreviewGridHeaderTextBrush));
+            OnPropertyChanged(nameof(PreviewGridRowSelectedBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGridCellSelectedBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGridCellSelectedTextBrush));
 
             OnPropertyChanged(nameof(PreviewFieldColumnTextBrush));
             OnPropertyChanged(nameof(PreviewValueColumnTextBrush));
@@ -502,6 +535,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(GridBorder) => GridBorder,
                 nameof(GridLines) => GridLines,
                 nameof(GridRowHoverBackground) => GridRowHoverBackground,
+                nameof(GridHeaderText) => GridHeaderText,
+                nameof(GridRowSelectedBackground) => GridRowSelectedBackground,
+                nameof(GridCellSelectedBackground) => GridCellSelectedBackground,
+                nameof(GridCellSelectedText) => GridCellSelectedText,
 
                 nameof(FieldColumnText) => FieldColumnText,
                 nameof(ValueColumnText) => ValueColumnText,
@@ -536,6 +573,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 case nameof(GridBorder): GridBorder = hex; break;
                 case nameof(GridLines): GridLines = hex; break;
                 case nameof(GridRowHoverBackground): GridRowHoverBackground = hex; break;
+                case nameof(GridHeaderText): GridHeaderText = hex; break;
+                case nameof(GridRowSelectedBackground): GridRowSelectedBackground = hex; break;
+                case nameof(GridCellSelectedBackground): GridCellSelectedBackground = hex; break;
+                case nameof(GridCellSelectedText): GridCellSelectedText = hex; break;
 
                 case nameof(FieldColumnText): FieldColumnText = hex; break;
                 case nameof(ValueColumnText): ValueColumnText = hex; break;
@@ -675,6 +716,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 GridHeaderText = p.GridHeaderText,
                 GridRowHoverBackground = p.GridRowHoverBackground,
                 GridRowSelectedBackground = p.GridRowSelectedBackground,
+                GridCellSelectedBackground = p.GridCellSelectedBackground,
+                GridCellSelectedText = p.GridCellSelectedText,
 
                 FieldColumnText = p.FieldColumnText,
                 ValueColumnText = p.ValueColumnText,
