@@ -131,14 +131,18 @@
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                    <Setter Property="Background" Value="Transparent" />
+                </DataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True" />
+                        <Condition Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource Self}}" Value="True" />
+                    </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{Binding DataContext.Appearance.GridCellSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                     <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridCellSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                </Trigger>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridCellSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridCellSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                </Trigger>
+                </MultiDataTrigger>
             </Style.Triggers>
         </Style>
 
