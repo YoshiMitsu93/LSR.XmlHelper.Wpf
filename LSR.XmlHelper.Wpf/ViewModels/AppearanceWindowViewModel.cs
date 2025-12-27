@@ -201,6 +201,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string HeaderText { get => _headerText; set { if (SetProperty(ref _headerText, value)) OnEdited(); } }
         public string SelectorBackground { get => _selectorBackground; set { if (SetProperty(ref _selectorBackground, value)) OnEdited(); } }
 
+        public string Pane2ComboText { get => _pane2ComboText; set { if (SetProperty(ref _pane2ComboText, value)) OnEdited(); } }
+        public string Pane2ComboBackground { get => _pane2ComboBackground; set { if (SetProperty(ref _pane2ComboBackground, value)) OnEdited(); } }
+        public string Pane2DropdownText { get => _pane2DropdownText; set { if (SetProperty(ref _pane2DropdownText, value)) OnEdited(); } }
+        public string Pane2DropdownBackground { get => _pane2DropdownBackground; set { if (SetProperty(ref _pane2DropdownBackground, value)) OnEdited(); } }
         public WpfBrush PreviewTextBrush => TryParseBrush(Text);
         public WpfBrush PreviewBackgroundBrush => TryParseBrush(Background);
 
@@ -230,6 +234,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewValueColumnBackgroundBrush => TryParseBrush(ValueColumnBackground);
         public WpfBrush PreviewHeaderTextBrush => TryParseBrush(HeaderText);
         public WpfBrush PreviewSelectorBackgroundBrush => TryParseBrush(SelectorBackground);
+
+        public WpfBrush PreviewPane2ComboTextBrush => TryParseBrush(Pane2ComboText);
+        public WpfBrush PreviewPane2ComboBackgroundBrush => TryParseBrush(Pane2ComboBackground);
+        public WpfBrush PreviewPane2DropdownTextBrush => TryParseBrush(Pane2DropdownText);
+        public WpfBrush PreviewPane2DropdownBackgroundBrush => TryParseBrush(Pane2DropdownBackground);
 
         public void RevertPreview()
         {
@@ -386,6 +395,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _headerText = p.HeaderText;
                 _selectorBackground = p.SelectorBackground;
 
+                _pane2ComboText = p.Pane2ComboText;
+                _pane2ComboBackground = p.Pane2ComboBackground;
+                _pane2DropdownText = p.Pane2DropdownText;
+                _pane2DropdownBackground = p.Pane2DropdownBackground;
+
                 OnPropertyChanged(nameof(UiFontFamily));
                 OnPropertyChanged(nameof(UiFontSize));
 
@@ -422,6 +436,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(HeaderText));
                 OnPropertyChanged(nameof(SelectorBackground));
 
+                OnPropertyChanged(nameof(Pane2ComboText));
+                OnPropertyChanged(nameof(Pane2ComboBackground));
+                OnPropertyChanged(nameof(Pane2DropdownText));
+                OnPropertyChanged(nameof(Pane2DropdownBackground));
+
                 RaisePreview();
             }
             finally
@@ -446,6 +465,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             p.MenuText = NormalizeColor(MenuText, p.MenuText);
             p.MenuBackground = NormalizeColor(MenuBackground, p.MenuBackground);
+
+            p.Pane2ComboText = NormalizeColor(Pane2ComboText, p.Pane2ComboText);
+            p.Pane2ComboBackground = NormalizeColor(Pane2ComboBackground, p.Pane2ComboBackground);
+            p.Pane2DropdownText = NormalizeColor(Pane2DropdownText, p.Pane2DropdownText);
+            p.Pane2DropdownBackground = NormalizeColor(Pane2DropdownBackground, p.Pane2DropdownBackground);
+
 
             if (_isEditingFriendlyView)
             {
@@ -481,6 +506,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void RaisePreview()
         {
+            OnPropertyChanged(nameof(PreviewPane2ComboTextBrush));
+            OnPropertyChanged(nameof(PreviewPane2ComboBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewPane2DropdownTextBrush));
+            OnPropertyChanged(nameof(PreviewPane2DropdownBackgroundBrush));
+
             OnPropertyChanged(nameof(PreviewTextBrush));
             OnPropertyChanged(nameof(PreviewBackgroundBrush));
 
@@ -545,6 +575,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(ValueColumnBackground) => ValueColumnBackground,
                 nameof(HeaderText) => HeaderText,
                 nameof(SelectorBackground) => SelectorBackground,
+                nameof(Pane2ComboText) => Pane2ComboText,
+nameof(Pane2ComboBackground) => Pane2ComboBackground,
+nameof(Pane2DropdownText) => Pane2DropdownText,
+nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
 
                 _ => "#FFFFFFFF"
             };
@@ -567,6 +601,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 case nameof(TreeBackground): TreeBackground = hex; break;
                 case nameof(TreeItemHoverBackground): TreeItemHoverBackground = hex; break;
                 case nameof(TreeItemSelectedBackground): TreeItemSelectedBackground = hex; break;
+
+                case nameof(Pane2ComboText): Pane2ComboText = hex; break;
+                case nameof(Pane2ComboBackground): Pane2ComboBackground = hex; break;
+                case nameof(Pane2DropdownText): Pane2DropdownText = hex; break;
+                case nameof(Pane2DropdownBackground): Pane2DropdownBackground = hex; break;
 
                 case nameof(GridBackground): GridBackground = hex; break;
                 case nameof(GridText): GridText = hex; break;
@@ -723,7 +762,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 ValueColumnText = p.ValueColumnText,
                 ValueColumnBackground = p.ValueColumnBackground,
                 HeaderText = p.HeaderText,
-                SelectorBackground = p.SelectorBackground
+                SelectorBackground = p.SelectorBackground,
+
+                Pane2ComboText = p.Pane2ComboText,
+                Pane2ComboBackground = p.Pane2ComboBackground,
+                Pane2DropdownText = p.Pane2DropdownText,
+                Pane2DropdownBackground = p.Pane2DropdownBackground
             };
         }
     }
