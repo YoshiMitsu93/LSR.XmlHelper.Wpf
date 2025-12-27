@@ -815,11 +815,11 @@
                 <Grid Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource BoolToVis}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="6" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-
                     <DockPanel Grid.Column="0"
-                               Margin="0,0,8,0"
+                               Margin="0"
                                Background="{Binding Appearance.SelectorBackgroundBrush}">
 
                         <ComboBox DockPanel.Dock="Top"
@@ -837,7 +837,14 @@
                                  ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}" />
                     </DockPanel>
 
-                    <Border Grid.Column="1"
+                    <GridSplitter Grid.Column="1"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  ResizeBehavior="PreviousAndNext"
+                                  ResizeDirection="Columns"
+                                  Background="{Binding Appearance.BackgroundBrush}" />
+
+                    <Border Grid.Column="2"
                             Background="{Binding Appearance.BackgroundBrush}"
                             BorderBrush="{Binding Appearance.GridBorderBrush}"
                             BorderThickness="1">
