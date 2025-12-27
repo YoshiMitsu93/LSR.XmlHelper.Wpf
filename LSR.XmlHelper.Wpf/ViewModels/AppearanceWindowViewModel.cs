@@ -137,6 +137,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private string _menuText = "#FFD4D4D4";
         private string _menuBackground = "#FF1E1E1E";
+        private string _topButtonText = "#FFD4D4D4";
+        private string _topButtonBackground = "#FF2F2F2F";
 
         private string _treeText = "#FFD4D4D4";
         private string _treeBackground = "#FF1E1E1E";
@@ -179,6 +181,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public string MenuText { get => _menuText; set { if (SetProperty(ref _menuText, value)) OnEdited(); } }
         public string MenuBackground { get => _menuBackground; set { if (SetProperty(ref _menuBackground, value)) OnEdited(); } }
+        public string TopButtonText { get => _topButtonText; set { if (SetProperty(ref _topButtonText, value)) OnEdited(); } }
+        public string TopButtonBackground { get => _topButtonBackground; set { if (SetProperty(ref _topButtonBackground, value)) OnEdited(); } }
 
         public string TreeText { get => _treeText; set { if (SetProperty(ref _treeText, value)) OnEdited(); } }
         public string TreeBackground { get => _treeBackground; set { if (SetProperty(ref _treeBackground, value)) OnEdited(); } }
@@ -213,6 +217,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public WpfBrush PreviewMenuTextBrush => TryParseBrush(MenuText);
         public WpfBrush PreviewMenuBackgroundBrush => TryParseBrush(MenuBackground);
+        public WpfBrush PreviewTopButtonTextBrush => TryParseBrush(TopButtonText);
+        public WpfBrush PreviewTopButtonBackgroundBrush => TryParseBrush(TopButtonBackground);
 
         public WpfBrush PreviewTreeTextBrush => TryParseBrush(TreeText);
         public WpfBrush PreviewTreeBackgroundBrush => TryParseBrush(TreeBackground);
@@ -363,6 +369,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _menuText = p.MenuText;
                 _menuBackground = p.MenuBackground;
+                _topButtonText = p.TopButtonText;
+                _topButtonBackground = p.TopButtonBackground;
 
                 if (_isEditingFriendlyView)
                 {
@@ -414,6 +422,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 OnPropertyChanged(nameof(MenuText));
                 OnPropertyChanged(nameof(MenuBackground));
+                OnPropertyChanged(nameof(TopButtonText));
+                OnPropertyChanged(nameof(TopButtonBackground));
 
                 OnPropertyChanged(nameof(TreeText));
                 OnPropertyChanged(nameof(TreeBackground));
@@ -465,6 +475,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             p.MenuText = NormalizeColor(MenuText, p.MenuText);
             p.MenuBackground = NormalizeColor(MenuBackground, p.MenuBackground);
+            p.TopButtonText = NormalizeColor(TopButtonText, p.TopButtonText);
+            p.TopButtonBackground = NormalizeColor(TopButtonBackground, p.TopButtonBackground);
 
             p.Pane2ComboText = NormalizeColor(Pane2ComboText, p.Pane2ComboText);
             p.Pane2ComboBackground = NormalizeColor(Pane2ComboBackground, p.Pane2ComboBackground);
@@ -519,6 +531,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             OnPropertyChanged(nameof(PreviewMenuTextBrush));
             OnPropertyChanged(nameof(PreviewMenuBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewTopButtonTextBrush));
+            OnPropertyChanged(nameof(PreviewTopButtonBackgroundBrush));
 
             OnPropertyChanged(nameof(PreviewTreeTextBrush));
             OnPropertyChanged(nameof(PreviewTreeBackgroundBrush));
@@ -554,6 +568,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 nameof(MenuText) => MenuText,
                 nameof(MenuBackground) => MenuBackground,
+                nameof(TopButtonText) => TopButtonText,
+                nameof(TopButtonBackground) => TopButtonBackground,
 
                 nameof(TreeText) => TreeText,
                 nameof(TreeBackground) => TreeBackground,
@@ -596,6 +612,8 @@ nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
 
                 case nameof(MenuText): MenuText = hex; break;
                 case nameof(MenuBackground): MenuBackground = hex; break;
+                case nameof(TopButtonText): TopButtonText = hex; break;
+                case nameof(TopButtonBackground): TopButtonBackground = hex; break;
 
                 case nameof(TreeText): TreeText = hex; break;
                 case nameof(TreeBackground): TreeBackground = hex; break;
@@ -731,6 +749,9 @@ nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
 
                 MenuText = p.MenuText,
                 MenuBackground = p.MenuBackground,
+                TopBarText = p.TopBarText,
+                TopButtonText = p.TopButtonText,
+                TopButtonBackground = p.TopButtonBackground,
 
                 TreeText = p.TreeText,
                 TreeBackground = p.TreeBackground,

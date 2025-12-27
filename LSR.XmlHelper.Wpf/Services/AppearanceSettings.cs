@@ -27,6 +27,8 @@ namespace LSR.XmlHelper.Wpf.Services
         public string MenuBackground { get; set; } = "#FF1E1E1E";
          public string TopBarText { get; set; } = "#FFD4D4D4";
         public string MenuText { get; set; } = "#FFD4D4D4";
+        public string TopButtonText { get; set; } = "#FFD4D4D4";
+        public string TopButtonBackground { get; set; } = "#FF2F2F2F";
         public string TreeText { get; set; } = "#FFD4D4D4";
         public string TreeBackground { get; set; } = "#FF1E1E1E";
         public string TreeItemHoverBackground { get; set; } = "#FF252525";
@@ -128,6 +130,8 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 MenuBackground = "#FF1E1E1E",
                 MenuText = "#FFD4D4D4",
+                TopButtonText = "#FFD4D4D4",
+                TopButtonBackground = "#FF2F2F2F",
 
                 TreeText = "#FFD4D4D4",
                 TreeBackground = "#FF1E1E1E",
@@ -173,6 +177,8 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 MenuBackground = "#FFF5F5F5",
                 MenuText = "#FF000000",
+                TopButtonText = "#FF000000",
+                TopButtonBackground = "#FFF5F5F5",
 
                 TreeText = "#FF000000",
                 TreeBackground = "#FFFFFFFF",

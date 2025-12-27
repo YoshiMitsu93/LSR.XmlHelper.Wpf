@@ -143,7 +143,7 @@
         </Style>
 
         <Style TargetType="{x:Type Expander}">
-            <Setter Property="Foreground" Value="{Binding Appearance.GridHeaderTextBrush}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
         </Style>
 
         <Style TargetType="{x:Type TreeView}">
@@ -674,6 +674,14 @@
 
         <StackPanel DockPanel.Dock="Top" Margin="8" Orientation="Vertical">
             <WrapPanel>
+                
+                <WrapPanel.Resources>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Foreground" Value="{Binding Appearance.TopButtonTextBrush}" />
+                        <Setter Property="Background" Value="{Binding Appearance.TopButtonBackgroundBrush}" />
+                    </Style>
+                </WrapPanel.Resources>
+                
                 <Button Content="Open Folder"
                         MinWidth="100"
                         Margin="0,0,8,0"
