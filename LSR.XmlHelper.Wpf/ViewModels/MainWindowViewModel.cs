@@ -82,6 +82,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             ApplySettingsToState();
 
             _appearance = new AppearanceService(_settings.Appearance, _isDarkMode, _isFriendlyView);
+            _appearance.PropertyChanged += AppearanceOnPropertyChanged;
+            SyncThemeTogglesFromAppearance();
 
             XmlFiles = new ObservableCollection<XmlFileListItem>();
             XmlTree = new ObservableCollection<XmlExplorerNode>();
@@ -357,7 +359,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenAppearance()
         {
-            var vm = new AppearanceWindowViewModel(_settingsService, _settings, _appearance, _isDarkMode, IsFriendlyView);
+            var vm = new AppearanceWindowViewModel(
+                _settingsService,
+                _settings,
+                _appearance,
+                _appearance.IsDarkMode,
+                _appearance.IsFriendlyView);
 
             var win = new AppearanceWindow
             {
@@ -366,6 +373,30 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             };
 
             win.ShowDialog();
+        }
+
+        private void AppearanceOnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppearanceService.IsDarkMode) ||
+                e.PropertyName == nameof(AppearanceService.IsFriendlyView))
+            {
+                SyncThemeTogglesFromAppearance();
+            }
+        }
+
+        private void SyncThemeTogglesFromAppearance()
+        {
+            if (_isDarkMode != _appearance.IsDarkMode)
+            {
+                _isDarkMode = _appearance.IsDarkMode;
+                OnPropertyChanged(nameof(IsDarkMode));
+            }
+
+            if (_isFriendlyView != _appearance.IsFriendlyView)
+            {
+                _isFriendlyView = _appearance.IsFriendlyView;
+                OnPropertyChanged(nameof(IsFriendlyView));
+            }
         }
 
         public bool TryConfirmClose()
