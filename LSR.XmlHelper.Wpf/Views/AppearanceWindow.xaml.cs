@@ -19,6 +19,7 @@ namespace LSR.XmlHelper.Wpf.Views
                 return;
 
             vm.CloseRequested += VmOnCloseRequested;
+            vm.OnViewReady();
         }
 
         protected override void OnClosed(EventArgs e)

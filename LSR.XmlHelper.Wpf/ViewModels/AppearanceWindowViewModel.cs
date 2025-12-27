@@ -23,11 +23,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly AppearanceSettings _originalFromSettings;
         private readonly AppearanceSettings _workingCopy;
 
+        private readonly bool _originalIsDarkMode;
+        private readonly bool _originalIsFriendlyView;
+
         private bool _isEditingDarkMode;
         private bool _isEditingFriendlyView;
 
         private bool _isDirty;
         private bool _suppressPreview;
+        private bool _isViewReady;
 
         public AppearanceWindowViewModel(
             AppSettingsService settingsService,
@@ -48,8 +52,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            _isEditingDarkMode = isCurrentDarkMode;
-            _isEditingFriendlyView = isCurrentFriendlyView;
+            _originalIsDarkMode = _appearance.IsDarkMode;
+            _originalIsFriendlyView = _appearance.IsFriendlyView;
+
+            _isEditingDarkMode = _originalIsDarkMode;
+            _isEditingFriendlyView = _originalIsFriendlyView;
+            _isEditingFriendlyView = _appearance.IsFriendlyView;
 
             LoadFromProfile(GetEditingProfile());
 
@@ -83,6 +91,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             get => _isEditingDarkMode;
             set
             {
+                if (!_isViewReady)
+                    return;
+
                 if (!SetProperty(ref _isEditingDarkMode, value))
                     return;
 
@@ -106,6 +117,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             get => _isEditingFriendlyView;
             set
             {
+                if (!_isViewReady)
+                    return;
+
                 if (!SetProperty(ref _isEditingFriendlyView, value))
                     return;
 
@@ -246,11 +260,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewPane2DropdownTextBrush => TryParseBrush(Pane2DropdownText);
         public WpfBrush PreviewPane2DropdownBackgroundBrush => TryParseBrush(Pane2DropdownBackground);
 
-        public void RevertPreview()
+        public void OnViewReady()
         {
-            _appearance.ReplaceSettings(CloneAppearance(_originalFromSettings));
+            if (_isViewReady)
+                return;
+
+            _isViewReady = true;
+
+            OnPropertyChanged(nameof(IsEditingDarkMode));
+            OnPropertyChanged(nameof(IsEditingLightMode));
+            OnPropertyChanged(nameof(IsEditingFriendlyView));
+            OnPropertyChanged(nameof(IsEditingRawXml));
+
+            ApplyPreviewIfEditingCurrentTheme();
         }
 
+        public void RevertPreview()
+        {
+            _appearance.IsDarkMode = _originalIsDarkMode;
+            _appearance.IsFriendlyView = _originalIsFriendlyView;
+            _appearance.ReplaceSettings(CloneAppearance(_originalFromSettings));
+        }
         public bool TryCommit()
         {
             var profile = GetEditingProfile();
