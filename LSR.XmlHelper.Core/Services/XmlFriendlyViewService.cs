@@ -103,7 +103,7 @@ namespace LSR.XmlHelper.Core.Services
                 index++;
 
                 var key = ResolveKey(element, index);
-                var display = ResolveDisplay(element, key);
+                var display = string.Empty;
 
                 entries.Add(new XmlFriendlyEntry(key, display, element));
             }
@@ -117,18 +117,27 @@ namespace LSR.XmlHelper.Core.Services
 
             void Walk(XElement el, string prefix)
             {
+                var basePrefix = string.IsNullOrEmpty(prefix) ? "" : prefix + "/";
+
                 foreach (var attr in el.Attributes())
                 {
-                    var key = string.IsNullOrEmpty(prefix)
-                        ? $"@{attr.Name.LocalName}"
-                        : $"{prefix}/@{attr.Name.LocalName}";
-
+                    var key = $"{basePrefix}@{attr.Name.LocalName}";
                     result[key] = new XmlFriendlyField(key, attr.Value, attr);
                 }
 
-                var children = el.Elements().ToList();
+                var hasAnyChild = false;
+                var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-                if (children.Count == 0)
+                foreach (var child in el.Elements())
+                {
+                    hasAnyChild = true;
+
+                    var name = child.Name.LocalName;
+                    counts.TryGetValue(name, out var c);
+                    counts[name] = c + 1;
+                }
+
+                if (!hasAnyChild)
                 {
                     if (string.IsNullOrEmpty(prefix))
                     {
@@ -143,34 +152,34 @@ namespace LSR.XmlHelper.Core.Services
                     return;
                 }
 
-                var grouped = children.GroupBy(c => c.Name.LocalName, StringComparer.OrdinalIgnoreCase);
+                Dictionary<string, int>? multiIndex = null;
 
-                foreach (var group in grouped)
+                foreach (var child in el.Elements())
                 {
-                    var list = group.ToList();
-                    if (list.Count == 1)
+                    var name = child.Name.LocalName;
+
+                    if (counts[name] == 1)
                     {
-                        var child = list[0];
                         var childPrefix = string.IsNullOrEmpty(prefix)
-                            ? child.Name.LocalName
-                            : $"{prefix}/{child.Name.LocalName}";
+                            ? name
+                            : $"{prefix}/{name}";
 
                         Walk(child, childPrefix);
+                        continue;
                     }
-                    else
-                    {
-                        var idx = 0;
-                        foreach (var child in list)
-                        {
-                            idx++;
 
-                            var childPrefix = string.IsNullOrEmpty(prefix)
-                                ? $"{child.Name.LocalName}[{idx}]"
-                                : $"{prefix}/{child.Name.LocalName}[{idx}]";
+                    multiIndex ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-                            Walk(child, childPrefix);
-                        }
-                    }
+                    multiIndex.TryGetValue(name, out var idx);
+                    idx++;
+                    multiIndex[name] = idx;
+
+                    var indexedName = $"{name}[{idx}]";
+                    var childPrefix2 = string.IsNullOrEmpty(prefix)
+                        ? indexedName
+                        : $"{prefix}/{indexedName}";
+
+                    Walk(child, childPrefix2);
                 }
             }
 
@@ -195,7 +204,7 @@ namespace LSR.XmlHelper.Core.Services
             return $"{element.Name.LocalName}[{index}]";
         }
 
-        private static string ResolveDisplay(XElement element, string fallback)
+        internal static string ResolveDisplay(XElement element, string fallback)
         {
             var bestName = FindBestIdentifier(element, preferNameLike: true);
             if (!string.IsNullOrWhiteSpace(bestName))
@@ -438,16 +447,17 @@ namespace LSR.XmlHelper.Core.Services
     public sealed class XmlFriendlyEntry
     {
         private Dictionary<string, XmlFriendlyField>? _fields;
+        private string? _display;
 
         public XmlFriendlyEntry(string key, string display, XElement element)
         {
             Key = key;
-            Display = display;
+            _display = string.IsNullOrWhiteSpace(display) ? null : display;
             Element = element;
         }
 
         public string Key { get; }
-        public string Display { get; }
+        public string Display => _display ??= XmlFriendlyViewService.ResolveDisplay(Element, Key);
         public XElement Element { get; }
 
         public Dictionary<string, XmlFriendlyField> Fields

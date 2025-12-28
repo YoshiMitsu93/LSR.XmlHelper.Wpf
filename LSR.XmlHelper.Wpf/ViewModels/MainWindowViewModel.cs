@@ -37,6 +37,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private CancellationTokenSource? _friendlyBuildCts;
         private CancellationTokenSource? _friendlyUiBuildCts;
+        private CancellationTokenSource? _friendlyFieldsBuildCts;
+
         private int _xmlVersion;
         private bool _suppressFriendlyRebuild;
 
@@ -263,7 +265,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _selectedFriendlyCollection, value))
                     return;
 
-                SelectedFriendlyEntry = value?.Entries.FirstOrDefault();
+                SelectedFriendlyEntry = null;
             }
         }
 
@@ -275,7 +277,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _selectedFriendlyEntry, value))
                     return;
 
-                RebuildFieldsForSelectedEntry();
+                QueueRebuildFieldsForSelectedEntry();
             }
         }
 
@@ -577,6 +579,22 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             ObservableCollection<XmlFriendlyFieldGroupViewModel> FieldGroups,
             ObservableCollection<object> Groups);
 
+        private void CancelPendingFriendlyFieldsBuild()
+        {
+            try
+            {
+                _friendlyFieldsBuildCts?.Cancel();
+                _friendlyFieldsBuildCts?.Dispose();
+            }
+            catch
+            {
+            }
+            finally
+            {
+                _friendlyFieldsBuildCts = null;
+            }
+        }
+
         private void ApplyFriendlyUiState(FriendlyUiState state)
         {
             HasFriendlyView = state.Collections.Count > 0;
@@ -606,42 +624,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var collections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
 
             var selectedCollection = collections.FirstOrDefault();
-            var selectedEntry = selectedCollection?.Entries.FirstOrDefault();
-
-            if (selectedEntry?.Entry is null)
-            {
-                return new FriendlyUiState(
-                    collections,
-                    selectedCollection,
-                    selectedEntry,
-                    new ObservableCollection<XmlFriendlyFieldViewModel>(),
-                    new ObservableCollection<XmlFriendlyFieldGroupViewModel>(),
-                    new ObservableCollection<object>());
-            }
-
-            token.ThrowIfCancellationRequested();
-
-            var entry = selectedEntry.Entry;
-
-            var fields = entry.Fields
-                .OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(k => new XmlFriendlyFieldViewModel(k.Key, k.Value.Value ?? ""))
-                .ToList();
-
-            token.ThrowIfCancellationRequested();
-
-            var fieldsVm = new ObservableCollection<XmlFriendlyFieldViewModel>(fields);
-            var fieldGroupsVm = BuildGroupsFromFields(fieldsVm);
-            var groupsVm = BuildUnifiedGroups(fieldsVm);
 
             return new FriendlyUiState(
                 collections,
                 selectedCollection,
-                selectedEntry,
-                fieldsVm,
-                fieldGroupsVm,
-                groupsVm);
+                null,
+                new ObservableCollection<XmlFriendlyFieldViewModel>(),
+                new ObservableCollection<XmlFriendlyFieldGroupViewModel>(),
+                new ObservableCollection<object>());
         }
+
 
         private void ClearFriendlyFields()
         {
@@ -652,14 +644,21 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             FriendlyGroups = new ObservableCollection<object>();
         }
 
-        private static void DetachFriendlyFieldHandlers(ObservableCollection<XmlFriendlyFieldViewModel> fields)
+        private void DetachFriendlyFieldHandlers(ObservableCollection<XmlFriendlyFieldViewModel> fields)
         {
             foreach (var f in fields)
-                f.PropertyChanged -= null;
+                f.PropertyChanged -= FriendlyField_PropertyChanged;
         }
 
-        private void RebuildFieldsForSelectedEntry()
+        private sealed record FriendlyFieldsState(
+            ObservableCollection<XmlFriendlyFieldViewModel> Fields,
+            ObservableCollection<XmlFriendlyFieldGroupViewModel> FieldGroups,
+            ObservableCollection<object> Groups);
+
+        private void QueueRebuildFieldsForSelectedEntry()
         {
+            CancelPendingFriendlyFieldsBuild();
+
             var entry = SelectedFriendlyEntry?.Entry;
             if (entry is null)
             {
@@ -667,20 +666,61 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            var fields = entry.Fields
-                .OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(k => new XmlFriendlyFieldViewModel(k.Key, k.Value.Value ?? ""))
-                .ToList();
+            ClearFriendlyFields();
 
-            var newFields = new ObservableCollection<XmlFriendlyFieldViewModel>(fields);
+            var myVersion = _xmlVersion;
 
-            foreach (var f in newFields)
+            _friendlyFieldsBuildCts = new CancellationTokenSource();
+            var token = _friendlyFieldsBuildCts.Token;
+
+            _ = Task.Run(() => BuildFriendlyFieldsState(entry, token), token).ContinueWith(t =>
+            {
+                if (t.IsCanceled || t.IsFaulted)
+                    return;
+
+                if (myVersion != _xmlVersion)
+                    return;
+
+                ApplyFriendlyFieldsState(t.Result);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private static FriendlyFieldsState BuildFriendlyFieldsState(XmlFriendlyEntry entry, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var source = entry.Fields;
+
+            IEnumerable<KeyValuePair<string, XmlFriendlyField>> ordered =
+            source.Count <= 5000
+            ? source.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
+            : source;
+
+            var fields = new List<XmlFriendlyFieldViewModel>(source.Count);
+
+            foreach (var kv in ordered)
+            {
+                token.ThrowIfCancellationRequested();
+                fields.Add(new XmlFriendlyFieldViewModel(kv.Key, kv.Value.Value ?? ""));
+            }
+
+            var fieldsVm = new ObservableCollection<XmlFriendlyFieldViewModel>(fields);
+            var fieldGroupsVm = BuildGroupsFromFields(fieldsVm);
+            var groupsVm = BuildUnifiedGroups(fieldsVm);
+
+            return new FriendlyFieldsState(fieldsVm, fieldGroupsVm, groupsVm);
+        }
+
+        private void ApplyFriendlyFieldsState(FriendlyFieldsState state)
+        {
+            foreach (var f in state.Fields)
                 f.PropertyChanged += FriendlyField_PropertyChanged;
 
-            FriendlyFields = newFields;
-            FriendlyFieldGroups = BuildGroupsFromFields(newFields);
-            FriendlyGroups = BuildUnifiedGroups(newFields);
+            FriendlyFields = state.Fields;
+            FriendlyFieldGroups = state.FieldGroups;
+            FriendlyGroups = state.Groups;
         }
+
 
         private static ObservableCollection<object> BuildUnifiedGroups(ObservableCollection<XmlFriendlyFieldViewModel> fields)
         {

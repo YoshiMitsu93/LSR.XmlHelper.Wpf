@@ -1,23 +1,27 @@
 ﻿using LSR.XmlHelper.Core.Services;
-using System.Collections.ObjectModel;
+using LSR.XmlHelper.Wpf.Infrastructure;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class XmlFriendlyCollectionViewModel
     {
+        private LazyVmList<XmlFriendlyEntry, XmlFriendlyEntryViewModel>? _entries;
+
         public XmlFriendlyCollectionViewModel(XmlFriendlyCollection collection)
         {
             Collection = collection;
-            Entries = new ObservableCollection<XmlFriendlyEntryViewModel>(
-                collection.Entries.Select(e => new XmlFriendlyEntryViewModel(e)));
         }
 
         public XmlFriendlyCollection Collection { get; }
 
         public string Title => GetDisplayTitle(Collection.Title);
 
-        public ObservableCollection<XmlFriendlyEntryViewModel> Entries { get; }
+        public IReadOnlyList<XmlFriendlyEntryViewModel> Entries =>
+            _entries ??= new LazyVmList<XmlFriendlyEntry, XmlFriendlyEntryViewModel>(
+                Collection.Entries,
+                e => new XmlFriendlyEntryViewModel(e));
 
         private static string GetDisplayTitle(string titlePath)
         {
