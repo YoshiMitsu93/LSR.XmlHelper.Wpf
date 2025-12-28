@@ -409,10 +409,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var result = win.ShowDialog();
             if (result == true)
             {
-                _ = LoadFileAsync(path);
-                Status = $"Restored backup: {Path.GetFileName(path)}";
+                var restored = vm.RestoredXmlPath;
+                if (!string.IsNullOrWhiteSpace(restored) && File.Exists(restored))
+                {
+                    _ = LoadFileAsync(restored);
+                    Status = $"Restored backup: {Path.GetFileName(restored)}";
+                }
+                else
+                {
+                    _ = LoadFileAsync(path);
+                    Status = $"Restored backup: {Path.GetFileName(path)}";
+                }
             }
         }
+
 
         private void AppearanceOnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {

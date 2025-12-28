@@ -33,5 +33,28 @@ namespace LSR.XmlHelper.Wpf.Views
             DialogResult = dialogResult;
             Close();
         }
+        private void BackupBrowserWindow_OnPreviewDragOver(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+                e.Effects = System.Windows.DragDropEffects.Copy;
+            else
+                e.Effects = System.Windows.DragDropEffects.None;
+
+            e.Handled = true;
+        }
+
+        private void BackupBrowserWindow_OnDrop(object sender, System.Windows.DragEventArgs e)
+        {
+            if (DataContext is not ViewModels.BackupBrowserWindowViewModel vm)
+                return;
+
+            if (!e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+                return;
+
+            if (e.Data.GetData(System.Windows.DataFormats.FileDrop) is not string[] files)
+                return;
+
+            vm.AddDroppedFiles(files);
+        }
     }
 }
