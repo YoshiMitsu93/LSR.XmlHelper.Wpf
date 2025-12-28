@@ -27,6 +27,29 @@ namespace LSR.XmlHelper.Wpf
             DataContext = new MainWindowViewModel();
         }
 
+        protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+        {
+            base.OnPreviewKeyDown(e);
+
+            if (e.Handled)
+                return;
+
+            if (e.Key != System.Windows.Input.Key.D)
+                return;
+
+            if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) != System.Windows.Input.ModifierKeys.Control)
+                return;
+
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (!vm.IsFriendlyView || vm.SelectedFriendlyEntry is null)
+                return;
+
+            vm.DuplicateSelectedFriendlyEntry();
+            e.Handled = true;
+        }
+
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (DataContext is not MainWindowViewModel vm)

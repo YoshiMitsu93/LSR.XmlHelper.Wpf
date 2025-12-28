@@ -93,6 +93,78 @@ namespace LSR.XmlHelper.Core.Services
             return document.Document.ToString(SaveOptions.DisableFormatting);
         }
 
+        public bool TryDuplicateEntry(
+    XmlFriendlyDocument document,
+    XmlFriendlyEntry sourceEntry,
+    bool insertAfter,
+    out XmlFriendlyEntry? duplicatedEntry,
+    out string? error)
+        {
+            duplicatedEntry = null;
+            error = null;
+
+            if (document is null)
+            {
+                error = "Document is null.";
+                return false;
+            }
+
+            if (sourceEntry is null)
+            {
+                error = "Source entry is null.";
+                return false;
+            }
+
+            var sourceElement = sourceEntry.Element;
+            var parent = sourceElement.Parent;
+
+            if (parent is null)
+            {
+                error = "Cannot duplicate. Entry has no parent in the XML.";
+                return false;
+            }
+
+            XElement clone;
+            try
+            {
+                clone = new XElement(sourceElement);
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+
+            try
+            {
+                if (insertAfter)
+                    sourceElement.AddAfterSelf(clone);
+                else
+                    parent.Add(clone);
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+
+            try
+            {
+                var siblings = parent.Elements(sourceElement.Name).ToList();
+                var siblingIndex = siblings.IndexOf(clone);
+                var displayIndex = siblingIndex >= 0 ? siblingIndex + 1 : siblings.Count;
+                var key = ResolveKey(clone, displayIndex);
+
+                duplicatedEntry = new XmlFriendlyEntry(key, string.Empty, clone);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
         private static List<XmlFriendlyEntry> BuildEntries(List<XElement> elements)
         {
             var entries = new List<XmlFriendlyEntry>(elements.Count);

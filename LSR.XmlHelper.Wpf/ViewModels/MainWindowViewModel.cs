@@ -583,13 +583,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
+            var selectedCollectionTitle = SelectedFriendlyCollection?.Collection.Title;
+            var selectedEntryKey = SelectedFriendlyEntry?.Entry.Key;
+
             _friendlyUiBuildCts = new CancellationTokenSource();
             var token = _friendlyUiBuildCts.Token;
 
             var myVersion = _xmlVersion;
             var doc = _friendlyDocument;
 
-            _ = Task.Run(() => BuildFriendlyUiState(doc, token), token).ContinueWith(t =>
+            _ = Task.Run(() => BuildFriendlyUiState(doc, selectedCollectionTitle, selectedEntryKey, token), token).ContinueWith(t =>
             {
                 if (t.IsCanceled || t.IsFaulted)
                     return;
@@ -600,7 +603,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 ApplyFriendlyUiState(t.Result);
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
         private void CancelPendingFriendlyUiBuild()
         {
             try
@@ -662,19 +664,33 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             FriendlyGroups = state.Groups;
         }
 
-        private static FriendlyUiState BuildFriendlyUiState(XmlFriendlyDocument doc, CancellationToken token)
+        private static FriendlyUiState BuildFriendlyUiState(
+    XmlFriendlyDocument doc,
+    string? selectedCollectionTitle,
+    string? selectedEntryKey,
+    CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
             var cols = doc.Collections.Select(c => new XmlFriendlyCollectionViewModel(c)).ToList();
             var collections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
 
-            var selectedCollection = collections.FirstOrDefault();
+            XmlFriendlyCollectionViewModel? selectedCollection = null;
+
+            if (!string.IsNullOrWhiteSpace(selectedCollectionTitle))
+                selectedCollection = collections.FirstOrDefault(c => string.Equals(c.Collection.Title, selectedCollectionTitle, StringComparison.OrdinalIgnoreCase));
+
+            selectedCollection ??= collections.FirstOrDefault();
+
+            XmlFriendlyEntryViewModel? selectedEntry = null;
+
+            if (selectedCollection is not null && !string.IsNullOrWhiteSpace(selectedEntryKey))
+                selectedEntry = selectedCollection.Entries.FirstOrDefault(e => string.Equals(e.Entry.Key, selectedEntryKey, StringComparison.OrdinalIgnoreCase));
 
             return new FriendlyUiState(
                 collections,
                 selectedCollection,
-                null,
+                selectedEntry,
                 new ObservableCollection<XmlFriendlyFieldViewModel>(),
                 new ObservableCollection<XmlFriendlyFieldGroupViewModel>(),
                 new ObservableCollection<object>());
@@ -953,6 +969,32 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             IsDirty = true;
             Status = "Edited.";
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+
+        public void DuplicateSelectedFriendlyEntry()
+        {
+            if (!IsFriendlyView)
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            var sourceEntry = SelectedFriendlyEntry?.Entry;
+            if (sourceEntry is null)
+                return;
+
+            if (!_friendly.TryDuplicateEntry(_friendlyDocument, sourceEntry, insertAfter: true, out _, out var error))
+            {
+                if (!string.IsNullOrWhiteSpace(error))
+                    MessageBox.Show(error, "Duplicate failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                Status = "Duplicate failed.";
+                return;
+            }
+
+            XmlText = _friendly.ToXml(_friendlyDocument);
+            Status = "Duplicated entry.";
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
