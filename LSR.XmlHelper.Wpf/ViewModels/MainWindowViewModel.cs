@@ -100,6 +100,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
 
+            OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
+            {
+                var p = GetSelectedFilePath();
+                return p is not null && File.Exists(p);
+            });
+
+
             if (!string.IsNullOrWhiteSpace(_rootFolder))
             {
                 RefreshFileViews(resetEditorAndSelection: true);
@@ -110,6 +117,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public AppearanceService Appearance => _appearance;
 
         public RelayCommand OpenAppearanceCommand { get; }
+        public RelayCommand OpenBackupBrowserCommand { get; }
 
         public string Title
         {
@@ -376,6 +384,34 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             };
 
             win.ShowDialog();
+        }
+
+
+        private void OpenBackupBrowser()
+        {
+            if (!TryConfirmDiscardOrSaveIfDirty())
+                return;
+
+            var path = GetSelectedFilePath();
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            {
+                MessageBox.Show("No XML file is currently selected.", "Restore from Backup", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var vm = new BackupBrowserWindowViewModel(path, _appearance);
+            var win = new BackupBrowserWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            var result = win.ShowDialog();
+            if (result == true)
+            {
+                _ = LoadFileAsync(path);
+                Status = $"Restored backup: {Path.GetFileName(path)}";
+            }
         }
 
         private void AppearanceOnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

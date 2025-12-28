@@ -486,7 +486,7 @@
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Header="Value"
-                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                            Binding="{Binding Value, UpdateSourceTrigger=LostFocus}"
                                             Width="*">
 
                             <DataGridTextColumn.CellStyle>
@@ -567,7 +567,7 @@
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Header="Value"
-                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                            Binding="{Binding Value, UpdateSourceTrigger=LostFocus}"
                                             Width="*">
 
                             <DataGridTextColumn.CellStyle>
@@ -627,6 +627,9 @@
                           ToolTip="Save changes to a new file path."
                           IsEnabled="{Binding IsDirty}"
                           Command="{Binding SaveAsCommand}" />
+                <MenuItem Header="_Restore from Backup..."
+                          ToolTip="Browse backups for the selected XML file and restore one safely."
+                          Command="{Binding OpenBackupBrowserCommand}" />
                 <Separator />
                 <MenuItem Header="E_xit"
                           ToolTip="Close the application."
