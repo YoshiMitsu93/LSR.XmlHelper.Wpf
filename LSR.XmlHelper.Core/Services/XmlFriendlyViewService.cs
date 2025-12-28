@@ -94,11 +94,11 @@ namespace LSR.XmlHelper.Core.Services
         }
 
         public bool TryDuplicateEntry(
-    XmlFriendlyDocument document,
-    XmlFriendlyEntry sourceEntry,
-    bool insertAfter,
-    out XmlFriendlyEntry? duplicatedEntry,
-    out string? error)
+        XmlFriendlyDocument document,
+        XmlFriendlyEntry sourceEntry,
+        bool insertAfter,
+        out XmlFriendlyEntry? duplicatedEntry,
+        out string? error)
         {
             duplicatedEntry = null;
             error = null;
@@ -124,23 +124,14 @@ namespace LSR.XmlHelper.Core.Services
                 return false;
             }
 
-            XElement clone;
-            try
-            {
-                clone = new XElement(sourceElement);
-            }
-            catch (Exception ex)
-            {
-                error = ex.Message;
-                return false;
-            }
+            var clone = new XElement(sourceElement);
 
             try
             {
                 if (insertAfter)
-                    sourceElement.AddAfterSelf(clone);
+                    AddAfterPreservingWhitespace(sourceElement, clone);
                 else
-                    parent.Add(clone);
+                    AddToEndPreservingWhitespace(parent, clone);
             }
             catch (Exception ex)
             {
@@ -164,6 +155,47 @@ namespace LSR.XmlHelper.Core.Services
                 return false;
             }
         }
+
+        private static void AddAfterPreservingWhitespace(XElement sourceElement, XElement clone)
+        {
+            var wsAfter = sourceElement.NextNode as XText;
+
+            if (wsAfter is not null && string.IsNullOrWhiteSpace(wsAfter.Value))
+            {
+                if (wsAfter.NextNode is XElement)
+                {
+                    wsAfter.AddAfterSelf(clone, new XText(wsAfter.Value));
+                    return;
+                }
+
+                sourceElement.AddAfterSelf(new XText(wsAfter.Value), clone);
+                return;
+            }
+
+            var wsBefore = sourceElement.PreviousNode as XText;
+            var separator = (wsBefore is not null && string.IsNullOrWhiteSpace(wsBefore.Value))
+                ? wsBefore.Value
+                : Environment.NewLine;
+
+            sourceElement.AddAfterSelf(new XText(separator), clone);
+
+            if (clone.NextNode is XElement)
+                clone.AddAfterSelf(new XText(separator));
+        }
+
+        private static void AddToEndPreservingWhitespace(XElement parent, XElement clone)
+        {
+            var trailing = parent.LastNode as XText;
+
+            if (trailing is not null && string.IsNullOrWhiteSpace(trailing.Value))
+            {
+                trailing.AddBeforeSelf(new XText(trailing.Value), clone);
+                return;
+            }
+
+            parent.Add(clone);
+        }
+
 
         private static List<XmlFriendlyEntry> BuildEntries(List<XElement> elements)
         {
