@@ -723,6 +723,13 @@
                         ToolTip="Validate that the XML is well-formed."
                         Command="{Binding ValidateCommand}" />
 
+                <Button Content="Duplicate"
+                        MinWidth="90"
+                        Margin="0,0,8,0"
+                        ToolTip="Duplicate the selected Friendly entry (Ctrl+D)."
+                        Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                        Command="{Binding DuplicateFriendlyEntryCommand}" />
+
                 <Button Content="Save"
                         MinWidth="70"
                         Margin="0,0,8,0"

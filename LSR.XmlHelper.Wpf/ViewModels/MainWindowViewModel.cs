@@ -97,6 +97,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SaveCommand = new RelayCommand(Save, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
             SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
             ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
+            DuplicateFriendlyEntryCommand = new RelayCommand(DuplicateSelectedFriendlyEntry, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null);
 
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
 
@@ -286,6 +287,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     return;
 
                 QueueRebuildFieldsForSelectedEntry();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -367,6 +369,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveCommand { get; }
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
+        public RelayCommand DuplicateFriendlyEntryCommand { get; }
 
         private void OpenAppearance()
         {
