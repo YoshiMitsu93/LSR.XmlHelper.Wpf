@@ -32,34 +32,28 @@ namespace LSR.XmlHelper.Core.Services
 
             var collections = new List<XmlFriendlyCollection>();
             var directEntries = new List<XElement>();
+            var seenTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var child in rootChildren)
             {
-                var grandchildren = child.Elements().ToList();
-                if (grandchildren.Count < 2)
+                var repeatingBlocks = FindRepeatingChildBlocks(child);
+
+                if (repeatingBlocks.Count == 0)
                 {
                     directEntries.Add(child);
                     continue;
                 }
 
-                var groupedGrand = grandchildren
-                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                var hasRepeatingGroup = groupedGrand.Any(g => g.Count() >= 2);
-                if (!hasRepeatingGroup)
+                foreach (var def in repeatingBlocks)
                 {
-                    directEntries.Add(child);
-                    continue;
-                }
-
-                foreach (var g in groupedGrand.Where(g => g.Count() >= 2))
-                {
-                    var title = groupedGrand.Count == 1
+                    var title = repeatingBlocks.Count == 1 && def.IsDirectChild
                         ? child.Name.LocalName
-                        : $"{child.Name.LocalName}/{g.Key}";
+                        : $"{child.Name.LocalName}/{def.BlockPath}";
 
-                    var entries = BuildEntries(g.ToList());
+                    if (!seenTitles.Add(title))
+                        continue;
+
+                    var entries = BuildEntries(def.Elements);
                     collections.Add(new XmlFriendlyCollection(title, entries));
                 }
             }
@@ -72,8 +66,13 @@ namespace LSR.XmlHelper.Core.Services
 
                 foreach (var g in groupedDirect)
                 {
+                    var title = g.Key;
+
+                    if (!seenTitles.Add(title))
+                        continue;
+
                     var entries = BuildEntries(g.ToList());
-                    collections.Add(new XmlFriendlyCollection(g.Key, entries));
+                    collections.Add(new XmlFriendlyCollection(title, entries));
                 }
             }
 
@@ -87,6 +86,87 @@ namespace LSR.XmlHelper.Core.Services
 
             return new XmlFriendlyDocument(doc, collections, primaryKey);
         }
+
+        private static List<(string BlockPath, bool IsDirectChild, List<XElement> Elements)> FindRepeatingChildBlocks(XElement entryRoot)
+        {
+            var results = new List<(string BlockPath, bool IsDirectChild, List<XElement> Elements)>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var parent in entryRoot.DescendantsAndSelf())
+            {
+                var children = parent.Elements().ToList();
+                if (children.Count < 2)
+                    continue;
+
+                var groups = children
+                    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var g in groups)
+                {
+                    if (g.Count() < 2)
+                        continue;
+
+                    if (!IsUniquePath(parent, entryRoot))
+                        continue;
+
+                    var parentPath = GetPathFromAncestor(parent, entryRoot);
+                    var blockPath = string.IsNullOrWhiteSpace(parentPath)
+                        ? g.Key
+                        : $"{parentPath}/{g.Key}";
+
+                    if (!seen.Add(blockPath))
+                        continue;
+
+                    results.Add((blockPath, string.IsNullOrWhiteSpace(parentPath), g.ToList()));
+                }
+            }
+
+            return results
+                .OrderBy(r => r.BlockPath, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static bool IsUniquePath(XElement node, XElement ancestor)
+        {
+            if (node == ancestor)
+                return true;
+
+            var current = node;
+            while (current != ancestor)
+            {
+                var parent = current.Parent;
+                if (parent is null)
+                    return false;
+
+                if (parent.Elements(current.Name).Take(2).Count() > 1)
+                    return false;
+
+                current = parent;
+            }
+
+            return true;
+        }
+
+        private static string GetPathFromAncestor(XElement node, XElement ancestor)
+        {
+            if (node == ancestor)
+                return string.Empty;
+
+            var parts = new Stack<string>();
+            var current = node;
+
+            while (current != ancestor)
+            {
+                parts.Push(current.Name.LocalName);
+                current = current.Parent;
+                if (current is null)
+                    return string.Empty;
+            }
+
+            return string.Join("/", parts);
+        }
+
 
         public string ToXml(XmlFriendlyDocument document)
         {
@@ -147,6 +227,98 @@ namespace LSR.XmlHelper.Core.Services
                 var key = ResolveKey(clone, displayIndex);
 
                 duplicatedEntry = new XmlFriendlyEntry(key, string.Empty, clone);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        public bool TryDuplicateChildBlock(
+          XmlFriendlyDocument document,
+          XmlFriendlyEntry sourceEntry,
+          string groupTitle,
+          string itemName,
+          bool insertAfter,
+          out string? error)
+        {
+            error = null;
+
+            if (document is null)
+            {
+                error = "Document is null.";
+                return false;
+            }
+
+            if (sourceEntry is null)
+            {
+                error = "Source entry is null.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(groupTitle))
+            {
+                error = "Group title is required.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(itemName))
+            {
+                error = "Item name is required.";
+                return false;
+            }
+
+            var lb = itemName.LastIndexOf('[');
+            var rb = itemName.EndsWith("]", StringComparison.Ordinal);
+
+            if (lb <= 0 || !rb)
+            {
+                error = "Item name is not in the expected format (Name[index]).";
+                return false;
+            }
+
+            var elementName = itemName.Substring(0, lb);
+            var indexText = itemName.Substring(lb + 1, itemName.Length - lb - 2);
+
+            if (!int.TryParse(indexText, out var index) || index <= 0)
+            {
+                error = "Item index is invalid.";
+                return false;
+            }
+
+            var entryElement = sourceEntry.Element;
+
+            var candidateContainer = entryElement.Element(groupTitle);
+            var container = candidateContainer is not null && candidateContainer.Elements(elementName).Any()
+                ? candidateContainer
+                : entryElement;
+
+            var items = container.Elements(elementName).ToList();
+            if (items.Count == 0)
+            {
+                error = "No matching items were found for this group.";
+                return false;
+            }
+
+            if (index > items.Count)
+            {
+                error = "The selected item index is out of range.";
+                return false;
+            }
+
+            var sourceElement = items[index - 1];
+            var clone = new XElement(sourceElement);
+
+            try
+            {
+                if (insertAfter)
+                    AddAfterPreservingWhitespace(sourceElement, clone);
+                else
+                    AddToEndPreservingWhitespace(container, clone);
+
+                sourceEntry.InvalidateFields();
                 return true;
             }
             catch (Exception ex)
@@ -280,7 +452,7 @@ namespace LSR.XmlHelper.Core.Services
 
                     var indexedName = $"{name}[{idx}]";
                     var childPrefix2 = string.IsNullOrEmpty(prefix)
-                        ? indexedName
+                        ? $"{name}/{indexedName}"
                         : $"{prefix}/{indexedName}";
 
                     Walk(child, childPrefix2);
@@ -571,6 +743,11 @@ namespace LSR.XmlHelper.Core.Services
                 _fields ??= XmlFriendlyViewService.FlattenFields(Element);
                 return _fields;
             }
+        }
+        public void InvalidateFields()
+        {
+            _fields = null;
+            _display = null;
         }
 
         public bool TrySetField(string fieldPath, string newValue, out string? error)

@@ -37,7 +37,9 @@ namespace LSR.XmlHelper.Wpf
             if (e.Key != System.Windows.Input.Key.D)
                 return;
 
-            if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) != System.Windows.Input.ModifierKeys.Control)
+            var mods = System.Windows.Input.Keyboard.Modifiers;
+
+            if ((mods & System.Windows.Input.ModifierKeys.Control) != System.Windows.Input.ModifierKeys.Control)
                 return;
 
             if (DataContext is not MainWindowViewModel vm)
@@ -45,6 +47,16 @@ namespace LSR.XmlHelper.Wpf
 
             if (!vm.IsFriendlyView || vm.SelectedFriendlyEntry is null)
                 return;
+
+            if ((mods & System.Windows.Input.ModifierKeys.Shift) == System.Windows.Input.ModifierKeys.Shift)
+            {
+                if (vm.SelectedFriendlyLookupItem is null)
+                    return;
+
+                vm.DuplicateSelectedFriendlyLookupItem();
+                e.Handled = true;
+                return;
+            }
 
             vm.DuplicateSelectedFriendlyEntry();
             e.Handled = true;
@@ -56,6 +68,30 @@ namespace LSR.XmlHelper.Wpf
                 return;
 
             vm.SelectedTreeNode = e.NewValue as XmlExplorerNode;
+        }
+
+        private void LookupGrid_PreviewMouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var dep = e.OriginalSource as System.Windows.DependencyObject;
+
+            while (dep is not null && dep is not System.Windows.Controls.DataGridRow)
+                dep = System.Windows.Media.VisualTreeHelper.GetParent(dep);
+
+            if (dep is System.Windows.Controls.DataGridRow row)
+                row.IsSelected = true;
+        }
+        private void LookupGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.DataGrid grid)
+                return;
+
+            if (grid.SelectedItem is null)
+                return;
+
+            grid.Dispatcher.BeginInvoke(new System.Action(() =>
+            {
+                grid.ScrollIntoView(grid.SelectedItem);
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void FriendlyGrid_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)

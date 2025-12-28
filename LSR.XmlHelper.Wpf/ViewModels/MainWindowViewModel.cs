@@ -66,6 +66,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
+        private XmlFriendlyLookupItemViewModel? _selectedFriendlyLookupItem;
+        private string? _pendingLookupGroupTitle;
+        private string? _pendingLookupItemName;
+        private string? _pendingLookupField;
+
 
         private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
         private ObservableCollection<XmlFriendlyFieldGroupViewModel> _friendlyFieldGroups = new();
@@ -98,6 +103,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
             ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
             DuplicateFriendlyEntryCommand = new RelayCommand(DuplicateSelectedFriendlyEntry, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null);
+            DuplicateFriendlyLookupItemCommand = new RelayCommand(DuplicateSelectedFriendlyLookupItem, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null && SelectedFriendlyLookupItem is not null);
 
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
 
@@ -286,7 +292,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (!SetProperty(ref _selectedFriendlyEntry, value))
                     return;
 
+                SelectedFriendlyLookupItem = null;
                 QueueRebuildFieldsForSelectedEntry();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public XmlFriendlyLookupItemViewModel? SelectedFriendlyLookupItem
+        {
+            get => _selectedFriendlyLookupItem;
+            set
+            {
+                if (!SetProperty(ref _selectedFriendlyLookupItem, value))
+                    return;
+
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
@@ -370,6 +389,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand SaveAsCommand { get; }
         public RelayCommand ClearCommand { get; }
         public RelayCommand DuplicateFriendlyEntryCommand { get; }
+        public RelayCommand DuplicateFriendlyLookupItemCommand { get; }
 
         private void OpenAppearance()
         {
@@ -752,14 +772,77 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private static FriendlyFieldsState BuildFriendlyFieldsState(XmlFriendlyEntry entry, CancellationToken token)
         {
+            static int CompareSegment(string a, string b)
+            {
+                static (string Name, int? Index) Parse(string s)
+                {
+                    if (string.IsNullOrWhiteSpace(s))
+                        return ("", null);
+
+                    var lb = s.LastIndexOf('[');
+                    if (lb > 0 && s.EndsWith("]", StringComparison.Ordinal))
+                    {
+                        var indexText = s.Substring(lb + 1, s.Length - lb - 2);
+                        if (int.TryParse(indexText, out var idx) && idx >= 0)
+                            return (s.Substring(0, lb), idx);
+                    }
+
+                    return (s, null);
+                }
+
+                var pa = Parse(a);
+                var pb = Parse(b);
+
+                var nameCompare = StringComparer.OrdinalIgnoreCase.Compare(pa.Name, pb.Name);
+                if (nameCompare != 0)
+                    return nameCompare;
+
+                if (pa.Index.HasValue && pb.Index.HasValue)
+                    return pa.Index.Value.CompareTo(pb.Index.Value);
+
+                if (pa.Index.HasValue)
+                    return 1;
+
+                if (pb.Index.HasValue)
+                    return -1;
+
+                return StringComparer.OrdinalIgnoreCase.Compare(a, b);
+            }
+
+            static int CompareFieldPath(string? a, string? b)
+            {
+                if (ReferenceEquals(a, b))
+                    return 0;
+
+                if (a is null)
+                    return -1;
+
+                if (b is null)
+                    return 1;
+
+                var aParts = a.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                var bParts = b.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                var len = Math.Min(aParts.Length, bParts.Length);
+
+                for (var i = 0; i < len; i++)
+                {
+                    var cmp = CompareSegment(aParts[i], bParts[i]);
+                    if (cmp != 0)
+                        return cmp;
+                }
+
+                return aParts.Length.CompareTo(bParts.Length);
+            }
+
             token.ThrowIfCancellationRequested();
 
             var source = entry.Fields;
 
             IEnumerable<KeyValuePair<string, XmlFriendlyField>> ordered =
-            source.Count <= 5000
-            ? source.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase)
-            : source;
+                source.Count <= 5000
+                    ? source.OrderBy(k => k.Key, Comparer<string>.Create(CompareFieldPath))
+                    : source;
 
             var fields = new List<XmlFriendlyFieldViewModel>(source.Count);
 
@@ -778,12 +861,50 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void ApplyFriendlyFieldsState(FriendlyFieldsState state)
         {
+            var pendingGroup = _pendingLookupGroupTitle;
+            var pendingItem = _pendingLookupItemName;
+            var pendingField = _pendingLookupField;
+
+            _pendingLookupGroupTitle = null;
+            _pendingLookupItemName = null;
+            _pendingLookupField = null;
+
+            var previous = SelectedFriendlyLookupItem;
+            var previousItem = previous?.Item;
+            var previousField = previous?.Field;
+
             foreach (var f in state.Fields)
                 f.PropertyChanged += FriendlyField_PropertyChanged;
 
             FriendlyFields = state.Fields;
             FriendlyFieldGroups = state.FieldGroups;
             FriendlyGroups = state.Groups;
+
+            XmlFriendlyLookupItemViewModel? match = null;
+
+            if (!string.IsNullOrWhiteSpace(pendingItem) && !string.IsNullOrWhiteSpace(pendingField))
+            {
+                match = state.Groups
+                    .OfType<XmlFriendlyLookupGroupViewModel>()
+                    .Where(g => string.IsNullOrWhiteSpace(pendingGroup) || string.Equals(g.Title, pendingGroup, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(g => g.Items)
+                    .FirstOrDefault(i =>
+                        string.Equals(i.Item, pendingItem, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(i.Field, pendingField, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (match is null && !string.IsNullOrWhiteSpace(previousItem) && !string.IsNullOrWhiteSpace(previousField))
+            {
+                match = state.Groups
+                    .OfType<XmlFriendlyLookupGroupViewModel>()
+                    .SelectMany(g => g.Items)
+                    .FirstOrDefault(i =>
+                        string.Equals(i.Item, previousItem, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(i.Field, previousField, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (match is not null)
+                SelectedFriendlyLookupItem = match;
         }
 
 
@@ -804,12 +925,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 var first = parts[0];
                 var second = parts[1];
-                var third = parts[2];
 
-                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second) || string.IsNullOrWhiteSpace(third))
+                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
                     return false;
 
-                var lb = second.IndexOf('[');
+                var lb = second.IndexOf('[', StringComparison.Ordinal);
                 var rb = second.EndsWith("]", StringComparison.Ordinal);
 
                 if (lb <= 0 || !rb)
@@ -817,7 +937,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 groupTitle = first;
                 itemName = second;
-                leafField = third;
+                leafField = string.Join("/", parts.Skip(2));
                 return true;
             }
 
@@ -833,23 +953,30 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return fieldName.Substring(0, slash);
             }
 
-            var lookupBuckets = new Dictionary<string, Dictionary<string, List<XmlFriendlyLookupItemViewModel>>>(StringComparer.OrdinalIgnoreCase);
-            var normalBuckets = new Dictionary<string, List<XmlFriendlyFieldViewModel>>(StringComparer.OrdinalIgnoreCase);
+            var lookupGroupsInOrder = new List<string>();
+            var lookupItemsInOrder = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var lookupRows = new Dictionary<string, Dictionary<string, List<XmlFriendlyLookupItemViewModel>>>(StringComparer.OrdinalIgnoreCase);
+
+            var normalGroupsInOrder = new List<string>();
+            var normalRows = new Dictionary<string, List<XmlFriendlyFieldViewModel>>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var f in fields)
             {
                 if (TryParseLookupField(f.Name, out var lookupGroup, out var itemName, out var leaf))
                 {
-                    if (!lookupBuckets.TryGetValue(lookupGroup, out var itemsByName))
+                    if (!lookupRows.TryGetValue(lookupGroup, out var itemsByName))
                     {
                         itemsByName = new Dictionary<string, List<XmlFriendlyLookupItemViewModel>>(StringComparer.OrdinalIgnoreCase);
-                        lookupBuckets[lookupGroup] = itemsByName;
+                        lookupRows[lookupGroup] = itemsByName;
+                        lookupGroupsInOrder.Add(lookupGroup);
+                        lookupItemsInOrder[lookupGroup] = new List<string>();
                     }
 
                     if (!itemsByName.TryGetValue(itemName, out var list))
                     {
                         list = new List<XmlFriendlyLookupItemViewModel>();
                         itemsByName[itemName] = list;
+                        lookupItemsInOrder[lookupGroup].Add(itemName);
                     }
 
                     list.Add(new XmlFriendlyLookupItemViewModel(itemName, leaf, f));
@@ -857,10 +984,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 }
 
                 var normalGroup = GetGroupTitle(f.Name);
-                if (!normalBuckets.TryGetValue(normalGroup, out var normalList))
+
+                if (!normalRows.TryGetValue(normalGroup, out var normalList))
                 {
                     normalList = new List<XmlFriendlyFieldViewModel>();
-                    normalBuckets[normalGroup] = normalList;
+                    normalRows[normalGroup] = normalList;
+                    normalGroupsInOrder.Add(normalGroup);
                 }
 
                 normalList.Add(f);
@@ -868,32 +997,42 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var output = new List<object>();
 
-            if (normalBuckets.TryGetValue("General", out var general))
+            if (normalRows.TryGetValue("General", out var general))
             {
-                var generalVm = new XmlFriendlyFieldGroupViewModel(
+                output.Add(new XmlFriendlyFieldGroupViewModel(
                     "General",
-                    new ObservableCollection<XmlFriendlyFieldViewModel>(general));
-                output.Add(generalVm);
-                normalBuckets.Remove("General");
+                    new ObservableCollection<XmlFriendlyFieldViewModel>(general)));
+
+                normalRows.Remove("General");
+                normalGroupsInOrder.RemoveAll(x => string.Equals(x, "General", StringComparison.OrdinalIgnoreCase));
             }
 
-            foreach (var lookupGroup in lookupBuckets.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+            foreach (var lookupGroup in lookupGroupsInOrder)
             {
+                if (!lookupRows.TryGetValue(lookupGroup, out var itemsByName))
+                    continue;
+
                 var rows = new List<XmlFriendlyLookupItemViewModel>();
 
-                foreach (var item in lookupGroup.Value.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
-                    rows.AddRange(item.Value.OrderBy(x => x.Field, StringComparer.OrdinalIgnoreCase));
+                foreach (var itemName in lookupItemsInOrder[lookupGroup])
+                {
+                    if (itemsByName.TryGetValue(itemName, out var list))
+                        rows.AddRange(list);
+                }
 
                 output.Add(new XmlFriendlyLookupGroupViewModel(
-                    lookupGroup.Key,
+                    lookupGroup,
                     new ObservableCollection<XmlFriendlyLookupItemViewModel>(rows)));
             }
 
-            foreach (var g in normalBuckets.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+            foreach (var g in normalGroupsInOrder)
             {
+                if (!normalRows.TryGetValue(g, out var list))
+                    continue;
+
                 output.Add(new XmlFriendlyFieldGroupViewModel(
-                    g.Key,
-                    new ObservableCollection<XmlFriendlyFieldViewModel>(g.Value)));
+                    g,
+                    new ObservableCollection<XmlFriendlyFieldViewModel>(list)));
             }
 
             return new ObservableCollection<object>(output);
@@ -998,6 +1137,118 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             XmlText = _friendly.ToXml(_friendlyDocument);
             Status = "Duplicated entry.";
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+
+        public void DuplicateSelectedFriendlyLookupItem()
+        {
+            if (!IsFriendlyView)
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            var sourceEntry = SelectedFriendlyEntry?.Entry;
+            if (sourceEntry is null)
+                return;
+
+            var selectedItem = SelectedFriendlyLookupItem;
+            if (selectedItem is null)
+                return;
+
+            static bool TryParseLookupField(string name, out string groupTitle, out string itemName, out string leafField)
+            {
+                groupTitle = "";
+                itemName = "";
+                leafField = "";
+
+                if (string.IsNullOrWhiteSpace(name))
+                    return false;
+
+                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 3)
+                    return false;
+
+                var first = parts[0];
+                var second = parts[1];
+
+                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
+                    return false;
+
+                var lb = second.IndexOf('[', StringComparison.Ordinal);
+                var rb = second.EndsWith("]", StringComparison.Ordinal);
+
+                if (lb <= 0 || !rb)
+                    return false;
+
+                groupTitle = first;
+                itemName = second;
+                leafField = string.Join("/", parts.Skip(2));
+                return true;
+            }
+
+            static bool TryParseIndexedItem(string itemName, out string elementName, out int index)
+            {
+                elementName = "";
+                index = 0;
+
+                if (string.IsNullOrWhiteSpace(itemName))
+                    return false;
+
+                var lb = itemName.LastIndexOf('[');
+                if (lb <= 0 || !itemName.EndsWith("]", StringComparison.Ordinal))
+                    return false;
+
+                elementName = itemName.Substring(0, lb);
+                var indexText = itemName.Substring(lb + 1, itemName.Length - lb - 2);
+
+                return int.TryParse(indexText, out index) && index > 0;
+            }
+
+            string? groupTitle = null;
+
+            foreach (var f in FriendlyFields)
+            {
+                if (TryParseLookupField(f.Name, out var g, out var itemName, out _)
+                    && string.Equals(itemName, selectedItem.Item, StringComparison.OrdinalIgnoreCase))
+                {
+                    groupTitle = g;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(groupTitle))
+            {
+                Status = "Duplicate item failed.";
+                return;
+            }
+
+            if (!TryParseIndexedItem(selectedItem.Item, out var elementName, out var index))
+            {
+                Status = "Duplicate item failed.";
+                return;
+            }
+
+            _pendingLookupGroupTitle = groupTitle;
+            _pendingLookupItemName = $"{elementName}[{index + 1}]";
+            _pendingLookupField = selectedItem.Field;
+
+            if (!_friendly.TryDuplicateChildBlock(_friendlyDocument, sourceEntry, groupTitle, selectedItem.Item, insertAfter: true, out var error))
+            {
+                _pendingLookupGroupTitle = null;
+                _pendingLookupItemName = null;
+                _pendingLookupField = null;
+
+                if (!string.IsNullOrWhiteSpace(error))
+                    MessageBox.Show(error, "Duplicate failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                Status = "Duplicate failed.";
+                return;
+            }
+
+            XmlText = _friendly.ToXml(_friendlyDocument);
+            Status = "Duplicated item.";
+            QueueRebuildFieldsForSelectedEntry();
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 

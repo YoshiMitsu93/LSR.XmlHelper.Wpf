@@ -531,6 +531,9 @@
                       IsExpanded="{Binding IsExpanded}"
                       Margin="0,0,0,6">
                 <DataGrid ItemsSource="{Binding Items}"
+                          SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                          PreviewMouseRightButtonDown="LookupGrid_PreviewMouseRightButtonDown"
+                          SelectionChanged="LookupGrid_SelectionChanged"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
@@ -540,7 +543,20 @@
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
                           ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.IsDeferredScrollingEnabled="True">
+                          ScrollViewer.IsDeferredScrollingEnabled="True"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          MaxHeight="600">
+
+
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Duplicate Item"
+                                      InputGestureText="Ctrl+Shift+D"
+                                      Command="{Binding DataContext.DuplicateFriendlyLookupItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Item"
                                             Binding="{Binding Item}"
@@ -729,6 +745,13 @@
                         ToolTip="Duplicate the selected Friendly entry (Ctrl+D)."
                         Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
                         Command="{Binding DuplicateFriendlyEntryCommand}" />
+
+                <Button Content="Duplicate Item"
+                        MinWidth="110"
+                        Margin="0,0,8,0"
+                        ToolTip="Duplicate the selected list item in Friendly View (e.g. MenuItem)."
+                        Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
+                        Command="{Binding DuplicateFriendlyLookupItemCommand}" />
 
                 <Button Content="Save"
                         MinWidth="70"
