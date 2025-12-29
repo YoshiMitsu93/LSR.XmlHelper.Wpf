@@ -14,7 +14,12 @@
         FontSize="{Binding Appearance.UiFontSize}"
         FontWeight="{Binding Appearance.UiFontWeight}"
         FontStyle="{Binding Appearance.UiFontStyle}">
-
+    
+    <Window.InputBindings>
+        <KeyBinding Key="D" Modifiers="Control" Command="{Binding DuplicateFriendlyEntryCommand}" />
+        <KeyBinding Key="D" Modifiers="Control+Shift" Command="{Binding DuplicateFriendlyLookupItemCommand}" />
+    </Window.InputBindings>
+    
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
@@ -471,7 +476,7 @@
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
                           ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.IsDeferredScrollingEnabled="True">
+                          ScrollViewer.IsDeferredScrollingEnabled="False" infra:ScrollViewerMouseWheelBehavior.Enable="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Field"
                                             Binding="{Binding Name}"
@@ -530,7 +535,7 @@
             <Expander Header="{Binding Title}"
                       IsExpanded="{Binding IsExpanded}"
                       Margin="0,0,0,6">
-                <DataGrid ItemsSource="{Binding Items}"
+                <DataGrid ItemsSource="{Binding Items}" infra:ScrollViewerMouseWheelBehavior.Enable="False" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                           SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
                           PreviewMouseRightButtonDown="LookupGrid_PreviewMouseRightButtonDown"
                           SelectionChanged="LookupGrid_SelectionChanged"
@@ -543,7 +548,7 @@
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
                           ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.IsDeferredScrollingEnabled="True"
+                          ScrollViewer.IsDeferredScrollingEnabled="False"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           MaxHeight="600">
@@ -553,7 +558,7 @@
                         <ContextMenu>
                             <MenuItem Header="Duplicate Item"
                                       InputGestureText="Ctrl+Shift+D"
-                                      Command="{Binding DataContext.DuplicateFriendlyLookupItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                      Command="{Binding PlacementTarget.Tag.DuplicateFriendlyLookupItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                     
@@ -749,7 +754,7 @@
                 <Button Content="Duplicate Item"
                         MinWidth="110"
                         Margin="0,0,8,0"
-                        ToolTip="Duplicate the selected list item in Friendly View (e.g. MenuItem)."
+                        ToolTip="Duplicate the selected list item in Friendly View (e.g. MenuItem) (Ctrl+Shift+D)."
                         Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
                         Command="{Binding DuplicateFriendlyLookupItemCommand}" />
 

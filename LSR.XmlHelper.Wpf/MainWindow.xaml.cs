@@ -85,12 +85,18 @@ namespace LSR.XmlHelper.Wpf
             if (sender is not System.Windows.Controls.DataGrid grid)
                 return;
 
-            if (grid.SelectedItem is null)
+            var selected = grid.SelectedItem;
+
+            if (DataContext is MainWindowViewModel vm)
+                vm.SelectedFriendlyLookupItem = selected as XmlFriendlyLookupItemViewModel;
+
+            if (selected is null)
                 return;
 
             grid.Dispatcher.BeginInvoke(new System.Action(() =>
             {
-                grid.ScrollIntoView(grid.SelectedItem);
+                if (grid.Items.Contains(selected))
+                    grid.ScrollIntoView(selected);
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
 

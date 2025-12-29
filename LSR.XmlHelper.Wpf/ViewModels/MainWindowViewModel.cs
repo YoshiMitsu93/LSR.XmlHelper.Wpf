@@ -672,10 +672,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             FriendlyCollections = state.Collections;
 
-            _selectedFriendlyCollection = state.SelectedCollection;
-            _selectedFriendlyEntry = state.SelectedEntry;
-            OnPropertyChanged(nameof(SelectedFriendlyCollection));
-            OnPropertyChanged(nameof(SelectedFriendlyEntry));
+            SelectedFriendlyCollection = state.SelectedCollection;
+            SelectedFriendlyEntry = state.SelectedEntry;
 
             DetachFriendlyFieldHandlers(_friendlyFields);
 
@@ -1136,6 +1134,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             XmlText = _friendly.ToXml(_friendlyDocument);
+            RefreshFriendlyFromXml();
+            QueueRebuildFieldsForSelectedEntry();
+
             Status = "Duplicated entry.";
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
@@ -1205,25 +1206,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return int.TryParse(indexText, out index) && index > 0;
             }
 
-            string? groupTitle = null;
-
-            foreach (var f in FriendlyFields)
-            {
-                if (TryParseLookupField(f.Name, out var g, out var itemName, out _)
-                    && string.Equals(itemName, selectedItem.Item, StringComparison.OrdinalIgnoreCase))
-                {
-                    groupTitle = g;
-                    break;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(groupTitle))
+            if (!TryParseLookupField(selectedItem.FullName, out var groupTitle, out var itemName, out _))
             {
                 Status = "Duplicate item failed.";
                 return;
             }
 
-            if (!TryParseIndexedItem(selectedItem.Item, out var elementName, out var index))
+            if (!TryParseIndexedItem(itemName, out var elementName, out var index))
             {
                 Status = "Duplicate item failed.";
                 return;
@@ -1233,7 +1222,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _pendingLookupItemName = $"{elementName}[{index + 1}]";
             _pendingLookupField = selectedItem.Field;
 
-            if (!_friendly.TryDuplicateChildBlock(_friendlyDocument, sourceEntry, groupTitle, selectedItem.Item, insertAfter: true, out var error))
+            if (!_friendly.TryDuplicateChildBlock(_friendlyDocument, sourceEntry, groupTitle, itemName, insertAfter: true, out var error))
             {
                 _pendingLookupGroupTitle = null;
                 _pendingLookupItemName = null;

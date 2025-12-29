@@ -17,6 +17,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public string Field { get; }
 
+        public string FullName => _field.Name;
+
         public string Value
         {
             get => _field.Value;
