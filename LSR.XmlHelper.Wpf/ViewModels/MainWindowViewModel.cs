@@ -908,37 +908,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private static ObservableCollection<object> BuildUnifiedGroups(ObservableCollection<XmlFriendlyFieldViewModel> fields)
         {
-            static bool TryParseLookupField(string name, out string groupTitle, out string itemName, out string leafField)
-            {
-                groupTitle = "";
-                itemName = "";
-                leafField = "";
-
-                if (string.IsNullOrWhiteSpace(name))
-                    return false;
-
-                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 3)
-                    return false;
-
-                var first = parts[0];
-                var second = parts[1];
-
-                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
-                    return false;
-
-                var lb = second.IndexOf('[', StringComparison.Ordinal);
-                var rb = second.EndsWith("]", StringComparison.Ordinal);
-
-                if (lb <= 0 || !rb)
-                    return false;
-
-                groupTitle = first;
-                itemName = second;
-                leafField = string.Join("/", parts.Skip(2));
-                return true;
-            }
-
             static string GetGroupTitle(string fieldName)
             {
                 if (string.IsNullOrWhiteSpace(fieldName))
@@ -951,6 +920,50 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return fieldName.Substring(0, slash);
             }
 
+            static bool TrySplitLookup(string name, out string section, out string item, out string leafField)
+            {
+                section = "";
+                item = "";
+                leafField = "";
+
+                if (string.IsNullOrWhiteSpace(name))
+                    return false;
+
+                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 3)
+                    return false;
+
+                section = parts[0];
+                item = parts[1];
+                leafField = string.Join("/", parts.Skip(2));
+
+                return !string.IsNullOrWhiteSpace(section)
+                    && !string.IsNullOrWhiteSpace(item)
+                    && !string.IsNullOrWhiteSpace(leafField);
+            }
+
+            var lookupItemCounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var f in fields)
+            {
+                if (!TrySplitLookup(f.Name, out var section, out var item, out _))
+                    continue;
+
+                if (!lookupItemCounts.TryGetValue(section, out var set))
+                {
+                    set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    lookupItemCounts[section] = set;
+                }
+
+                set.Add(item);
+            }
+
+            var lookupSections = new HashSet<string>(
+                lookupItemCounts
+                    .Where(kvp => kvp.Value.Count >= 2)
+                    .Select(kvp => kvp.Key),
+                StringComparer.OrdinalIgnoreCase);
+
             var lookupGroupsInOrder = new List<string>();
             var lookupItemsInOrder = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var lookupRows = new Dictionary<string, Dictionary<string, List<XmlFriendlyLookupItemViewModel>>>(StringComparer.OrdinalIgnoreCase);
@@ -960,21 +973,21 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             foreach (var f in fields)
             {
-                if (TryParseLookupField(f.Name, out var lookupGroup, out var itemName, out var leaf))
+                if (TrySplitLookup(f.Name, out var section, out var itemName, out var leaf) && lookupSections.Contains(section))
                 {
-                    if (!lookupRows.TryGetValue(lookupGroup, out var itemsByName))
+                    if (!lookupRows.TryGetValue(section, out var itemsByName))
                     {
                         itemsByName = new Dictionary<string, List<XmlFriendlyLookupItemViewModel>>(StringComparer.OrdinalIgnoreCase);
-                        lookupRows[lookupGroup] = itemsByName;
-                        lookupGroupsInOrder.Add(lookupGroup);
-                        lookupItemsInOrder[lookupGroup] = new List<string>();
+                        lookupRows[section] = itemsByName;
+                        lookupGroupsInOrder.Add(section);
+                        lookupItemsInOrder[section] = new List<string>();
                     }
 
                     if (!itemsByName.TryGetValue(itemName, out var list))
                     {
                         list = new List<XmlFriendlyLookupItemViewModel>();
                         itemsByName[itemName] = list;
-                        lookupItemsInOrder[lookupGroup].Add(itemName);
+                        lookupItemsInOrder[section].Add(itemName);
                     }
 
                     list.Add(new XmlFriendlyLookupItemViewModel(itemName, leaf, f));
@@ -995,12 +1008,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var output = new List<object>();
 
-            if (normalRows.TryGetValue("General", out var general))
+            if (normalRows.TryGetValue("General", out var generalList))
             {
-                output.Add(new XmlFriendlyFieldGroupViewModel(
-                    "General",
-                    new ObservableCollection<XmlFriendlyFieldViewModel>(general)));
-
+                output.Add(new XmlFriendlyFieldGroupViewModel("General", new ObservableCollection<XmlFriendlyFieldViewModel>(generalList)));
                 normalRows.Remove("General");
                 normalGroupsInOrder.RemoveAll(x => string.Equals(x, "General", StringComparison.OrdinalIgnoreCase));
             }
@@ -1012,9 +1022,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 var rows = new List<XmlFriendlyLookupItemViewModel>();
 
-                foreach (var itemName in lookupItemsInOrder[lookupGroup])
+                foreach (var item in lookupItemsInOrder[lookupGroup])
                 {
-                    if (itemsByName.TryGetValue(itemName, out var list))
+                    if (itemsByName.TryGetValue(item, out var list))
                         rows.AddRange(list);
                 }
 
