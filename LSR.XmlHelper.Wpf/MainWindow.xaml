@@ -19,6 +19,12 @@
         <KeyBinding Key="D" Modifiers="Control" Command="{Binding DuplicateFriendlyEntryCommand}" />
         <KeyBinding Key="D" Modifiers="Control+Shift" Command="{Binding DuplicateFriendlyLookupItemCommand}" />
         <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding OpenGlobalSearchCommand}" />
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
+        <KeyBinding Key="K" Modifiers="Control" Command="{Binding FormatCommand}" />
+        <KeyBinding Key="V" Modifiers="Control+Shift" Command="{Binding ValidateCommand}" />
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveAsCommand}" />
+        <KeyBinding Key="L" Modifiers="Control" Command="{Binding ClearCommand}" />
     </Window.InputBindings>
     
     <Window.Resources>
@@ -687,17 +693,20 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Open Folder..."
-                          ToolTip="Pick the folder that contains your XML files."
-                          Command="{Binding OpenCommand}" />
+                          ToolTip="Pick the folder that contains your XML files. (Ctrl+O)"
+                          InputGestureText="Ctrl+O"
+                          Command="{Binding OpenCommand}" />            
                 <Separator />
                 <MenuItem Header="_Save"
-                          ToolTip="Save changes to the current XML file (backup is created when saving edits)."
+                          ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)"
+                          InputGestureText="Ctrl+S"
                           IsEnabled="{Binding IsDirty}"
                           Command="{Binding SaveCommand}" />
                 <MenuItem Header="Save _As..."
-                          ToolTip="Save changes to a new file path."
+                          ToolTip="Save changes to a new file path. (Ctrl+Shift+S)"
+                          InputGestureText="Ctrl+Shift+S"
                           IsEnabled="{Binding IsDirty}"
-                          Command="{Binding SaveAsCommand}" />
+                          Command="{Binding SaveAsCommand}" />  
                 <MenuItem Header="_Restore from Backup..."
                           ToolTip="Browse backups for the selected XML file and restore one safely."
                           Command="{Binding OpenBackupBrowserCommand}" />
@@ -709,15 +718,18 @@
 
             <MenuItem Header="_Edit">
                 <MenuItem Header="_Format"
-                          ToolTip="Format (pretty-print) the XML."
+                          ToolTip="Format (pretty-print) the XML. (Ctrl+K)"
+                          InputGestureText="Ctrl+K"
                           Command="{Binding FormatCommand}" />
                 <MenuItem Header="_Validate"
-                          ToolTip="Validate that the XML is well-formed."
+                          ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)"
+                          InputGestureText="Ctrl+Shift+V"
                           Command="{Binding ValidateCommand}" />
                 <Separator />
                 <MenuItem Header="_Clear"
-                          ToolTip="Clear the current selection and editor."
-                          Command="{Binding ClearCommand}" />
+                          ToolTip="Clear the current selection and editor. (Ctrl+L)"
+                          InputGestureText="Ctrl+L"
+                          Command="{Binding ClearCommand}" />   
             </MenuItem>
 
             <MenuItem Header="_View">
@@ -782,19 +794,19 @@
                 <Button Content="Open Folder"
                         MinWidth="100"
                         Margin="0,0,8,0"
-                        ToolTip="Pick the folder that contains your XML files."
+                        ToolTip="Pick the folder that contains your XML files. (Ctrl+O)"
                         Command="{Binding OpenCommand}" />
 
                 <Button Content="Format"
                         MinWidth="70"
                         Margin="0,0,8,0"
-                        ToolTip="Format (pretty-print) the XML."
+                        ToolTip="Format (pretty-print) the XML. (Ctrl+K)"
                         Command="{Binding FormatCommand}" />
 
                 <Button Content="Validate"
                         MinWidth="70"
                         Margin="0,0,8,0"
-                        ToolTip="Validate that the XML is well-formed."
+                        ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)"
                         Command="{Binding ValidateCommand}" />
 
                 <Button Content="Duplicate"
@@ -814,21 +826,21 @@
                 <Button Content="Save"
                         MinWidth="70"
                         Margin="0,0,8,0"
-                        ToolTip="Save changes to the current XML file (backup is created when saving edits)."
+                        ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)"
                         IsEnabled="{Binding IsDirty}"
                         Command="{Binding SaveCommand}" />
 
                 <Button Content="Save As..."
                         MinWidth="90"
                         Margin="0,0,8,0"
-                        ToolTip="Save changes to a new file path."
+                        ToolTip="Save changes to a new file path. (Ctrl+Shift+S)"
                         IsEnabled="{Binding IsDirty}"
                         Command="{Binding SaveAsCommand}" />
 
                 <Button Content="Clear"
                         MinWidth="70"
                         Margin="0,0,8,0"
-                        ToolTip="Clear the current selection and editor."
+                        ToolTip="Clear the current selection and editor. (Ctrl+L)"
                         Command="{Binding ClearCommand}" />
                 <Button Width="34"
         Height="34"
