@@ -475,13 +475,14 @@
                           EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
+                          VirtualizingPanel.ScrollUnit="Pixel"
                           ScrollViewer.CanContentScroll="True"
                           ScrollViewer.IsDeferredScrollingEnabled="False" infra:ScrollViewerMouseWheelBehavior.Enable="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Field"
                                             Binding="{Binding Name}"
                                             IsReadOnly="True"
-                                            Width="260">
+                                            Width="520">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="Foreground"
@@ -535,97 +536,145 @@
             <Expander Header="{Binding Title}"
                       IsExpanded="{Binding IsExpanded}"
                       Margin="0,0,0,6">
-                <DataGrid ItemsSource="{Binding Items}" infra:ScrollViewerMouseWheelBehavior.Enable="False" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
-                          SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
-                          PreviewMouseRightButtonDown="LookupGrid_PreviewMouseRightButtonDown"
-                          SelectionChanged="LookupGrid_SelectionChanged"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          SelectionUnit="FullRow"
-                          EnableRowVirtualization="True"
-                          EnableColumnVirtualization="True"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling"
-                          ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.IsDeferredScrollingEnabled="False"
-                          ScrollViewer.VerticalScrollBarVisibility="Visible"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                          MaxHeight="600">
+                <Expander.Resources>
+                    <CollectionViewSource x:Key="GroupedLookupItems" Source="{Binding Items}">
+                        <CollectionViewSource.GroupDescriptions>
+                            <PropertyGroupDescription PropertyName="Item" />
+                        </CollectionViewSource.GroupDescriptions>
+                    </CollectionViewSource>
+                </Expander.Resources>
+
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="0,0,0,6">
+                        <Button Content="Expand all"
+                                Click="LookupExpandAll_Click" />
+                        <Button Content="Collapse all"
+                                Click="LookupCollapseAll_Click"
+                                Margin="6,0,0,0" />
+                    </StackPanel>
+
+                    <DataGrid ItemsSource="{Binding Source={StaticResource GroupedLookupItems}}"
+                    MinColumnWidth="120"
+                    HeadersVisibility="Column"
+                    GridLinesVisibility="All"
+                    infra:ScrollViewerMouseWheelBehavior.Enable="False"
+                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                        SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                        PreviewMouseRightButtonDown="LookupGrid_PreviewMouseRightButtonDown"
+                        SelectionChanged="LookupGrid_SelectionChanged"
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        SelectionUnit="FullRow"
+                        EnableRowVirtualization="True"
+                        EnableColumnVirtualization="True"
+                        VirtualizingPanel.IsVirtualizing="True"
+                        VirtualizingPanel.VirtualizationMode="Recycling"
+                        ScrollViewer.CanContentScroll="False"
+                        ScrollViewer.IsDeferredScrollingEnabled="False"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        MaxHeight="600">
 
 
-                    <DataGrid.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Duplicate Item"
-                                      InputGestureText="Ctrl+Shift+D"
-                                      Command="{Binding PlacementTarget.Tag.DuplicateFriendlyLookupItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        </ContextMenu>
-                    </DataGrid.ContextMenu>
-                    
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Item"
-                                            Binding="{Binding Item}"
-                                            IsReadOnly="True"
-                                            Width="220">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGrid.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.ContainerStyle>
+                                    <Style TargetType="{x:Type GroupItem}">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                    <Expander Header="{Binding Name}"
+                                                              Margin="0,0,0,6"
+                                                              Tag="{Binding RelativeSource={RelativeSource AncestorType=DataGrid}, Path=Tag}"
+                                                              infra:LookupGridGroupExpansionBehavior.IsEnabled="True">
+                                                        <ItemsPresenter />
+                                                    </Expander>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </GroupStyle.ContainerStyle>
+                            </GroupStyle>
+                        </DataGrid.GroupStyle>
 
-                        <DataGridTextColumn Header="Field"
-                                            Binding="{Binding Field}"
-                                            IsReadOnly="True"
-                                            Width="160">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Duplicate Item"
+                                          InputGestureText="Ctrl+Shift+D"
+                                          Command="{Binding PlacementTarget.Tag.DuplicateFriendlyLookupItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
 
-                        <DataGridTextColumn Header="Value"
-                                            Binding="{Binding Value, UpdateSourceTrigger=LostFocus}"
-                                            Width="*">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Item"
+                        Binding="{Binding Item}"
+                        IsReadOnly="True"
+                        Width="160"
+                        MinWidth="140">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Foreground"
+                        Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                            <DataGridTextColumn.CellStyle>
-                                <Style TargetType="{x:Type DataGridCell}"
-                                            BasedOn="{StaticResource {x:Type DataGridCell}}">
-                                    <Setter Property="Background"
-                                            Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                            <Setter Property="Background"
-                                            Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
+                            <DataGridTextColumn Header="Field"
+                        Binding="{Binding Field}"
+                        IsReadOnly="True"
+                        Width="320"
+                        MinWidth="260">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Foreground"
+                        Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                            </DataGridTextColumn.CellStyle>
+                            <DataGridTextColumn Header="Value"
+                        Binding="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                        Width="*"
+                        MinWidth="300">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="{x:Type DataGridCell}"
+                   BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                        <Setter Property="Background"
+                        Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}"
+                                 Value="True">
+                                                <Setter Property="Background"
+                                Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
 
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Foreground"
+                        Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
 
-                            <DataGridTextColumn.EditingElementStyle>
-                                <Style TargetType="{x:Type TextBox}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Setter Property="Background"
-                                            Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Setter Property="BorderThickness" Value="0" />
-                                </Style>
-                            </DataGridTextColumn.EditingElementStyle>
-
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                                <DataGridTextColumn.EditingElementStyle>
+                                    <Style TargetType="{x:Type TextBox}">
+                                        <Setter Property="Foreground"
+                        Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Background"
+                        Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                </DataGridTextColumn.EditingElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
             </Expander>
         </DataTemplate>
 
@@ -907,8 +956,8 @@
                                  BorderThickness="0"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 ScrollViewer.CanContentScroll="True"
-                                 VirtualizingPanel.IsVirtualizing="True"
+                                 ScrollViewer.CanContentScroll="False"
+                                 VirtualizingPanel.IsVirtualizing="False"
                                  VirtualizingPanel.VirtualizationMode="Recycling">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="{x:Type ListBoxItem}">

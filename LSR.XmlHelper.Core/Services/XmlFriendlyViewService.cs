@@ -33,9 +33,25 @@ namespace LSR.XmlHelper.Core.Services
             var collections = new List<XmlFriendlyCollection>();
             var directEntries = new List<XElement>();
             var seenTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var groupedRootChildren = rootChildren
+    .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+    .ToList();
 
-            foreach (var child in rootChildren)
+            foreach (var rootGroup in groupedRootChildren)
             {
+                if (rootGroup.Count() > 1)
+                {
+                    var title = rootGroup.Key;
+
+                    if (!seenTitles.Add(title))
+                        continue;
+
+                    var entries = BuildEntries(rootGroup.ToList());
+                    collections.Add(new XmlFriendlyCollection(title, entries));
+                    continue;
+                }
+
+                var child = rootGroup.First();
                 var repeatingBlocks = FindRepeatingChildBlocks(child);
 
                 if (repeatingBlocks.Count == 0)
@@ -122,7 +138,22 @@ namespace LSR.XmlHelper.Core.Services
                 }
             }
 
+            var direct = results.Where(r => r.IsDirectChild).ToList();
+
+            if (direct.Count > 0)
+            {
+                return direct
+                    .OrderBy(r => r.BlockPath, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+
+            if (results.Count == 0)
+                return results;
+
+            var minDepth = results.Min(r => r.BlockPath.Count(c => c == '/'));
+
             return results
+                .Where(r => r.BlockPath.Count(c => c == '/') == minDepth)
                 .OrderBy(r => r.BlockPath, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }

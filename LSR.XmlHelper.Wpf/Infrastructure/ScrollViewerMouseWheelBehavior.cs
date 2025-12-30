@@ -37,11 +37,20 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
             if (scrollViewer is null)
                 return;
 
-            if (e.Delta < 0)
-                scrollViewer.LineDown();
-            else
-                scrollViewer.LineUp();
+            var current = scrollViewer.VerticalOffset;
+            var delta = -e.Delta / 12.0;
+            var target = current + delta;
 
+            if (target < 0)
+                target = 0;
+
+            if (target > scrollViewer.ScrollableHeight)
+                target = scrollViewer.ScrollableHeight;
+
+            if (Math.Abs(target - current) < 0.01)
+                return;
+
+            scrollViewer.ScrollToVerticalOffset(target);
             e.Handled = true;
         }
 

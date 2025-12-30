@@ -234,6 +234,91 @@ namespace LSR.XmlHelper.Wpf
             OpenInExplorer(backups);
         }
 
+        private void LookupExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.Button button)
+                return;
+
+            var dock = FindAncestor<System.Windows.Controls.DockPanel>(button);
+            if (dock is null)
+                return;
+
+            System.Windows.Controls.DataGrid? grid = null;
+
+            foreach (var g in FindVisualChildren<System.Windows.Controls.DataGrid>(dock))
+            {
+                grid = g;
+                break;
+            }
+
+            if (grid is null)
+                return;
+
+            SetLookupGroupExpanders(grid, true);
+        }
+
+        private void LookupCollapseAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.Button button)
+                return;
+
+            var dock = FindAncestor<System.Windows.Controls.DockPanel>(button);
+            if (dock is null)
+                return;
+
+            System.Windows.Controls.DataGrid? grid = null;
+
+            foreach (var g in FindVisualChildren<System.Windows.Controls.DataGrid>(dock))
+            {
+                grid = g;
+                break;
+            }
+
+            if (grid is null)
+                return;
+
+            SetLookupGroupExpanders(grid, false);
+        }
+
+        private static void SetLookupGroupExpanders(System.Windows.Controls.DataGrid grid, bool isExpanded)
+        {
+            foreach (var expander in FindVisualChildren<System.Windows.Controls.Expander>(grid))
+            {
+                if (expander.DataContext is System.Windows.Data.CollectionViewGroup)
+                    expander.IsExpanded = isExpanded;
+            }
+        }
+
+        private static T? FindAncestor<T>(System.Windows.DependencyObject start) where T : System.Windows.DependencyObject
+        {
+            var current = start;
+
+            while (current is not null)
+            {
+                if (current is T match)
+                    return match;
+
+                current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+            }
+
+            return null;
+        }
+
+        private static System.Collections.Generic.IEnumerable<T> FindVisualChildren<T>(System.Windows.DependencyObject parent) where T : System.Windows.DependencyObject
+        {
+            var count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
+
+            for (var i = 0; i < count; i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T match)
+                    yield return match;
+
+                foreach (var nested in FindVisualChildren<T>(child))
+                    yield return nested;
+            }
+        }
         private string? GetCurrentXmlPath()
         {
             if (DataContext is not MainWindowViewModel vm)

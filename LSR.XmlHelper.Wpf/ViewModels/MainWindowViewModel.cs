@@ -71,7 +71,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string? _pendingLookupItemName;
         private string? _pendingLookupField;
 
-
+        private readonly FriendlyGroupExpansionStateStore _friendlyExpansionStateStore = new();
+        private readonly LookupGridGroupExpansionStateStore _lookupGridGroupExpansionStateStore = new();
         private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
         private ObservableCollection<XmlFriendlyFieldGroupViewModel> _friendlyFieldGroups = new();
         private ObservableCollection<object> _friendlyGroups = new();
@@ -347,6 +348,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 if (value is not null)
                 {
+                    _friendlyExpansionStateStore.Clear();
+                    _lookupGridGroupExpansionStateStore.Clear();
                     SelectedTreeNode = null;
                     _ = LoadFileAsync(value.FullPath);
                 }
@@ -601,14 +604,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _selectedFriendlyEntry = null;
                 OnPropertyChanged(nameof(SelectedFriendlyCollection));
                 OnPropertyChanged(nameof(SelectedFriendlyEntry));
-
+                _friendlyExpansionStateStore.Clear();
+                _lookupGridGroupExpansionStateStore.Clear();
                 ClearFriendlyFields();
                 return;
             }
 
             var selectedCollectionTitle = SelectedFriendlyCollection?.Collection.Title;
             var selectedEntryKey = SelectedFriendlyEntry?.Entry.Key;
-
+            _friendlyExpansionStateStore.Capture(FriendlyGroups);
             _friendlyUiBuildCts = new CancellationTokenSource();
             var token = _friendlyUiBuildCts.Token;
 
@@ -666,6 +670,33 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
         }
 
+        public bool TryGetLookupGridGroupIsExpanded(string groupName, out bool expanded)
+        {
+            expanded = false;
+
+            var collectionTitle = SelectedFriendlyCollection?.Collection.Title;
+            var entryKey = SelectedFriendlyEntry?.Entry.Key;
+
+            if (string.IsNullOrWhiteSpace(collectionTitle) || string.IsNullOrWhiteSpace(entryKey))
+                return false;
+
+            var key = $"{collectionTitle}||{entryKey}||{groupName}";
+            return _lookupGridGroupExpansionStateStore.TryGet(key, out expanded);
+        }
+
+        public void SetLookupGridGroupIsExpanded(string groupName, bool expanded)
+        {
+            var collectionTitle = SelectedFriendlyCollection?.Collection.Title;
+            var entryKey = SelectedFriendlyEntry?.Entry.Key;
+
+            if (string.IsNullOrWhiteSpace(collectionTitle) || string.IsNullOrWhiteSpace(entryKey))
+                return;
+
+            var key = $"{collectionTitle}||{entryKey}||{groupName}";
+            _lookupGridGroupExpansionStateStore.Set(key, expanded);
+        }
+
+
         private void ApplyFriendlyUiState(FriendlyUiState state)
         {
             HasFriendlyView = state.Collections.Count > 0;
@@ -682,14 +713,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             FriendlyFields = state.Fields;
             FriendlyFieldGroups = state.FieldGroups;
+            _friendlyExpansionStateStore.Apply(state.Groups);
             FriendlyGroups = state.Groups;
         }
 
         private static FriendlyUiState BuildFriendlyUiState(
-    XmlFriendlyDocument doc,
-    string? selectedCollectionTitle,
-    string? selectedEntryKey,
-    CancellationToken token)
+            XmlFriendlyDocument doc,
+            string? selectedCollectionTitle,
+            string? selectedEntryKey,
+            CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -716,7 +748,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 new ObservableCollection<XmlFriendlyFieldGroupViewModel>(),
                 new ObservableCollection<object>());
         }
-
 
         private void ClearFriendlyFields()
         {
@@ -745,10 +776,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var entry = SelectedFriendlyEntry?.Entry;
             if (entry is null)
             {
+                _friendlyExpansionStateStore.Capture(FriendlyGroups);
                 ClearFriendlyFields();
                 return;
             }
 
+            _friendlyExpansionStateStore.Capture(FriendlyGroups);
             ClearFriendlyFields();
 
             var myVersion = _xmlVersion;
@@ -876,6 +909,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             FriendlyFields = state.Fields;
             FriendlyFieldGroups = state.FieldGroups;
+            _friendlyExpansionStateStore.Apply(state.Groups);
             FriendlyGroups = state.Groups;
 
             XmlFriendlyLookupItemViewModel? match = null;
@@ -908,37 +942,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private static ObservableCollection<object> BuildUnifiedGroups(ObservableCollection<XmlFriendlyFieldViewModel> fields)
         {
-            static bool TryParseLookupField(string name, out string groupTitle, out string itemName, out string leafField)
-            {
-                groupTitle = "";
-                itemName = "";
-                leafField = "";
-
-                if (string.IsNullOrWhiteSpace(name))
-                    return false;
-
-                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 3)
-                    return false;
-
-                var first = parts[0];
-                var second = parts[1];
-
-                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
-                    return false;
-
-                var lb = second.IndexOf('[', StringComparison.Ordinal);
-                var rb = second.EndsWith("]", StringComparison.Ordinal);
-
-                if (lb <= 0 || !rb)
-                    return false;
-
-                groupTitle = first;
-                itemName = second;
-                leafField = string.Join("/", parts.Skip(2));
-                return true;
-            }
-
             static string GetGroupTitle(string fieldName)
             {
                 if (string.IsNullOrWhiteSpace(fieldName))
@@ -951,6 +954,53 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return fieldName.Substring(0, slash);
             }
 
+            static bool TrySplitLookup(string name, out string section, out string item, out string leafField)
+            {
+                section = "";
+                item = "";
+                leafField = "";
+
+                if (string.IsNullOrWhiteSpace(name))
+                    return false;
+
+                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 3)
+                    return false;
+
+                section = parts[0];
+                item = parts[1];
+                leafField = string.Join("/", parts.Skip(2));
+
+                if (leafField.Contains("[", StringComparison.Ordinal))
+                    return false;
+
+                return !string.IsNullOrWhiteSpace(section)
+                    && !string.IsNullOrWhiteSpace(item)
+                    && !string.IsNullOrWhiteSpace(leafField);
+            }
+
+            var lookupItemCounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var f in fields)
+            {
+                if (!TrySplitLookup(f.Name, out var section, out var item, out _))
+                    continue;
+
+                if (!lookupItemCounts.TryGetValue(section, out var set))
+                {
+                    set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    lookupItemCounts[section] = set;
+                }
+
+                set.Add(item);
+            }
+
+            var lookupSections = new HashSet<string>(
+                lookupItemCounts
+                    .Where(kvp => kvp.Value.Count >= 2)
+                    .Select(kvp => kvp.Key),
+                StringComparer.OrdinalIgnoreCase);
+
             var lookupGroupsInOrder = new List<string>();
             var lookupItemsInOrder = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             var lookupRows = new Dictionary<string, Dictionary<string, List<XmlFriendlyLookupItemViewModel>>>(StringComparer.OrdinalIgnoreCase);
@@ -960,21 +1010,21 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             foreach (var f in fields)
             {
-                if (TryParseLookupField(f.Name, out var lookupGroup, out var itemName, out var leaf))
+                if (TrySplitLookup(f.Name, out var section, out var itemName, out var leaf) && lookupSections.Contains(section))
                 {
-                    if (!lookupRows.TryGetValue(lookupGroup, out var itemsByName))
+                    if (!lookupRows.TryGetValue(section, out var itemsByName))
                     {
                         itemsByName = new Dictionary<string, List<XmlFriendlyLookupItemViewModel>>(StringComparer.OrdinalIgnoreCase);
-                        lookupRows[lookupGroup] = itemsByName;
-                        lookupGroupsInOrder.Add(lookupGroup);
-                        lookupItemsInOrder[lookupGroup] = new List<string>();
+                        lookupRows[section] = itemsByName;
+                        lookupGroupsInOrder.Add(section);
+                        lookupItemsInOrder[section] = new List<string>();
                     }
 
                     if (!itemsByName.TryGetValue(itemName, out var list))
                     {
                         list = new List<XmlFriendlyLookupItemViewModel>();
                         itemsByName[itemName] = list;
-                        lookupItemsInOrder[lookupGroup].Add(itemName);
+                        lookupItemsInOrder[section].Add(itemName);
                     }
 
                     list.Add(new XmlFriendlyLookupItemViewModel(itemName, leaf, f));
@@ -995,12 +1045,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var output = new List<object>();
 
-            if (normalRows.TryGetValue("General", out var general))
+            if (normalRows.TryGetValue("General", out var generalList))
             {
-                output.Add(new XmlFriendlyFieldGroupViewModel(
-                    "General",
-                    new ObservableCollection<XmlFriendlyFieldViewModel>(general)));
-
+                output.Add(new XmlFriendlyFieldGroupViewModel("General", new ObservableCollection<XmlFriendlyFieldViewModel>(generalList)));
                 normalRows.Remove("General");
                 normalGroupsInOrder.RemoveAll(x => string.Equals(x, "General", StringComparison.OrdinalIgnoreCase));
             }
@@ -1012,9 +1059,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 var rows = new List<XmlFriendlyLookupItemViewModel>();
 
-                foreach (var itemName in lookupItemsInOrder[lookupGroup])
+                foreach (var item in lookupItemsInOrder[lookupGroup])
                 {
-                    if (itemsByName.TryGetValue(itemName, out var list))
+                    if (itemsByName.TryGetValue(item, out var list))
                         rows.AddRange(list);
                 }
 
