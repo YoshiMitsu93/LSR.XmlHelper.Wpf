@@ -18,6 +18,7 @@
     <Window.InputBindings>
         <KeyBinding Key="D" Modifiers="Control" Command="{Binding DuplicateFriendlyEntryCommand}" />
         <KeyBinding Key="D" Modifiers="Control+Shift" Command="{Binding DuplicateFriendlyLookupItemCommand}" />
+        <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding OpenGlobalSearchCommand}" />
     </Window.InputBindings>
     
     <Window.Resources>

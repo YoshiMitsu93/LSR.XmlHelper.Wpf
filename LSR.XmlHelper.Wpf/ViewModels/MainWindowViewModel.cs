@@ -1,4 +1,5 @@
 ﻿using LSR.XmlHelper.Core.Services;
+using LSR.XmlHelper.Core.Models;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Services;
 using LSR.XmlHelper.Wpf.Views;
@@ -27,6 +28,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly XmlFileLoaderService _loader;
         private readonly XmlFileSaveService _saver;
         private readonly XmlFriendlyViewService _friendly;
+        private readonly XmlGlobalSearchService _globalSearch;
 
         private readonly AppSettingsService _settingsService;
         private AppSettings _settings;
@@ -48,6 +50,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _status = "Ready.";
         private string _xmlText = "";
         private string? _rootFolder;
+
+        private RawNavigationRequest? _pendingRawNavigation;
+
+        public event EventHandler<RawNavigationRequest>? RawNavigationRequested;
+
 
         private bool _isDirty;
 
@@ -84,6 +91,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _loader = new XmlFileLoaderService();
             _saver = new XmlFileSaveService();
             _friendly = new XmlFriendlyViewService();
+            _globalSearch = new XmlGlobalSearchService();
 
             _settingsService = new AppSettingsService();
             _settings = _settingsService.Load();
@@ -107,6 +115,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             DuplicateFriendlyLookupItemCommand = new RelayCommand(DuplicateSelectedFriendlyLookupItem, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null && SelectedFriendlyLookupItem is not null);
 
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
+            OpenGlobalSearchCommand = new RelayCommand(OpenGlobalSearch);
 
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
@@ -126,6 +135,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public RelayCommand OpenAppearanceCommand { get; }
         public RelayCommand OpenBackupBrowserCommand { get; }
+        public RelayCommand OpenGlobalSearchCommand { get; }
+
 
         public string Title
         {
@@ -412,6 +423,49 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             win.ShowDialog();
         }
 
+        private void OpenGlobalSearch()
+        {
+            var root = _rootFolder;
+            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
+            {
+                MessageBox.Show("Pick a folder first by using Open Folder.", "Global Search", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var vm = new GlobalSearchWindowViewModel(
+                _discovery,
+                _globalSearch,
+                () => _rootFolder,
+                () => IncludeSubfolders,
+                NavigateToRawHit);
+
+            var win = new GlobalSearchWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
+        }
+
+        private void NavigateToRawHit(GlobalSearchHit hit)
+        {
+            if (hit is null)
+                return;
+
+            _pendingRawNavigation = new RawNavigationRequest(hit.FilePath, hit.Offset, hit.Length);
+
+            var match = XmlFiles.FirstOrDefault(x =>
+                string.Equals(x.FullPath, hit.FilePath, StringComparison.OrdinalIgnoreCase));
+
+            if (match is not null)
+            {
+                SelectedXmlFile = match;
+                return;
+            }
+
+            _ = LoadFileAsync(hit.FilePath);
+        }
 
         private void OpenBackupBrowser()
         {
@@ -1649,6 +1703,21 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             await RebuildFriendlyFromCurrentXmlAsync(token);
             Status = $"Opened: {name}";
+            TryRaiseRawNavigationForLoadedFile(path);
+        }
+
+        private void TryRaiseRawNavigationForLoadedFile(string loadedPath)
+        {
+            if (_pendingRawNavigation is null)
+                return;
+
+            if (!string.Equals(_pendingRawNavigation.FilePath, loadedPath, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var req = _pendingRawNavigation;
+            _pendingRawNavigation = null;
+
+            RawNavigationRequested?.Invoke(this, req);
         }
 
         private async Task RebuildFriendlyFromCurrentXmlAsync(CancellationToken token)

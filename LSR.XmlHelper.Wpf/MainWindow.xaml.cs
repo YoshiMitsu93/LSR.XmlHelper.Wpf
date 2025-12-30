@@ -2,6 +2,7 @@
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Search;
 using LSR.XmlHelper.Core.Services;
+using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.ViewModels;
 using System.Diagnostics;
 using System.IO;
@@ -25,6 +26,8 @@ namespace LSR.XmlHelper.Wpf
             }
 
             DataContext = new MainWindowViewModel();
+            if (DataContext is MainWindowViewModel vm)
+                vm.RawNavigationRequested += VmOnRawNavigationRequested;
         }
 
         protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
@@ -331,6 +334,32 @@ namespace LSR.XmlHelper.Wpf
                 return vm.SelectedTreeNode.FullPath;
 
             return null;
+        }
+
+        private void VmOnRawNavigationRequested(object? sender, RawNavigationRequest e)
+        {
+            var editor = FindName("XmlEditor") as TextEditor;
+            if (editor is null)
+                return;
+
+            var offset = e.Offset;
+            if (offset < 0)
+                offset = 0;
+
+            if (offset > editor.Text.Length)
+                offset = editor.Text.Length;
+
+            var length = e.Length;
+            if (length < 0)
+                length = 0;
+
+            if (offset + length > editor.Text.Length)
+                length = editor.Text.Length - offset;
+
+            editor.Select(offset, length);
+            editor.TextArea.Caret.Offset = offset;
+            editor.TextArea.Caret.BringCaretToView();
+            editor.Focus();
         }
 
         private static void OpenInExplorer(string path)
