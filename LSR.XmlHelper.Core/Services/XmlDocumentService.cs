@@ -31,13 +31,15 @@ namespace LSR.XmlHelper.Core.Services
 
         public string Format(string xml)
         {
-            var doc = XDocument.Parse(xml, LoadOptions.PreserveWhitespace);
+            var doc = XDocument.Parse(xml, LoadOptions.None);
 
             var settings = new XmlWriterSettings
             {
                 Indent = true,
+                IndentChars = "    ",
                 OmitXmlDeclaration = doc.Declaration is null,
                 NewLineHandling = NewLineHandling.Replace,
+                NewLineChars = "\r\n",
                 NewLineOnAttributes = false
             };
 
