@@ -4,6 +4,7 @@ using ICSharpCode.AvalonEdit.Search;
 using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.ViewModels;
+using System.Windows.Controls;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -13,6 +14,7 @@ namespace LSR.XmlHelper.Wpf
     public partial class MainWindow : Window
     {
         private readonly XmlHelperRootService _helperRoot = new XmlHelperRootService();
+        private SearchPanel? _searchPanel;
 
         public MainWindow()
         {
@@ -22,7 +24,7 @@ namespace LSR.XmlHelper.Wpf
             if (editor is not null)
             {
                 editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
-                SearchPanel.Install(editor);
+                _searchPanel = SearchPanel.Install(editor);
             }
 
             DataContext = new MainWindowViewModel();
@@ -338,6 +340,8 @@ namespace LSR.XmlHelper.Wpf
 
         private void VmOnRawNavigationRequested(object? sender, RawNavigationRequest e)
         {
+            TrySelectFileInPane1(e.FilePath);
+
             var editor = FindName("XmlEditor") as TextEditor;
             if (editor is null)
                 return;
@@ -360,6 +364,81 @@ namespace LSR.XmlHelper.Wpf
             editor.TextArea.Caret.Offset = offset;
             editor.TextArea.Caret.BringCaretToView();
             editor.Focus();
+        }
+
+        private void TrySelectFileInPane1(string filePath)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (!vm.IsFoldersMode)
+                return;
+
+            var tree = XmlTreeView;
+            if (tree is null)
+                return;
+
+            if (tree.Items.Count == 0)
+                return;
+
+            tree.UpdateLayout();
+
+            if (!SelectTreeViewItemByPath(tree, filePath))
+            {
+                tree.UpdateLayout();
+                SelectTreeViewItemByPath(tree, filePath);
+            }
+        }
+
+        private bool SelectTreeViewItemByPath(ItemsControl parent, string filePath)
+        {
+            parent.UpdateLayout();
+
+            for (var i = 0; i < parent.Items.Count; i++)
+            {
+                var item = parent.Items[i];
+                if (item is not XmlExplorerNode node)
+                    continue;
+
+                var container = parent.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                if (container is null)
+                {
+                    parent.UpdateLayout();
+                    container = parent.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                }
+
+                if (container is null)
+                    continue;
+
+                if (node.IsFile && node.FullPath is not null &&
+                    string.Equals(node.FullPath, filePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    container.IsSelected = true;
+                    container.BringIntoView();
+                    container.Focus();
+                    return true;
+                }
+
+                if (node.Children.Count > 0)
+                {
+                    if (!container.IsExpanded)
+                    {
+                        container.IsExpanded = true;
+                        container.UpdateLayout();
+                        parent.UpdateLayout();
+                    }
+
+                    if (SelectTreeViewItemByPath(container, filePath))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void OpenLocalSearch_Click(object sender, RoutedEventArgs e)
+        {
+            _searchPanel?.Open();
         }
 
         private static void OpenInExplorer(string path)

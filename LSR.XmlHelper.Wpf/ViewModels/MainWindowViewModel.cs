@@ -455,16 +455,47 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             _pendingRawNavigation = new RawNavigationRequest(hit.FilePath, hit.Offset, hit.Length);
 
-            var match = XmlFiles.FirstOrDefault(x =>
-                string.Equals(x.FullPath, hit.FilePath, StringComparison.OrdinalIgnoreCase));
-
-            if (match is not null)
+            if (IsFoldersMode)
             {
-                SelectedXmlFile = match;
-                return;
+                var node = FindFileNodeByPath(XmlTree, hit.FilePath);
+                if (node is not null)
+                {
+                    SelectedTreeNode = node;
+                    return;
+                }
+            }
+            else
+            {
+                var match = XmlFiles.FirstOrDefault(x =>
+                    string.Equals(x.FullPath, hit.FilePath, StringComparison.OrdinalIgnoreCase));
+
+                if (match is not null)
+                {
+                    SelectedXmlFile = match;
+                    return;
+                }
             }
 
             _ = LoadFileAsync(hit.FilePath);
+        }
+
+        private XmlExplorerNode? FindFileNodeByPath(IEnumerable<XmlExplorerNode> nodes, string fullPath)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.IsFile && node.FullPath is not null &&
+                    string.Equals(node.FullPath, fullPath, StringComparison.OrdinalIgnoreCase))
+                    return node;
+
+                if (node.Children.Count > 0)
+                {
+                    var match = FindFileNodeByPath(node.Children, fullPath);
+                    if (match is not null)
+                        return match;
+                }
+            }
+
+            return null;
         }
 
         private void OpenBackupBrowser()

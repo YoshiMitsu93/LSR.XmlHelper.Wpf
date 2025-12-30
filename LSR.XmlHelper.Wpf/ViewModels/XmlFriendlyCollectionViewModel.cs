@@ -7,11 +7,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class XmlFriendlyCollectionViewModel
     {
+        private readonly string _singleEntryDisplayTitle;
         private LazyVmList<XmlFriendlyEntry, XmlFriendlyEntryViewModel>? _entries;
 
         public XmlFriendlyCollectionViewModel(XmlFriendlyCollection collection)
         {
             Collection = collection;
+            _singleEntryDisplayTitle = collection.Entries.Count == 1 ? GetDisplayTitle(collection.Title) : null;
         }
 
         public XmlFriendlyCollection Collection { get; }
@@ -21,7 +23,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public IReadOnlyList<XmlFriendlyEntryViewModel> Entries =>
             _entries ??= new LazyVmList<XmlFriendlyEntry, XmlFriendlyEntryViewModel>(
                 Collection.Entries,
-                e => new XmlFriendlyEntryViewModel(e));
+                e => new XmlFriendlyEntryViewModel(e, _singleEntryDisplayTitle));
 
         private static string GetDisplayTitle(string titlePath)
         {

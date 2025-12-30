@@ -827,6 +827,34 @@
                         Margin="0,0,8,0"
                         ToolTip="Clear the current selection and editor."
                         Command="{Binding ClearCommand}" />
+                <Button Width="34"
+        Height="34"
+        Margin="0,0,8,0"
+        ToolTip="Find in current XML (Ctrl+F)."
+        Background="{Binding Appearance.TopButtonBackgroundBrush}"
+        BorderBrush="{Binding Appearance.TopButtonTextBrush}"
+        Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
+        Click="OpenLocalSearch_Click">
+                    <Viewbox Width="18" Height="18">
+                        <Path Fill="{Binding Appearance.TopButtonTextBrush}"
+              Data="M15.5,14H14.71L14.43,13.73C15.35,12.67 15.9,11.29 15.9,9.8C15.9,6.49 13.21,3.8 9.9,3.8C6.59,3.8 3.9,6.49 3.9,9.8C3.9,13.11 6.59,15.8 9.9,15.8C11.39,15.8 12.77,15.25 13.83,14.33L14.1,14.6V15.4L18.2,19.5L19.5,18.2L15.5,14ZM9.9,14.1C7.53,14.1 5.6,12.17 5.6,9.8C5.6,7.43 7.53,5.5 9.9,5.5C12.27,5.5 14.2,7.43 14.2,9.8C14.2,12.17 12.27,14.1 9.9,14.1Z" />
+                    </Viewbox>
+                </Button>
+
+                <Button Width="34"
+        Height="34"
+        Margin="0,0,8,0"
+        ToolTip="Search all XML files (Ctrl+Shift+F)."
+        Background="{Binding Appearance.TopButtonBackgroundBrush}"
+        BorderBrush="{Binding Appearance.TopButtonTextBrush}"
+        Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
+        Command="{Binding OpenGlobalSearchCommand}">
+                    <Viewbox Width="18" Height="18">
+                        <Path Fill="{Binding Appearance.TopButtonTextBrush}"
+        Data="M10,4H4C2.9,4 2,4.9 2,6V16C2,17.1 2.9,18 4,18H9.2C9.7,18.6 10.3,19.1 11,19.4C12.3,20 13.8,20 15.1,19.4C16.4,18.8 17.4,17.8 18,16.5C18.6,15.2 18.6,13.7 18,12.4C17.4,11.1 16.4,10.1 15.1,9.5C13.8,9 12.3,9 11,9.5C9.7,10.1 8.7,11.1 8.1,12.4C7.5,13.7 7.5,15.2 8.1,16.5C8.2,16.7 8.3,16.9 8.4,17H4C3.4,17 3,16.6 3,16V6C3,5.4 3.4,5 4,5H9.6L11.6,7H20V8H11.2L10,6.8V4ZM13,11C14.7,11 16,12.3 16,14C16,15.7 14.7,17 13,17C11.3,17 10,15.7 10,14C10,12.3 11.3,11 13,11ZM19,20L16.6,17.6L17.3,16.9L19.7,19.3L19,20Z" />
+                    </Viewbox>
+                </Button>
+
             </WrapPanel>
 
             <WrapPanel Margin="0,6,0,0">
@@ -893,7 +921,7 @@
                     Padding="6"
                     Background="{Binding Appearance.TreeBackgroundBrush}">
                 <Grid Background="{Binding Appearance.TreeBackgroundBrush}">
-                    <TreeView ItemsSource="{Binding XmlTree}"
+                    <TreeView x:Name="XmlTreeView" ItemsSource="{Binding XmlTree}"
                               ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
                               HorizontalContentAlignment="Stretch"
                               SelectedItemChanged="TreeView_SelectedItemChanged"
