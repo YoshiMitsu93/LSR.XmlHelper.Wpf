@@ -979,22 +979,26 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (lb <= 0 || !rb)
                     return false;
 
-                groupTitle = first;
-                itemName = second;
+                section = first;
+                item = second;
                 leafField = string.Join("/", parts.Skip(2));
                 return true;
             }
 
-            static string GetGroupTitle(string fieldName)
+            var lookupItemCounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var f in fields)
             {
-                if (string.IsNullOrWhiteSpace(fieldName))
-                    return "General";
+                if (TrySplitLookup(f.Name, out var section, out var item, out _))
+                {
+                    if (!lookupItemCounts.TryGetValue(section, out var set))
+                    {
+                        set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        lookupItemCounts[section] = set;
+                    }
 
-                var slash = fieldName.IndexOf('/');
-                if (slash <= 0)
-                    return "General";
-
-                return fieldName.Substring(0, slash);
+                    set.Add(item);
+                }
             }
 
             var lookupSections = new HashSet<string>(
