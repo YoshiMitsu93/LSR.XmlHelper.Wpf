@@ -967,32 +967,34 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (parts.Length < 3)
                     return false;
 
-                section = parts[0];
-                item = parts[1];
-                leafField = string.Join("/", parts.Skip(2));
+                var first = parts[0];
+                var second = parts[1];
 
-                if (leafField.Contains("[", StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
                     return false;
 
-                return !string.IsNullOrWhiteSpace(section)
-                    && !string.IsNullOrWhiteSpace(item)
-                    && !string.IsNullOrWhiteSpace(leafField);
+                var lb = second.IndexOf('[', StringComparison.Ordinal);
+                var rb = second.EndsWith("]", StringComparison.Ordinal);
+
+                if (lb <= 0 || !rb)
+                    return false;
+
+                groupTitle = first;
+                itemName = second;
+                leafField = string.Join("/", parts.Skip(2));
+                return true;
             }
 
-            var lookupItemCounts = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var f in fields)
+            static string GetGroupTitle(string fieldName)
             {
-                if (!TrySplitLookup(f.Name, out var section, out var item, out _))
-                    continue;
+                if (string.IsNullOrWhiteSpace(fieldName))
+                    return "General";
 
-                if (!lookupItemCounts.TryGetValue(section, out var set))
-                {
-                    set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    lookupItemCounts[section] = set;
-                }
+                var slash = fieldName.IndexOf('/');
+                if (slash <= 0)
+                    return "General";
 
-                set.Add(item);
+                return fieldName.Substring(0, slash);
             }
 
             var lookupSections = new HashSet<string>(
