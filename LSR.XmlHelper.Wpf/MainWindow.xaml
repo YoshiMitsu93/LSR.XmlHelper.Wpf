@@ -733,6 +733,9 @@
                 <MenuItem Header="_Appearance..."
                           ToolTip="Customize fonts and colors."
                           Command="{Binding OpenAppearanceCommand}" />
+                <MenuItem Header="Saved _Edits..."
+                          ToolTip="Review pending vs committed edits and apply them."
+                          Command="{Binding OpenSavedEditsCommand}" />
                 <Separator />
                 <MenuItem Header="Include _subfolders"
                           ToolTip="Include XML files from subfolders when scanning."

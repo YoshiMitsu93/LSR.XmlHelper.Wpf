@@ -1,0 +1,113 @@
+﻿<Window x:Class="LSR.XmlHelper.Wpf.Views.SavedEditsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Saved Edits"
+        Height="700"
+        Width="1100"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="File:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Bold"/>
+                <ComboBox Width="980"
+                          ItemsSource="{Binding FilePaths}"
+                          SelectedItem="{Binding SelectedFilePath}"
+                          IsEditable="False"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Filter:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Bold"/>
+                <TextBox Width="520" Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="From:" VerticalAlignment="Center" Margin="14,0,8,0" FontWeight="Bold"/>
+                <DatePicker Width="140" SelectedDate="{Binding DateFrom}" />
+
+                <TextBlock Text="To:" VerticalAlignment="Center" Margin="14,0,8,0" FontWeight="Bold"/>
+                <DatePicker Width="140" SelectedDate="{Binding DateTo}" />
+            </StackPanel>
+        </StackPanel>
+
+        <TabControl>
+            <TabItem Header="Pending">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="Apply Selected" Width="140" ToolTip="Apply only the checked pending edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplySelectedPendingCommand}" />
+                        <Button Content="Apply All" Width="140" Margin="10,0,0,0" ToolTip="Apply all visible (filtered) pending edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplyAllPendingCommand}" />
+
+                        <Button Content="Delete Selected" Width="140" Margin="30,0,0,0" ToolTip="Delete the checked pending edits from history. This does not change any XML file." Command="{Binding DeleteSelectedPendingCommand}" />
+                        <Button Content="Delete All" Width="140" Margin="10,0,0,0" ToolTip="Delete all visible (filtered) pending edits from history. This does not change any XML file." Command="{Binding DeleteAllPendingCommand}" />
+                    </StackPanel>
+
+                    <DataGrid ItemsSource="{Binding PendingRowsView}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="False"
+                              SelectionMode="Extended">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="" Width="40">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="When (UTC)" Width="160" Binding="{Binding Item.TimestampUtc}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Collection" Width="140" Binding="{Binding Item.CollectionTitle}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Entry" Width="160" Binding="{Binding Item.EntryKey}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Field" Width="180" Binding="{Binding Item.FieldPath}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Old" Width="120" Binding="{Binding Item.OldValue}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="New" Width="120" Binding="{Binding Item.NewValue}" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem Header="Committed">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Button Content="Apply Selected" Width="140" ToolTip="Apply only the checked committed edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplySelectedCommittedCommand}" />
+                            <Button Content="Apply All" Width="140" Margin="10,0,0,0" ToolTip="Apply all visible (filtered) committed edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplyAllCommittedCommand}" />
+
+                            <Button Content="Delete Selected" Width="140" Margin="30,0,0,0" ToolTip="Delete the checked committed edits from history. You will be prompted to create a backup first." Command="{Binding DeleteSelectedCommittedCommand}" />
+                            <Button Content="Delete All" Width="140" Margin="10,0,0,0" ToolTip="Delete all visible (filtered) committed edits from history. You will be prompted to create a backup first." Command="{Binding DeleteAllCommittedCommand}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Show:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
+                            <CheckBox Content="Active" IsChecked="{Binding ShowActive}" Margin="0,0,14,0" ToolTip="Show committed edits where the current XML value matches the edit's New value."/>
+                            <CheckBox Content="Outdated" IsChecked="{Binding ShowOutdated}" Margin="0,0,14,0" ToolTip="Show committed edits where the current XML value no longer matches the edit's New value."/>
+                            <CheckBox Content="Missing" IsChecked="{Binding ShowMissing}" ToolTip="Show committed edits where the entry/field (or file) could not be found/loaded."/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <DataGrid ItemsSource="{Binding CommittedRowsView}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="False"
+                              SelectionMode="Extended">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="" Width="40">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="State" Width="90" Binding="{Binding Status}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Current" Width="130" Binding="{Binding CurrentValue}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="When (UTC)" Width="160" Binding="{Binding Item.TimestampUtc}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Collection" Width="140" Binding="{Binding Item.CollectionTitle}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Entry" Width="160" Binding="{Binding Item.EntryKey}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Field" Width="180" Binding="{Binding Item.FieldPath}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Old" Width="120" Binding="{Binding Item.OldValue}" IsReadOnly="True" />
+                            <DataGridTextColumn Header="New" Width="120" Binding="{Binding Item.NewValue}" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

@@ -2,6 +2,7 @@
 using LSR.XmlHelper.Core.Models;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Services;
+using LSR.XmlHelper.Wpf.Services.EditHistory;
 using LSR.XmlHelper.Wpf.Views;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private readonly AppSettingsService _settingsService;
         private AppSettings _settings;
+        private readonly EditHistoryService _editHistory;
+        private readonly XmlBackupRequestService _backupRequest;
 
         private readonly AppearanceService _appearance;
 
@@ -95,6 +98,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             _settingsService = new AppSettingsService();
             _settings = _settingsService.Load();
+            _editHistory = new EditHistoryService(_settings, _settingsService, _friendly, _xml);
+            _backupRequest = new XmlBackupRequestService();
 
             ApplySettingsToState();
 
@@ -116,6 +121,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
             OpenGlobalSearchCommand = new RelayCommand(OpenGlobalSearch);
+            OpenSavedEditsCommand = new RelayCommand(OpenSavedEdits);
 
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
@@ -136,6 +142,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand OpenAppearanceCommand { get; }
         public RelayCommand OpenBackupBrowserCommand { get; }
         public RelayCommand OpenGlobalSearchCommand { get; }
+        public RelayCommand OpenSavedEditsCommand { get; }
 
 
         public string Title
@@ -496,6 +503,41 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             return null;
+        }
+
+        private void OpenSavedEdits()
+        {
+            var vm = new SavedEditsWindowViewModel(
+                _editHistory,
+                GetSelectedFilePath,
+                TryApplySavedEditsToCurrent,
+                _backupRequest);
+
+            var win = new SavedEditsWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
+        }
+
+        private bool TryApplySavedEditsToCurrent(IEnumerable<EditHistoryItem> edits)
+        {
+            var list = edits?.ToList() ?? new List<EditHistoryItem>();
+            if (list.Count == 0)
+                return true;
+
+            if (!_editHistory.TryApplyToXmlText(XmlText, list, out var updated, out var error))
+            {
+                Status = error ?? "Saved edits could not be applied.";
+                return false;
+            }
+
+            XmlText = updated;
+            IsDirty = true;
+            Status = $"Applied {list.Count} saved edit(s).";
+            return true;
         }
 
         private void OpenBackupBrowser()
@@ -1218,8 +1260,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (entry is null)
                 return;
 
+            entry.Fields.TryGetValue(field.Name, out var existingField);
+            var previousValue = existingField?.Value;
+
             if (!entry.TrySetField(field.Name, field.Value, out _))
                 return;
+
 
             if (_friendlyDocument is null)
                 return;
@@ -1243,6 +1289,18 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             finally
             {
                 _suppressFriendlyRebuild = false;
+            }
+
+            var filePath = GetSelectedFilePath();
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                _editHistory.AddPending(
+                    filePath,
+                    SelectedFriendlyCollection?.Title,
+                    entry.Key,
+                    field.Name,
+                    previousValue,
+                    field.Value);
             }
 
             IsDirty = true;
@@ -1443,6 +1501,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             IsDirty = false;
+            _editHistory.CommitForFile(path);
 
             if (existed && backupDir is not null)
             {
@@ -1492,6 +1551,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             IsDirty = false;
+            _editHistory.CommitForFile(dlg.FileName);
 
             if (existed && backupDir is not null)
             {

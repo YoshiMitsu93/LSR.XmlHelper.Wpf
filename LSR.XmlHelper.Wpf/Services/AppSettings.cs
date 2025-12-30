@@ -15,5 +15,7 @@ namespace LSR.XmlHelper.Wpf.Services
         public bool IsFriendlyView { get; set; } = true;
 
         public AppearanceSettings Appearance { get; set; } = new AppearanceSettings();
+
+        public EditHistorySettings EditHistory { get; set; } = new EditHistorySettings();
     }
 }
