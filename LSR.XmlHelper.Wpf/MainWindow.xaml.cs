@@ -441,6 +441,30 @@ namespace LSR.XmlHelper.Wpf
             _searchPanel?.Open();
         }
 
+        private void Pane3DuplicateEntry_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.MainWindowViewModel vm)
+                vm.DuplicateSelectedFriendlyEntry();
+        }
+
+        private void Pane3DeleteEntry_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.MainWindowViewModel vm)
+                vm.DeleteSelectedFriendlyEntry();
+        }
+
+        private void Pane3DuplicateItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.MainWindowViewModel vm)
+                vm.DuplicateSelectedFriendlyLookupItem();
+        }
+
+        private void Pane3DeleteItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.MainWindowViewModel vm)
+                vm.DeleteSelectedFriendlyLookupItem();
+        }
+
         private static void OpenInExplorer(string path)
         {
             try

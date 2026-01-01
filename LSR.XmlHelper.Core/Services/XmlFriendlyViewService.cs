@@ -257,7 +257,7 @@ namespace LSR.XmlHelper.Core.Services
                 var displayIndex = siblingIndex >= 0 ? siblingIndex + 1 : siblings.Count;
                 var key = ResolveKey(clone, displayIndex);
 
-                duplicatedEntry = new XmlFriendlyEntry(key, string.Empty, clone);
+                duplicatedEntry = new XmlFriendlyEntry(key, string.Empty, clone, -1);
                 return true;
             }
             catch (Exception ex)
@@ -265,6 +265,55 @@ namespace LSR.XmlHelper.Core.Services
                 error = ex.Message;
                 return false;
             }
+        }
+
+        public bool TryDeleteEntry(XmlFriendlyDocument document, XmlFriendlyEntry entry, out string? error)
+        {
+            error = null;
+
+            if (document is null)
+            {
+                error = "Document is null.";
+                return false;
+            }
+
+            if (entry is null)
+            {
+                error = "Entry is null.";
+                return false;
+            }
+
+            var element = entry.Element;
+            var parent = element.Parent;
+
+            if (parent is null)
+            {
+                error = "Cannot delete. Entry has no parent in the XML.";
+                return false;
+            }
+
+            try
+            {
+                RemovePreservingWhitespace(element);
+                element.Remove();
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+
+            foreach (var c in document.Collections)
+                c.Entries.Remove(entry);
+
+            return true;
+        }
+
+        private static void RemovePreservingWhitespace(XElement element)
+        {
+            var prev = element.PreviousNode as XText;
+            if (prev is not null && string.IsNullOrWhiteSpace(prev.Value))
+                prev.Remove();
         }
 
         public bool TryDuplicateChildBlock(
@@ -359,6 +408,93 @@ namespace LSR.XmlHelper.Core.Services
             }
         }
 
+        public bool TryDeleteChildBlock(
+    XmlFriendlyDocument document,
+    XmlFriendlyEntry sourceEntry,
+    string groupTitle,
+    string itemName,
+    out string? error)
+        {
+            error = null;
+
+            if (document is null)
+            {
+                error = "Document is null.";
+                return false;
+            }
+
+            if (sourceEntry is null)
+            {
+                error = "Source entry is null.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(groupTitle))
+            {
+                error = "Group title is required.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(itemName))
+            {
+                error = "Item name is required.";
+                return false;
+            }
+
+            var lb = itemName.LastIndexOf('[');
+            var rb = itemName.EndsWith("]", StringComparison.Ordinal);
+
+            if (lb <= 0 || !rb)
+            {
+                error = "Item name is not in the expected format (Name[index]).";
+                return false;
+            }
+
+            var elementName = itemName.Substring(0, lb);
+            var indexText = itemName.Substring(lb + 1, itemName.Length - lb - 2);
+
+            if (!int.TryParse(indexText, out var index) || index <= 0)
+            {
+                error = "Item index is invalid.";
+                return false;
+            }
+
+            try
+            {
+                var entryElement = sourceEntry.Element;
+
+                var candidateContainer = entryElement.Element(groupTitle);
+                var container = candidateContainer is not null && candidateContainer.Elements(elementName).Any()
+                    ? candidateContainer
+                    : entryElement;
+
+                var items = container.Elements(elementName).ToList();
+                if (items.Count == 0)
+                {
+                    error = "No matching items were found for this group.";
+                    return false;
+                }
+
+                if (index > items.Count)
+                {
+                    error = "The selected item index is out of range.";
+                    return false;
+                }
+
+                var toRemove = items[index - 1];
+                RemovePreservingWhitespace(toRemove);
+                toRemove.Remove();
+
+                sourceEntry.InvalidateFields();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
         private static void AddAfterPreservingWhitespace(XElement sourceElement, XElement clone)
         {
             var wsAfter = sourceElement.NextNode as XText;
@@ -404,6 +540,7 @@ namespace LSR.XmlHelper.Core.Services
         {
             var entries = new List<XmlFriendlyEntry>(elements.Count);
             var index = 0;
+            var occurrences = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var element in elements)
             {
@@ -412,7 +549,10 @@ namespace LSR.XmlHelper.Core.Services
                 var key = ResolveKey(element, index);
                 var display = string.Empty;
 
-                entries.Add(new XmlFriendlyEntry(key, display, element));
+                occurrences.TryGetValue(key, out var occ);
+                occurrences[key] = occ + 1;
+
+                entries.Add(new XmlFriendlyEntry(key, display, element, occ));
             }
 
             return entries;
@@ -756,14 +896,16 @@ namespace LSR.XmlHelper.Core.Services
         private Dictionary<string, XmlFriendlyField>? _fields;
         private string? _display;
 
-        public XmlFriendlyEntry(string key, string display, XElement element)
+        public XmlFriendlyEntry(string key, string display, XElement element, int occurrence)
         {
             Key = key;
+            Occurrence = occurrence;
             _display = string.IsNullOrWhiteSpace(display) ? null : display;
             Element = element;
         }
 
         public string Key { get; }
+        public int Occurrence { get; }
         public string Display => _display ??= XmlFriendlyViewService.ResolveDisplay(Element, Key);
         public XElement Element { get; }
 

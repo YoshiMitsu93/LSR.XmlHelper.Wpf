@@ -30,49 +30,34 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly XmlFileSaveService _saver;
         private readonly XmlFriendlyViewService _friendly;
         private readonly XmlGlobalSearchService _globalSearch;
-
         private readonly AppSettingsService _settingsService;
         private AppSettings _settings;
         private readonly EditHistoryService _editHistory;
         private readonly XmlBackupRequestService _backupRequest;
-
         private readonly AppearanceService _appearance;
-
         private CancellationTokenSource? _loadCts;
-
         private CancellationTokenSource? _friendlyBuildCts;
         private CancellationTokenSource? _friendlyUiBuildCts;
         private CancellationTokenSource? _friendlyFieldsBuildCts;
-
         private int _xmlVersion;
         private bool _suppressFriendlyRebuild;
-
         private bool _suppressDirtyTracking;
-
         private string _title = "LSR XML Helper";
         private string _status = "Ready.";
         private string _xmlText = "";
         private string? _rootFolder;
-
         private RawNavigationRequest? _pendingRawNavigation;
-
         public event EventHandler<RawNavigationRequest>? RawNavigationRequested;
-
-
         private bool _isDirty;
-
         private XmlFileListItem? _selectedXmlFile;
         private XmlExplorerNode? _selectedTreeNode;
-
+        private string? _currentFilePath;
         private XmlListViewMode _viewMode = XmlListViewMode.Flat;
         private bool _includeSubfolders;
-
         private bool _hasFriendlyView;
         private bool _isFriendlyView;
         private XmlFriendlyDocument? _friendlyDocument;
-
         private bool _isDarkMode = true;
-
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
@@ -80,7 +65,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string? _pendingLookupGroupTitle;
         private string? _pendingLookupItemName;
         private string? _pendingLookupField;
-
         private readonly FriendlyGroupExpansionStateStore _friendlyExpansionStateStore = new();
         private readonly LookupGridGroupExpansionStateStore _lookupGridGroupExpansionStateStore = new();
         private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
@@ -118,10 +102,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
             DuplicateFriendlyEntryCommand = new RelayCommand(DuplicateSelectedFriendlyEntry, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null);
             DuplicateFriendlyLookupItemCommand = new RelayCommand(DuplicateSelectedFriendlyLookupItem, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null && SelectedFriendlyLookupItem is not null);
+            DeleteFriendlyLookupItemCommand = new RelayCommand(DeleteSelectedFriendlyLookupItem, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null && SelectedFriendlyLookupItem is not null);
+            DeleteFriendlyEntryCommand = new RelayCommand(DeleteSelectedFriendlyEntry, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null);
 
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
             OpenGlobalSearchCommand = new RelayCommand(OpenGlobalSearch);
             OpenSavedEditsCommand = new RelayCommand(OpenSavedEdits);
+            OpenSharedConfigPacksCommand = new RelayCommand(OpenSharedConfigPacks, () => !string.IsNullOrWhiteSpace(_rootFolder));
 
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
@@ -143,7 +130,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand OpenBackupBrowserCommand { get; }
         public RelayCommand OpenGlobalSearchCommand { get; }
         public RelayCommand OpenSavedEditsCommand { get; }
-
+        public RelayCommand OpenSharedConfigPacksCommand { get; }
 
         public string Title
         {
@@ -411,6 +398,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand ClearCommand { get; }
         public RelayCommand DuplicateFriendlyEntryCommand { get; }
         public RelayCommand DuplicateFriendlyLookupItemCommand { get; }
+        public RelayCommand DeleteFriendlyLookupItemCommand { get; }
+        public RelayCommand DeleteFriendlyEntryCommand { get; }
 
         private void OpenAppearance()
         {
@@ -538,6 +527,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             IsDirty = true;
             Status = $"Applied {list.Count} saved edit(s).";
             return true;
+        }
+        private void OpenSharedConfigPacks()
+        {
+            if (string.IsNullOrWhiteSpace(_rootFolder))
+            {
+                MessageBox.Show("Open a folder first.", "Shared Config Packs", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var packs = new Services.SharedConfigs.SharedConfigPackService(_settingsService, new Services.SharedConfigs.SettingsCopyService());
+            var vm = new SharedConfigPacksWindowViewModel(() => _rootFolder, _settings, packs, _editHistory, _backupRequest);
+
+            var win = new SharedConfigPacksWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
         }
 
         private void OpenBackupBrowser()
@@ -1263,9 +1271,31 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             entry.Fields.TryGetValue(field.Name, out var existingField);
             var previousValue = existingField?.Value;
 
+            var entryKeyBeforeEdit = entry.Key;
+
+            var occurrenceBeforeEdit = 0;
+            var collectionBeforeEdit = SelectedFriendlyCollection?.Collection;
+            if (collectionBeforeEdit is not null)
+            {
+                var matchesBefore = 0;
+
+                foreach (var e2 in collectionBeforeEdit.Entries)
+                {
+                    if (!string.Equals(e2.Key, entryKeyBeforeEdit, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (ReferenceEquals(e2, entry))
+                    {
+                        occurrenceBeforeEdit = matchesBefore;
+                        break;
+                    }
+
+                    matchesBefore++;
+                }
+            }
+
             if (!entry.TrySetField(field.Name, field.Value, out _))
                 return;
-
 
             if (_friendlyDocument is null)
                 return;
@@ -1294,10 +1324,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var filePath = GetSelectedFilePath();
             if (!string.IsNullOrWhiteSpace(filePath))
             {
+                var occurrence = occurrenceBeforeEdit;
+
                 _editHistory.AddPending(
                     filePath,
                     SelectedFriendlyCollection?.Title,
-                    entry.Key,
+                    entryKeyBeforeEdit,
+                    occurrence,
                     field.Name,
                     previousValue,
                     field.Value);
@@ -1320,6 +1353,29 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (sourceEntry is null)
                 return;
 
+            var filePath = GetSelectedFilePath();
+
+            var sourceOccurrence = 0;
+            var collection = SelectedFriendlyCollection?.Collection;
+            if (collection is not null)
+            {
+                var matchesBefore = 0;
+
+                foreach (var e2 in collection.Entries)
+                {
+                    if (!string.Equals(e2.Key, sourceEntry.Key, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (ReferenceEquals(e2, sourceEntry))
+                    {
+                        sourceOccurrence = matchesBefore;
+                        break;
+                    }
+
+                    matchesBefore++;
+                }
+            }
+
             if (!_friendly.TryDuplicateEntry(_friendlyDocument, sourceEntry, insertAfter: true, out _, out var error))
             {
                 if (!string.IsNullOrWhiteSpace(error))
@@ -1329,11 +1385,93 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
+            if (!string.IsNullOrWhiteSpace(filePath))
+            _editHistory.AddPendingDuplicateEntry(filePath, SelectedFriendlyCollection?.Title, sourceEntry.Key, sourceOccurrence, sourceEntry.Display);
             XmlText = _friendly.ToXml(_friendlyDocument);
             RefreshFriendlyFromXml();
             QueueRebuildFieldsForSelectedEntry();
 
             Status = "Duplicated entry.";
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+        public void DeleteSelectedFriendlyEntry()
+        {
+            if (!IsFriendlyView)
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            var entry = SelectedFriendlyEntry?.Entry;
+            if (entry is null)
+                return;
+
+            var filePath = GetSelectedFilePath();
+
+            var result = MessageBox.Show(
+                $"Delete entry '{entry.Display}'?\n\nYes: Backup file then delete\nNo: Delete without backup",
+                "Delete Entry",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Cancel)
+                return;
+
+            if (result == MessageBoxResult.Yes)
+            {
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    MessageBox.Show("No file is selected to back up.", "Delete Entry", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (!_backupRequest.TryBackup(filePath, out var backupErr))
+                {
+                    MessageBox.Show(backupErr ?? "Backup failed.", "Delete Entry", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            if (result != MessageBoxResult.Yes && result != MessageBoxResult.No)
+                return;
+
+            var entryKeyBeforeDelete = entry.Key;
+
+            var occurrenceBeforeDelete = 0;
+            var collectionBeforeDelete = SelectedFriendlyCollection?.Collection;
+            if (collectionBeforeDelete is not null)
+            {
+                var matchesBefore = 0;
+
+                foreach (var e2 in collectionBeforeDelete.Entries)
+                {
+                    if (!string.Equals(e2.Key, entryKeyBeforeDelete, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (ReferenceEquals(e2, entry))
+                    {
+                        occurrenceBeforeDelete = matchesBefore;
+                        break;
+                    }
+
+                    matchesBefore++;
+                }
+            }
+
+            if (!_friendly.TryDeleteEntry(_friendlyDocument, entry, out var err))
+            {
+                MessageBox.Show(err ?? "Delete failed.", "Delete Entry", MessageBoxButton.OK, MessageBoxImage.Error);
+                Status = "Delete failed.";
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(filePath))
+                _editHistory.AddPendingDeleteEntry(filePath, SelectedFriendlyCollection?.Title, entryKeyBeforeDelete, occurrenceBeforeDelete, entry.Display);
+                XmlText = _friendly.ToXml(_friendlyDocument);
+                RefreshFriendlyFromXml();
+                QueueRebuildFieldsForSelectedEntry();
+
+            Status = "Deleted entry.";
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
@@ -1353,37 +1491,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (selectedItem is null)
                 return;
 
-            static bool TryParseLookupField(string name, out string groupTitle, out string itemName, out string leafField)
-            {
-                groupTitle = "";
-                itemName = "";
-                leafField = "";
-
-                if (string.IsNullOrWhiteSpace(name))
-                    return false;
-
-                var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 3)
-                    return false;
-
-                var first = parts[0];
-                var second = parts[1];
-
-                if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
-                    return false;
-
-                var lb = second.IndexOf('[', StringComparison.Ordinal);
-                var rb = second.EndsWith("]", StringComparison.Ordinal);
-
-                if (lb <= 0 || !rb)
-                    return false;
-
-                groupTitle = first;
-                itemName = second;
-                leafField = string.Join("/", parts.Skip(2));
-                return true;
-            }
-
             static bool TryParseIndexedItem(string itemName, out string elementName, out int index)
             {
                 elementName = "";
@@ -1402,7 +1509,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return int.TryParse(indexText, out index) && index > 0;
             }
 
-            if (!TryParseLookupField(selectedItem.FullName, out var groupTitle, out var itemName, out _))
+            if (!LookupFieldPathParser.TryParseLookupField(selectedItem.FullName, out var groupTitle, out var itemName, out _))
             {
                 Status = "Duplicate item failed.";
                 return;
@@ -1431,21 +1538,100 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
+            var filePath = GetSelectedFilePath();
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                _editHistory.AddPendingDuplicateChildBlock(filePath, SelectedFriendlyCollection?.Title, sourceEntry.Key, sourceEntry.Occurrence, selectedItem.FullName, sourceEntry.Display);
+            }
+
             XmlText = _friendly.ToXml(_friendlyDocument);
             Status = "Duplicated item.";
             QueueRebuildFieldsForSelectedEntry();
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
+        public void DeleteSelectedFriendlyLookupItem()
+        {
+            if (!IsFriendlyView)
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            var sourceEntry = SelectedFriendlyEntry?.Entry;
+            if (sourceEntry is null)
+                return;
+
+            var selectedItem = SelectedFriendlyLookupItem;
+            if (selectedItem is null)
+                return;
+
+            if (!LookupFieldPathParser.TryParseLookupField(selectedItem.FullName, out var groupTitle, out var itemName, out _))
+            {
+                Status = "Delete item failed.";
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Delete item '{itemName}'?\n\nYes: Backup file then delete\nNo: Delete without backup",
+                "Delete Item",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Cancel)
+                return;
+
+            var filePath = GetSelectedFilePath();
+
+            if (result == MessageBoxResult.Yes)
+            {
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    MessageBox.Show("No file is selected to back up.", "Delete Item", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (!_backupRequest.TryBackup(filePath, out var backupErr))
+                {
+                    MessageBox.Show(backupErr ?? "Backup failed.", "Delete Item", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            if (!_friendly.TryDeleteChildBlock(_friendlyDocument, sourceEntry, groupTitle, itemName, out var error))
+            {
+                if (!string.IsNullOrWhiteSpace(error))
+                    MessageBox.Show(error, "Delete failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                Status = "Delete item failed.";
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                _editHistory.AddPendingDeleteChildBlock(filePath, SelectedFriendlyCollection?.Title, sourceEntry.Key, sourceEntry.Occurrence, selectedItem.FullName, sourceEntry.Display);
+            }
+
+            XmlText = _friendly.ToXml(_friendlyDocument);
+            Status = "Deleted item.";
+            QueueRebuildFieldsForSelectedEntry();
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
         private string? GetSelectedFilePath()
         {
             if (SelectedXmlFile is not null)
+            {
+                _currentFilePath = SelectedXmlFile.FullPath;
                 return SelectedXmlFile.FullPath;
+            }
 
             if (SelectedTreeNode is not null && SelectedTreeNode.IsFile && SelectedTreeNode.FullPath is not null)
+            {
+                _currentFilePath = SelectedTreeNode.FullPath;
                 return SelectedTreeNode.FullPath;
+            }
 
-            return null;
+            return _currentFilePath;
         }
 
         private void Format()
@@ -1794,6 +1980,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             await RebuildFriendlyFromCurrentXmlAsync(token);
             Status = $"Opened: {name}";
+            _currentFilePath = path;
             TryRaiseRawNavigationForLoadedFile(path);
         }
 

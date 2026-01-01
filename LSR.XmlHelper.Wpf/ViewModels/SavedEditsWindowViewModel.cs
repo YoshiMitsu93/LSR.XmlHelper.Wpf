@@ -224,7 +224,36 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 foreach (var e in g)
                 {
-                    if (!_history.TryGetCurrentFieldValue(xml, e.EntryKey, e.FieldPath, out var current, out _))
+                    if (e.Operation == EditHistoryOperation.DuplicateEntry)
+                    {
+                        if (_history.TryEntryExists(xml, e.CollectionTitle, e.EntryKey, e.EntryOccurrence))
+                        {
+                            map[e.Id] = ("Active", null);
+                            continue;
+                        }
+
+                        var srcKey = e.SourceEntryKey ?? e.EntryKey;
+                        var srcOcc = e.SourceEntryOccurrence ?? Math.Max(0, e.EntryOccurrence - 1);
+
+                        if (_history.TryEntryExists(xml, e.CollectionTitle, srcKey, srcOcc))
+                            map[e.Id] = ("Outdated", null);
+                        else
+                            map[e.Id] = ("Missing", null);
+
+                        continue;
+                    }
+
+                    if (e.Operation == EditHistoryOperation.DeleteEntry)
+                    {
+                        if (_history.TryEntryExists(xml, e.CollectionTitle, e.EntryKey, e.EntryOccurrence))
+                            map[e.Id] = ("Outdated", null);
+                        else
+                            map[e.Id] = ("Active", null);
+
+                        continue;
+                    }
+
+                    if (!_history.TryGetCurrentFieldValue(xml, e.CollectionTitle, e.EntryKey, e.EntryOccurrence, e.FieldPath, out var current, out _))
                     {
                         map[e.Id] = ("Missing", null);
                         continue;
@@ -480,6 +509,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     throw new OperationCanceledException();
                 }
             }
+
+            MessageBox.Show("Backup created successfully.", "Saved Edits", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void Apply(IReadOnlyList<EditHistoryItem> edits)

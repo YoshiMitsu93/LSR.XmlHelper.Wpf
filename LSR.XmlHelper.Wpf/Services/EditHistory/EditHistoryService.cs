@@ -24,7 +24,7 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
         public IReadOnlyList<EditHistoryItem> Pending => _settings.EditHistory.Pending;
         public IReadOnlyList<EditHistoryItem> Committed => _settings.EditHistory.Committed;
 
-        public void AddPending(string filePath, string? collectionTitle, string entryKey, string fieldPath, string? oldValue, string newValue)
+        public void AddPending(string filePath, string? collectionTitle, string entryKey, int entryOccurrence, string fieldPath, string? oldValue, string newValue)
         {
             if (string.IsNullOrWhiteSpace(filePath))
                 return;
@@ -37,12 +37,137 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
 
             var item = new EditHistoryItem
             {
+                Operation = EditHistoryOperation.FieldChange,
                 FilePath = filePath,
                 CollectionTitle = collectionTitle,
                 EntryKey = entryKey,
+                EntryOccurrence = entryOccurrence,
                 FieldPath = fieldPath,
                 OldValue = oldValue,
                 NewValue = newValue ?? ""
+            };
+
+            _settings.EditHistory.Pending.Add(item);
+            Persist();
+        }
+        public void AddPendingDuplicateEntry(string filePath, string? collectionTitle, string sourceEntryKey, int sourceEntryOccurrence, string? sourceEntryDisplay)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            if (string.IsNullOrWhiteSpace(sourceEntryKey))
+                return;
+
+            if (sourceEntryOccurrence < 0)
+                return;
+
+            var sourceLabel = string.IsNullOrWhiteSpace(sourceEntryDisplay) ? sourceEntryKey : sourceEntryDisplay;
+
+            var item = new EditHistoryItem
+            {
+                Operation = EditHistoryOperation.DuplicateEntry,
+                FilePath = filePath,
+                CollectionTitle = collectionTitle,
+                SourceEntryKey = sourceEntryKey,
+                SourceEntryOccurrence = sourceEntryOccurrence,
+                EntryKey = sourceEntryKey,
+                EntryOccurrence = sourceEntryOccurrence + 1,
+                FieldPath = "DUPLICATE",
+                OldValue = $"{sourceLabel} ({sourceEntryKey}#{sourceEntryOccurrence})",
+                NewValue = $"{sourceLabel} ({sourceEntryKey}#{sourceEntryOccurrence + 1})"
+            };
+
+            _settings.EditHistory.Pending.Add(item);
+            Persist();
+        }
+
+        public void AddPendingDuplicateChildBlock(string filePath, string? collectionTitle, string entryKey, int entryOccurrence, string fieldPath, string? display)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            if (string.IsNullOrWhiteSpace(entryKey))
+                return;
+
+            if (entryOccurrence < 0)
+                return;
+
+            if (string.IsNullOrWhiteSpace(fieldPath))
+                return;
+
+            var label = string.IsNullOrWhiteSpace(display) ? entryKey : display;
+
+            var item = new EditHistoryItem
+            {
+                Operation = EditHistoryOperation.DuplicateChildBlock,
+                FilePath = filePath,
+                CollectionTitle = collectionTitle,
+                EntryKey = entryKey,
+                EntryOccurrence = entryOccurrence,
+                FieldPath = fieldPath,
+                OldValue = $"{label} ({entryKey}#{entryOccurrence})",
+                NewValue = $"{label} ({entryKey}#{entryOccurrence})"
+            };
+
+            _settings.EditHistory.Pending.Add(item);
+            Persist();
+        }
+
+        public void AddPendingDeleteEntry(string filePath, string? collectionTitle, string entryKey, int entryOccurrence, string? entryDisplay)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            if (string.IsNullOrWhiteSpace(entryKey))
+                return;
+
+            if (entryOccurrence < 0)
+                return;
+
+            var entryLabel = string.IsNullOrWhiteSpace(entryDisplay) ? entryKey : entryDisplay;
+
+            var item = new EditHistoryItem
+            {
+                Operation = EditHistoryOperation.DeleteEntry,
+                FilePath = filePath,
+                CollectionTitle = collectionTitle,
+                EntryKey = entryKey,
+                EntryOccurrence = entryOccurrence,
+                FieldPath = "DELETE",
+                OldValue = $"{entryLabel} ({entryKey}#{entryOccurrence})",
+                NewValue = "(deleted)"
+            };
+
+            _settings.EditHistory.Pending.Add(item);
+            Persist();
+        }
+
+        public void AddPendingDeleteChildBlock(string filePath, string? collectionTitle, string entryKey, int entryOccurrence, string fieldPath, string? display)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            if (string.IsNullOrWhiteSpace(entryKey))
+                return;
+
+            if (entryOccurrence < 0)
+                return;
+
+            if (string.IsNullOrWhiteSpace(fieldPath))
+                return;
+
+            var label = string.IsNullOrWhiteSpace(display) ? entryKey : display;
+
+            var item = new EditHistoryItem
+            {
+                Operation = EditHistoryOperation.DeleteChildBlock,
+                FilePath = filePath,
+                CollectionTitle = collectionTitle,
+                EntryKey = entryKey,
+                EntryOccurrence = entryOccurrence,
+                FieldPath = fieldPath,
+                OldValue = $"{label} ({entryKey}#{entryOccurrence})",
+                NewValue = "(deleted)"
             };
 
             _settings.EditHistory.Pending.Add(item);
@@ -84,15 +209,127 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
                 return false;
             }
 
-            foreach (var e in edits)
+            foreach (var e in edits.OrderBy(x => x.TimestampUtc).ThenBy(x => x.Id))
             {
-                if (!TryGetEntry(doc, e.EntryKey, out var entry))
+                if (e.Operation == EditHistoryOperation.DuplicateEntry)
+                {
+                    var srcKey = e.SourceEntryKey ?? e.EntryKey;
+                    var srcOcc = e.SourceEntryOccurrence ?? Math.Max(0, e.EntryOccurrence - 1);
+
+                    if (!TryGetEntry(doc, e.CollectionTitle, srcKey, srcOcc, out var sourceEntry))
+                    {
+                        error = $"Entry not found: {srcKey}";
+                        return false;
+                    }
+
+                    if (!_friendly.TryDuplicateEntry(doc, sourceEntry, insertAfter: true, out _, out var dupErr))
+                    {
+                        error = dupErr ?? "Duplicate failed.";
+                        return false;
+                    }
+
+                    var rebuiltAfterDuplicate = _friendly.TryBuild(_friendly.ToXml(doc));
+                    if (rebuiltAfterDuplicate is null)
+                    {
+                        error = "XML could not be rebuilt after duplication.";
+                        return false;
+                    }
+
+                    doc = rebuiltAfterDuplicate;
+                    continue;
+                }
+
+                if (e.Operation == EditHistoryOperation.DeleteEntry)
+                {
+                    if (!TryGetEntry(doc, e.CollectionTitle, e.EntryKey, e.EntryOccurrence, out var deleteEntry))
+                        continue;
+
+                    if (!_friendly.TryDeleteEntry(doc, deleteEntry, out var delErr))
+                    {
+                        error = delErr ?? "Delete failed.";
+                        return false;
+                    }
+
+                    var rebuiltAfterDelete = _friendly.TryBuild(_friendly.ToXml(doc));
+                    if (rebuiltAfterDelete is null)
+                    {
+                        error = "XML could not be rebuilt after deletion.";
+                        return false;
+                    }
+
+                    doc = rebuiltAfterDelete;
+                    continue;
+                }
+
+                if (e.Operation == EditHistoryOperation.DuplicateChildBlock)
+                {
+                    if (!TryGetEntry(doc, e.CollectionTitle, e.EntryKey, e.EntryOccurrence, out var entry))
+                    {
+                        error = $"Entry not found: {e.EntryKey}";
+                        return false;
+                    }
+
+                    if (!LSR.XmlHelper.Wpf.Services.LookupFieldPathParser.TryParseLookupField(e.FieldPath, out var groupTitle, out var itemName, out _))
+                    {
+                        error = "Child block path is not in the expected format.";
+                        return false;
+                    }
+
+                    if (!_friendly.TryDuplicateChildBlock(doc, entry, groupTitle, itemName, insertAfter: true, out var dupChildErr))
+                    {
+                        error = dupChildErr ?? "Duplicate item failed.";
+                        return false;
+                    }
+
+                    var rebuiltAfterChildDup = _friendly.TryBuild(_friendly.ToXml(doc));
+                    if (rebuiltAfterChildDup is null)
+                    {
+                        error = "XML could not be rebuilt after duplicating item.";
+                        return false;
+                    }
+
+                    doc = rebuiltAfterChildDup;
+                    continue;
+                }
+
+                if (e.Operation == EditHistoryOperation.DeleteChildBlock)
+                {
+                    if (!TryGetEntry(doc, e.CollectionTitle, e.EntryKey, e.EntryOccurrence, out var entry))
+                    {
+                        error = $"Entry not found: {e.EntryKey}";
+                        return false;
+                    }
+
+                    if (!LSR.XmlHelper.Wpf.Services.LookupFieldPathParser.TryParseLookupField(e.FieldPath, out var groupTitle, out var itemName, out _))
+                    {
+                        error = "Child block path is not in the expected format.";
+                        return false;
+                    }
+
+                    if (!_friendly.TryDeleteChildBlock(doc, entry, groupTitle, itemName, out var delChildErr))
+                    {
+                        error = delChildErr ?? "Delete item failed.";
+                        return false;
+                    }
+
+                    var rebuiltAfterChildDel = _friendly.TryBuild(_friendly.ToXml(doc));
+                    if (rebuiltAfterChildDel is null)
+                    {
+                        error = "XML could not be rebuilt after deleting item.";
+                        return false;
+                    }
+
+                    doc = rebuiltAfterChildDel;
+                    continue;
+                }
+
+                if (!TryGetEntry(doc, e.CollectionTitle, e.EntryKey, e.EntryOccurrence, out var fieldEntry))
                 {
                     error = $"Entry not found: {e.EntryKey}";
                     return false;
                 }
 
-                if (!entry.TrySetField(e.FieldPath, e.NewValue, out var fieldErr))
+                if (!fieldEntry.TrySetField(e.FieldPath, e.NewValue, out var fieldErr))
                 {
                     error = fieldErr ?? $"Failed to set field: {e.FieldPath}";
                     return false;
@@ -101,6 +338,69 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
 
             updatedXml = _friendly.ToXml(doc);
             return true;
+        }
+
+        public bool TryDeleteChildBlock(XmlFriendlyDocument document, XmlFriendlyEntry sourceEntry, string groupTitle, string itemName, out string? error)
+        {
+            error = null;
+
+            if (string.IsNullOrWhiteSpace(groupTitle) || string.IsNullOrWhiteSpace(itemName))
+            {
+                error = "Group title or item name is missing.";
+                return false;
+            }
+
+            var lb = itemName.IndexOf('[', StringComparison.Ordinal);
+            var rb = itemName.EndsWith("]", StringComparison.Ordinal);
+
+            if (lb <= 0 || !rb)
+            {
+                error = "Item name is not in the expected format (Name[index]).";
+                return false;
+            }
+
+            var elementName = itemName.Substring(0, lb);
+            var indexText = itemName.Substring(lb + 1, itemName.Length - lb - 2);
+
+            if (!int.TryParse(indexText, out var index) || index <= 0)
+            {
+                error = "Item index is invalid.";
+                return false;
+            }
+
+            try
+            {
+                var entryElement = sourceEntry.Element;
+
+                var candidateContainer = entryElement.Element(groupTitle);
+                var container = candidateContainer is not null && candidateContainer.Elements(elementName).Any()
+                    ? candidateContainer
+                    : entryElement;
+
+                var items = container.Elements(elementName).ToList();
+                if (items.Count == 0)
+                {
+                    error = "No matching items were found for this group.";
+                    return false;
+                }
+
+                if (index > items.Count)
+                {
+                    error = "Item index is out of range.";
+                    return false;
+                }
+
+                var toRemove = items[index - 1];
+                RemovePreservingWhitespace(toRemove);
+
+                sourceEntry.InvalidateFields();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
         }
 
         public bool TryLoadFileAndApply(string filePath, IEnumerable<EditHistoryItem> edits, out string updatedXml, out string? error)
@@ -143,7 +443,16 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
             }
         }
 
-        public bool TryGetCurrentFieldValue(string xmlText, string entryKey, string fieldPath, out string? value, out string? error)
+        public bool TryEntryExists(string xmlText, string? collectionTitle, string entryKey, int entryOccurrence)
+        {
+            var doc = _friendly.TryBuild(xmlText);
+            if (doc is null)
+                return false;
+
+            return TryGetEntry(doc, collectionTitle, entryKey, entryOccurrence, out _);
+        }
+
+        public bool TryGetCurrentFieldValue(string xmlText, string? collectionTitle, string entryKey, int entryOccurrence, string fieldPath, out string? value, out string? error)
         {
             value = null;
             error = null;
@@ -155,13 +464,13 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
                 return false;
             }
 
-            if (!TryGetEntry(doc, entryKey, out var entry))
+            if (!TryGetEntry(doc, collectionTitle, entryKey, entryOccurrence, out var friendlyEntry))
             {
                 error = $"Entry not found: {entryKey}";
                 return false;
             }
 
-            if (!entry.Fields.TryGetValue(fieldPath, out var field))
+            if (!friendlyEntry.Fields.TryGetValue(fieldPath, out var field))
             {
                 error = $"Field not found: {fieldPath}";
                 return false;
@@ -197,20 +506,45 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
             return removed;
         }
 
-        private static bool TryGetEntry(XmlFriendlyDocument doc, string entryKey, out XmlFriendlyEntry entry)
+        private static bool TryGetEntry(XmlFriendlyDocument doc, string? collectionTitle, string entryKey, int occurrence, out XmlFriendlyEntry entry)
         {
-            foreach (var c in doc.Collections)
+            if (occurrence < 0)
+                occurrence = 0;
+
+            IEnumerable<XmlFriendlyCollection> collections = doc.Collections;
+
+            if (!string.IsNullOrWhiteSpace(collectionTitle))
             {
-                var match = c.Entries.FirstOrDefault(e => string.Equals(e.Key, entryKey, StringComparison.OrdinalIgnoreCase));
-                if (match is not null)
-                {
-                    entry = match;
-                    return true;
-                }
+                var matchCollection = doc.Collections.FirstOrDefault(c => string.Equals(c.Title, collectionTitle, StringComparison.OrdinalIgnoreCase));
+                if (matchCollection is not null)
+                    collections = new[] { matchCollection };
+            }
+
+            foreach (var c in collections)
+            {
+                var matches = c.Entries.Where(e => string.Equals(e.Key, entryKey, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (matches.Count == 0)
+                    continue;
+
+                if (occurrence >= matches.Count)
+                    occurrence = matches.Count - 1;
+
+                entry = matches[occurrence];
+                return true;
             }
 
             entry = null!;
             return false;
+        }
+        private static void RemovePreservingWhitespace(System.Xml.Linq.XElement element)
+        {
+            var next = element.NextNode as System.Xml.Linq.XText;
+            if (next is not null && string.IsNullOrWhiteSpace(next.Value))
+                next.Remove();
+
+            var prev = element.PreviousNode as System.Xml.Linq.XText;
+            if (prev is not null && string.IsNullOrWhiteSpace(prev.Value))
+                prev.Remove();
         }
 
         private void Persist()

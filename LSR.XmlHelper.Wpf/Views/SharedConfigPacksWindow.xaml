@@ -1,0 +1,168 @@
+﻿<Window x:Class="LSR.XmlHelper.Wpf.Views.SharedConfigPacksWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Shared Config Packs"
+        Height="720"
+        Width="1120"
+        WindowStartupLocation="CenterOwner">
+	<DockPanel Margin="10">
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+			<Button Content="Open Configs Folder" Width="170" Command="{Binding OpenConfigsFolderCommand}" />
+			<Button Content="Refresh Packs" Width="140" Margin="10,0,0,0" Command="{Binding RefreshPacksCommand}" />
+		</StackPanel>
+
+		<TabControl>
+			<TabItem Header="Export">
+				<Grid Margin="10">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
+
+					<StackPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
+						<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+							<TextBlock Text="Pack Name:" Width="90" VerticalAlignment="Center" FontWeight="Bold"/>
+							<TextBox Width="400" Text="{Binding PackName, UpdateSourceTrigger=PropertyChanged}" />
+                            <CheckBox Content="Include Appearance" Margin="18,0,0,0" IsChecked="{Binding IncludeAppearance}" ToolTip="Includes Appearance settings in the pack. Leave off unless you want to share UI/visual settings too." />
+                        </StackPanel>
+
+						<TextBlock Text="Description (optional):" FontWeight="Bold" Margin="0,0,0,6"/>
+						<TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+					</StackPanel>
+
+					<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10">
+						<Button Content="Select All Pending" Width="160" Command="{Binding ExportSelectAllPendingCommand}" />
+						<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ExportSelectNonePendingCommand}" />
+					</StackPanel>
+
+					<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,10">
+						<Button Content="Select All Committed" Width="170" Command="{Binding ExportSelectAllCommittedCommand}" />
+						<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ExportSelectNoneCommittedCommand}" />
+					</StackPanel>
+
+					<GroupBox Grid.Row="2" Grid.Column="0" Header="Pending edits to include">
+						<ListBox ItemsSource="{Binding ExportPending}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</GroupBox>
+
+					<GroupBox Grid.Row="2" Grid.Column="1" Header="Committed edits to include">
+						<ListBox ItemsSource="{Binding ExportCommitted}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</GroupBox>
+
+					<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,10,0,0">
+						<Button Content="Export Pack" Width="140" Command="{Binding ExportCommand}" />
+						<TextBlock Text="Exports to: LSR-XML-Helper\Shared-Configs" Margin="14,6,0,0" Opacity="0.75"/>
+					</StackPanel>
+				</Grid>
+			</TabItem>
+
+			<TabItem Header="Import">
+				<Grid Margin="10">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="340"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
+
+					<Grid.RowDefinitions>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+
+					<GroupBox Header="Available Packs" Grid.Column="0" Grid.RowSpan="2" Margin="0,0,10,0">
+						<DockPanel Margin="10">
+							<ListBox ItemsSource="{Binding PackFiles}" SelectedItem="{Binding SelectedPackPath}" />
+						</DockPanel>
+					</GroupBox>
+
+					<Grid Grid.Column="1" Grid.Row="0">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+
+						<StackPanel Grid.Row="0" Margin="0,0,0,10">
+							<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+								<CheckBox Content="Import Appearance" IsChecked="{Binding ImportAppearance}" />
+								<CheckBox Content="Import Edits" Margin="18,0,0,0" IsChecked="{Binding ImportEdits}" />
+							</StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Content="Import edits as Pending" GroupName="ImportAs" IsChecked="{Binding ImportEditsAsPending}" />
+                                <RadioButton Content="Import edits as Committed" GroupName="ImportAs" Margin="18,0,0,0" IsChecked="{Binding ImportEditsAsCommitted}" />
+                                <CheckBox Content="Apply Now" Margin="18,0,0,0" IsChecked="{Binding ApplyNow}"
+								ToolTip="If enabled, selected edits are applied directly to XML files on disk (backups will be created)." />
+                            </StackPanel>
+                        </StackPanel>
+
+						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+							<Button Content="Select All Pending" Width="160" Command="{Binding ImportSelectAllPendingCommand}" />
+							<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ImportSelectNonePendingCommand}" />
+							<Button Content="Select All Committed" Width="170" Margin="30,0,0,0" Command="{Binding ImportSelectAllCommittedCommand}" />
+							<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ImportSelectNoneCommittedCommand}" />
+						</StackPanel>
+
+						<Grid Grid.Row="2">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+
+							<GroupBox Header="Pending edits in pack" Grid.Column="0" Margin="0,0,10,0">
+								<ListBox ItemsSource="{Binding ImportPending}">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</GroupBox>
+
+							<GroupBox Header="Committed edits in pack" Grid.Column="1">
+								<ListBox ItemsSource="{Binding ImportCommitted}">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</GroupBox>
+						</Grid>
+
+						<GroupBox Header="Preview (what will change)" Grid.Row="3">
+							<DockPanel Margin="10">
+								<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+									<Button Content="Rebuild Preview" Width="140" Command="{Binding RebuildPreviewCommand}" />
+									<Button Content="Import Selected" Width="140" Margin="10,0,0,0" Command="{Binding ImportCommand}" />
+								</StackPanel>
+                                <TextBox Text="{Binding PreviewText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                            </DockPanel>
+						</GroupBox>
+					</Grid>
+
+					<TextBlock Grid.Column="1" Grid.Row="1" Margin="0,10,0,0" Opacity="0.75"
+                               Text="Tip: Import can add items as Pending (recommended) or Committed. Apply Now writes directly to disk with backups."/>
+				</Grid>
+			</TabItem>
+		</TabControl>
+	</DockPanel>
+</Window>
