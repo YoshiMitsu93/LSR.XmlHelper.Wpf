@@ -18,6 +18,8 @@ namespace LSR.XmlHelper.Wpf.Services
             _settingsPath = Path.Combine(root, "settings.json");
         }
 
+        public string SettingsPath => _settingsPath;
+
         public AppSettings Load()
         {
             try

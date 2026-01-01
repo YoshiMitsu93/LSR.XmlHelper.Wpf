@@ -229,6 +229,23 @@ namespace LSR.XmlHelper.Wpf
             }
         }
 
+        private void OpenSettingsInfo_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not LSR.XmlHelper.Wpf.ViewModels.MainWindowViewModel mainVm)
+                return;
+
+            var settingsService = new LSR.XmlHelper.Wpf.Services.AppSettingsService();
+            var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.SettingsInfoWindowViewModel(mainVm, settingsService);
+
+            var win = new LSR.XmlHelper.Wpf.Views.SettingsInfoWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
+        }
+
         private void About_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show(
