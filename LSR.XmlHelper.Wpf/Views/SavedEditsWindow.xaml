@@ -24,6 +24,9 @@
 
                 <TextBlock Text="To:" VerticalAlignment="Center" Margin="14,0,8,0" FontWeight="Bold"/>
                 <DatePicker Width="140" SelectedDate="{Binding DateTo}" />
+                <Button Content="Export Edit Summary..." Margin="14,0,0,0" Width="170"
+                ToolTip="Export a readable summary of saved edits to a .txt file."
+                Command="{Binding ExportEditSummaryCommand}" />
             </StackPanel>
         </StackPanel>
 

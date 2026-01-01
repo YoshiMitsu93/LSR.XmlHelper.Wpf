@@ -7,6 +7,10 @@ using LSR.XmlHelper.Wpf.ViewModels;
 using System.Windows.Controls;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
+using LSR.XmlHelper.Wpf.Services.Updates;
 using System.Windows;
 
 namespace LSR.XmlHelper.Wpf
@@ -185,6 +189,46 @@ namespace LSR.XmlHelper.Wpf
             Close();
         }
 
+        private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var currentVersion = assembly.GetName().Version;
+            var currentText = currentVersion is null ? "Unknown" : currentVersion.ToString(3);
+
+            try
+            {
+                var service = new GitHubReleaseService(new HttpClient());
+                var latest = await service.GetLatestReleaseAsync("YoshiMitsu93", "LSR.XmlHelper.Wpf");
+
+                if (latest is null)
+                {
+                    System.Windows.MessageBox.Show("Could not check for updates (no release info returned).", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var latestText = string.IsNullOrWhiteSpace(latest.TagName) ? "Unknown" : latest.TagName;
+                var hasUpdate = currentVersion is not null && latest.Version is not null && latest.Version > currentVersion;
+
+                var message =
+                    hasUpdate
+                        ? $"An update is available.\n\nCurrent: {currentText}\nLatest: {latestText}\n\nOpen the release page?"
+                        : $"You are up to date.\n\nCurrent: {currentText}\nLatest: {latestText}\n\nOpen the release page anyway?";
+
+                var result = System.Windows.MessageBox.Show(message, "Check for Updates", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                if (!string.IsNullOrWhiteSpace(latest.HtmlUrl))
+                {
+                    Process.Start(new ProcessStartInfo(latest.HtmlUrl) { UseShellExecute = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Could not check for updates.\n\n{ex.Message}", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         private void About_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show(
@@ -193,7 +237,7 @@ namespace LSR.XmlHelper.Wpf
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
-
+       
         private void OpenCurrentXmlFolder_Click(object sender, RoutedEventArgs e)
         {
             var xmlPath = GetCurrentXmlPath();

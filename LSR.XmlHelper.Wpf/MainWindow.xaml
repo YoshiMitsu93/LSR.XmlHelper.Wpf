@@ -787,6 +787,10 @@
             </MenuItem>
 
             <MenuItem Header="_Help">
+                <MenuItem Header="Check for _Updates..."
+                          ToolTip="Check GitHub for the latest release."
+                          Click="CheckForUpdates_Click" />
+                <Separator />
                 <MenuItem Header="_About"
                           ToolTip="Show information about this app."
                           Click="About_Click" />

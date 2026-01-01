@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using LSR.XmlHelper.Wpf.Services.EditSummary;
+using Microsoft.Win32;
+using System.IO;
 using System.Windows.Data;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
@@ -18,6 +21,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
     {
         private readonly EditHistoryService _history;
         private readonly Func<string?> _getCurrentFilePath;
+        private readonly Func<string?> _getRootFolderPath;
         private readonly Func<IEnumerable<EditHistoryItem>, bool> _tryApplyToCurrent;
         private readonly XmlBackupRequestService _backupRequest;
 
@@ -30,28 +34,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private bool _showOutdated = true;
         private bool _showMissing = true;
 
-        public SavedEditsWindowViewModel(EditHistoryService history, Func<string?> getCurrentFilePath, Func<IEnumerable<EditHistoryItem>, bool> tryApplyToCurrent, XmlBackupRequestService backupRequest)
+        public SavedEditsWindowViewModel(EditHistoryService history, Func<string?> getCurrentFilePath, Func<IEnumerable<EditHistoryItem>, bool> tryApplyToCurrent, XmlBackupRequestService backupRequest, Func<string?> getRootFolderPath)
         {
             _history = history;
             _getCurrentFilePath = getCurrentFilePath;
             _tryApplyToCurrent = tryApplyToCurrent;
             _backupRequest = backupRequest;
+            _getRootFolderPath = getRootFolderPath;
 
             ApplySelectedPendingCommand = new RelayCommand(ApplySelectedPending, CanApplySelectedPending);
             ApplyAllPendingCommand = new RelayCommand(ApplyAllPending, CanApplyAllPending);
-
             ApplySelectedCommittedCommand = new RelayCommand(ApplySelectedCommitted, CanApplySelectedCommitted);
             ApplyAllCommittedCommand = new RelayCommand(ApplyAllCommitted, CanApplyAllCommitted);
-
             DeleteSelectedPendingCommand = new RelayCommand(DeleteSelectedPending, CanDeleteSelectedPending);
             DeleteAllPendingCommand = new RelayCommand(DeleteAllPending, CanDeleteAllPending);
-
             DeleteSelectedCommittedCommand = new RelayCommand(DeleteSelectedCommitted, CanDeleteSelectedCommitted);
             DeleteAllCommittedCommand = new RelayCommand(DeleteAllCommitted, CanDeleteAllCommitted);
-
+            ExportEditSummaryCommand = new RelayCommand(ExportEditSummary);
             PendingRowsView = CollectionViewSource.GetDefaultView(PendingRows);
             CommittedRowsView = CollectionViewSource.GetDefaultView(CommittedRows);
-
             PendingRowsView.Filter = PendingRowFilter;
             CommittedRowsView.Filter = CommittedRowFilter;
 
@@ -147,6 +148,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public RelayCommand DeleteSelectedCommittedCommand { get; }
         public RelayCommand DeleteAllCommittedCommand { get; }
+        public RelayCommand ExportEditSummaryCommand { get; }
 
         public void Refresh()
         {
@@ -527,6 +529,105 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var ok = _tryApplyToCurrent(edits);
             if (!ok)
                 MessageBox.Show("Edits could not be applied. See the main window status/error for details.", "Saved Edits", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        private void ExportEditSummary()
+        {
+            var current = _getCurrentFilePath();
+            var scope = MessageBox.Show(
+                "Export scope:\n\nYes = Current XML only\nNo = All XMLs with saved edits\nCancel = Abort",
+                "Export Edit Summary",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (scope == MessageBoxResult.Cancel)
+                return;
+
+            var pending = _history.Pending.AsEnumerable();
+            var committed = _history.Committed.AsEnumerable();
+
+            if (scope == MessageBoxResult.Yes)
+            {
+                if (string.IsNullOrWhiteSpace(current))
+                {
+                    MessageBox.Show("No current XML is loaded in the main window.", "Export Edit Summary", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                pending = pending.Where(x => string.Equals(x.FilePath, current, StringComparison.OrdinalIgnoreCase));
+                committed = committed.Where(x => string.Equals(x.FilePath, current, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var pendingList = pending.ToList();
+            var committedList = committed.ToList();
+
+            if (pendingList.Count == 0 && committedList.Count == 0)
+            {
+                MessageBox.Show("No edits found for the selected export scope.", "Export Edit Summary", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var optVm = new LSR.XmlHelper.Wpf.ViewModels.Dialogs.EditSummaryExportOptionsViewModel
+            {
+                FileName = $"EditSummary_{DateTime.Now:yyyyMMdd_HHmmss}",
+                Notes = ""
+            };
+
+            var optWin = new LSR.XmlHelper.Wpf.Views.EditSummaryExportOptionsWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = optVm
+            };
+
+            if (optWin.ShowDialog() != true)
+                return;
+
+            var safeName = (optVm.FileName ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(safeName))
+                safeName = $"EditSummary_{DateTime.Now:yyyyMMdd_HHmmss}";
+
+            var loadedFolder = _getRootFolderPath() ?? "";
+
+            var firstXml = current;
+            if (string.IsNullOrWhiteSpace(firstXml))
+                firstXml = pendingList.Select(x => x.FilePath).Concat(committedList.Select(x => x.FilePath)).FirstOrDefault(p => !string.IsNullOrWhiteSpace(p));
+
+            var summariesFolder = "";
+            if (!string.IsNullOrWhiteSpace(firstXml))
+            {
+                var helperRoot = new LSR.XmlHelper.Core.Services.XmlHelperRootService();
+                summariesFolder = helperRoot.GetOrCreateSubfolder(firstXml!, "Summaries");
+            }
+            else if (!string.IsNullOrWhiteSpace(loadedFolder))
+            {
+                summariesFolder = Path.Combine(loadedFolder, "LSR-XML-Helper", "Summaries");
+                Directory.CreateDirectory(summariesFolder);
+            }
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Export Edit Summary",
+                Filter = "Text File (*.txt)|*.txt",
+                FileName = $"{safeName}.txt",
+                InitialDirectory = string.IsNullOrWhiteSpace(summariesFolder) ? null : summariesFolder
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            var exporter = new EditSummaryExportService();
+            var text = exporter.BuildSummary(loadedFolder, safeName, optVm.Notes, pendingList, committedList);
+
+            File.WriteAllText(dialog.FileName, text);
+
+            var files = pendingList.Select(x => x.FilePath)
+                .Concat(committedList.Select(x => x.FilePath))
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
+            var edits = pendingList.Count + committedList.Count;
+
+            MessageBox.Show($"Exported summary for {files} files / {edits} edits.", "Export Edit Summary", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private bool IsSelectedFileCurrent()

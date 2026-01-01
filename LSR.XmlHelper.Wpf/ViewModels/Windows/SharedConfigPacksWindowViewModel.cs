@@ -63,6 +63,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             ImportSelectNoneCommittedCommand = new RelayCommand(() => SetAll(ImportCommitted, false), () => SelectedPack?.EditHistory?.Committed?.Count > 0);
 
             ExportCommand = new RelayCommand(Export, CanUseRootFolder);
+            ExportSummaryCommand = new RelayCommand(ExportSummary, CanUseRootFolder);
             ImportCommand = new RelayCommand(ImportSelected, CanImportSelected);
             RebuildPreviewCommand = new RelayCommand(RebuildPreview);
 
@@ -184,18 +185,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         public RelayCommand RefreshPacksCommand { get; }
         public RelayCommand OpenConfigsFolderCommand { get; }
-
         public RelayCommand ExportSelectAllPendingCommand { get; }
         public RelayCommand ExportSelectNonePendingCommand { get; }
         public RelayCommand ExportSelectAllCommittedCommand { get; }
         public RelayCommand ExportSelectNoneCommittedCommand { get; }
-
         public RelayCommand ImportSelectAllPendingCommand { get; }
         public RelayCommand ImportSelectNonePendingCommand { get; }
         public RelayCommand ImportSelectAllCommittedCommand { get; }
         public RelayCommand ImportSelectNoneCommittedCommand { get; }
-
         public RelayCommand ExportCommand { get; }
+        public RelayCommand ExportSummaryCommand { get; }
         public RelayCommand ImportCommand { get; }
         public RelayCommand RebuildPreviewCommand { get; }
 
@@ -264,6 +263,74 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             RefreshPacks();
             SelectedPackPath = path;
+        }
+
+        private void ExportSummary()
+        {
+            var root = _getRootFolder();
+            if (string.IsNullOrWhiteSpace(root))
+                return;
+
+            var pending = ExportPending.Where(x => x.IsSelected).Select(x => x.Item).ToList();
+            var committed = ExportCommitted.Where(x => x.IsSelected).Select(x => x.Item).ToList();
+
+            if (pending.Count == 0 && committed.Count == 0)
+            {
+                System.Windows.MessageBox.Show("Select at least one Pending or Committed edit to export a summary.", "Config Packs", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var summariesFolder = Path.Combine(root, "LSR-XML-Helper", "Summaries");
+            Directory.CreateDirectory(summariesFolder);
+
+            var defaultName = (PackName ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(defaultName))
+                defaultName = $"ConfigPackSummary_{DateTime.Now:yyyyMMdd_HHmmss}";
+
+            var optVm = new LSR.XmlHelper.Wpf.ViewModels.Dialogs.EditSummaryExportOptionsViewModel
+            {
+                FileName = defaultName,
+                Notes = Description ?? ""
+            };
+
+            var optWin = new LSR.XmlHelper.Wpf.Views.EditSummaryExportOptionsWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = optVm
+            };
+
+            if (optWin.ShowDialog() != true)
+                return;
+
+            var safeName = (optVm.FileName ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(safeName))
+                safeName = defaultName;
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Export Edit Summary",
+                Filter = "Text File (*.txt)|*.txt",
+                FileName = $"{safeName}.txt",
+                InitialDirectory = summariesFolder
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            var exporter = new LSR.XmlHelper.Wpf.Services.EditSummary.EditSummaryExportService();
+            var text = exporter.BuildSummary(root, safeName, optVm.Notes, pending, committed);
+
+            File.WriteAllText(dialog.FileName, text);
+
+            var files = pending.Select(x => x.FilePath)
+                .Concat(committed.Select(x => x.FilePath))
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
+            var edits = pending.Count + committed.Count;
+
+            System.Windows.MessageBox.Show($"Exported summary for {files} files / {edits} edits.", "Config Packs", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void LoadSelectedPack()
@@ -405,6 +472,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void RebuildPreview()
         {
+            PreviewText = string.Empty;
             if (SelectedPack is null)
             {
                 PreviewText = "No pack selected.";

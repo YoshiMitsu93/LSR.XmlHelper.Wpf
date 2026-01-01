@@ -502,7 +502,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _editHistory,
                 GetSelectedFilePath,
                 TryApplySavedEditsToCurrent,
-                _backupRequest);
+                _backupRequest,
+                () => RootFolderPath);
 
             var win = new SavedEditsWindow
             {
