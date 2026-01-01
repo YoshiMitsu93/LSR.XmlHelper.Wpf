@@ -113,9 +113,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
                 var p = GetSelectedFilePath();
-                return p is not null && File.Exists(p);
-            });
+                if (p is not null && File.Exists(p))
+                    return true;
 
+                return !string.IsNullOrWhiteSpace(_rootFolder) && Directory.Exists(_rootFolder) && XmlFiles.Any();
+            });
 
             if (!string.IsNullOrWhiteSpace(_rootFolder))
             {
@@ -125,7 +127,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         }
 
         public AppearanceService Appearance => _appearance;
-
+        public string? RootFolderPath => _rootFolder;
         public RelayCommand OpenAppearanceCommand { get; }
         public RelayCommand OpenBackupBrowserCommand { get; }
         public RelayCommand OpenGlobalSearchCommand { get; }
@@ -556,8 +558,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var path = GetSelectedFilePath();
             if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
             {
-                MessageBox.Show("No XML file is currently selected.", "Restore from Backup", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                var first = XmlFiles.FirstOrDefault();
+                if (first is null || string.IsNullOrWhiteSpace(first.FullPath) || !File.Exists(first.FullPath))
+                {
+                    MessageBox.Show("No XML files were found in the opened folder.", "Restore from Backup", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                path = first.FullPath;
             }
 
             var vm = new BackupBrowserWindowViewModel(path, _appearance);
@@ -1296,6 +1304,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             if (!entry.TrySetField(field.Name, field.Value, out _))
                 return;
+
+            entry.InvalidateFields();
+            SelectedFriendlyEntry?.RefreshDisplay();
 
             if (_friendlyDocument is null)
                 return;

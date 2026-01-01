@@ -775,8 +775,8 @@
                           IsCheckable="True"
                           IsChecked="{Binding IsDarkMode}" />
                 <Separator />
-                <MenuItem Header="Open _Current XML Folder"
-                          ToolTip="Open the folder of the currently selected XML file."
+                <MenuItem Header="Open _XML Folder"
+                          ToolTip="Open the loaded XML folder."
                           Click="OpenCurrentXmlFolder_Click" />
                 <MenuItem Header="Open _Helper Root Folder"
                           ToolTip="Open the helper root folder that contains backup and related folders."

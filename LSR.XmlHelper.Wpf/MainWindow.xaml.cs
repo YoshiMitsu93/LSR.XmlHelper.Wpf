@@ -215,8 +215,13 @@ namespace LSR.XmlHelper.Wpf
             var xmlPath = GetCurrentXmlPath();
             if (string.IsNullOrWhiteSpace(xmlPath) || !File.Exists(xmlPath))
             {
-                System.Windows.MessageBox.Show("No XML file is currently selected.", "Open Helper Root Folder", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                if (DataContext is MainWindowViewModel vm && !string.IsNullOrWhiteSpace(vm.RootFolderPath) && Directory.Exists(vm.RootFolderPath))
+                    xmlPath = Path.Combine(vm.RootFolderPath, "__folder__.xml");
+                else
+                {
+                    System.Windows.MessageBox.Show("No folder is currently open.", "Open Helper Root Folder", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
             }
 
             var root = _helperRoot.GetHelperRootForXmlPath(xmlPath);
@@ -231,8 +236,13 @@ namespace LSR.XmlHelper.Wpf
             var xmlPath = GetCurrentXmlPath();
             if (string.IsNullOrWhiteSpace(xmlPath) || !File.Exists(xmlPath))
             {
-                System.Windows.MessageBox.Show("No XML file is currently selected.", "Open Backups Folder", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                if (DataContext is MainWindowViewModel vm && !string.IsNullOrWhiteSpace(vm.RootFolderPath) && Directory.Exists(vm.RootFolderPath))
+                    xmlPath = Path.Combine(vm.RootFolderPath, "__folder__.xml");
+                else
+                {
+                    System.Windows.MessageBox.Show("No folder is currently open.", "Open Backups Folder", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
             }
 
             var backups = _helperRoot.GetOrCreateSubfolder(xmlPath, "BackupXMLs");
