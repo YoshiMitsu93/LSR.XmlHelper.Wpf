@@ -122,7 +122,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (!string.IsNullOrWhiteSpace(_rootFolder))
             {
                 RefreshFileViews(resetEditorAndSelection: true);
-                Title = $"LSR XML Helper - {_rootFolder}";
+                Title = $"LSR XML Helper - {_rootFolder}  |  Created by Y0sh1M1tsu";
             }
         }
 
@@ -1799,7 +1799,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             SaveSettings();
 
             RefreshFileViews(resetEditorAndSelection: true);
-            Title = $"LSR XML Helper - {_rootFolder}";
+            Title = $"LSR XML Helper - {_rootFolder}  |  Created by Y0sh1M1tsu";
         }
 
         private void RefreshFileViews(bool resetEditorAndSelection)

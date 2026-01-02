@@ -11,7 +11,12 @@
 
     <AssemblyName>LSR.XmlHelper.Wpf</AssemblyName>
     <RootNamespace>LSR.XmlHelper.Wpf</RootNamespace>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Quicker.AvalonEdit" Version="6.3.1" />

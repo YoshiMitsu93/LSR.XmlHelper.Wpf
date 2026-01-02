@@ -8,6 +8,7 @@
         xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
         mc:Ignorable="d"
         Title="{Binding Title}"
+        Icon="Assets/AppIcon.ico"
         Height="450"
         Width="900"
         FontFamily="{Binding Appearance.UiFontFamily}"
@@ -786,18 +787,20 @@
                           Click="OpenBackupsFolder_Click" />
             </MenuItem>
 
-            <MenuItem Header="_Help">
+            <MenuItem Header="_Tools">
                 <MenuItem Header="Settings &amp; _Info..."
                           ToolTip="Open the settings and info screen (QoL toggles + app info)."
                           Click="OpenSettingsInfo_Click" />
-                <Separator />
+            </MenuItem>
+
+            <MenuItem Header="_Help">
                 <MenuItem Header="Check for _Updates..."
                           ToolTip="Check GitHub for the latest release."
                           Click="CheckForUpdates_Click" />
                 <Separator />
-                <MenuItem Header="_About"
-              ToolTip="Show information about this app."
-              Click="About_Click" />
+                <MenuItem Header="_Documentation..."
+                          ToolTip="Open documentation for features, shortcuts, and how-to guides."
+                          Click="About_Click" />
             </MenuItem>
 
         </Menu>

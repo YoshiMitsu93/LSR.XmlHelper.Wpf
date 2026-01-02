@@ -248,13 +248,20 @@ namespace LSR.XmlHelper.Wpf
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show(
-                "LSR XML Helper\n\nFriendly view + XML editor.\nBackups are stored under the 'LSR-XML-Helper' folder next to your XML files.",
-                "About",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            if (DataContext is not MainWindowViewModel mainVm)
+                return;
+
+            var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.HelpDocumentationWindowViewModel(mainVm.Appearance);
+
+            var win = new LSR.XmlHelper.Wpf.Views.HelpDocumentationWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
         }
-       
+
         private void OpenCurrentXmlFolder_Click(object sender, RoutedEventArgs e)
         {
             var xmlPath = GetCurrentXmlPath();
