@@ -332,20 +332,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             private set => SetProperty(ref _friendlyFieldGroups, value);
         }
 
-        public string FriendlyDebugSummary
-        {
-            get
-            {
-                var entry = SelectedFriendlyEntry?.Entry;
-                if (entry is null)
-                    return "";
-
-                var fields = entry.Fields;
-                var sample = string.Join(", ", fields.Keys.Take(10));
-                return $"Fields: {fields.Count} | Sample: {sample}";
-            }
-        }
-
         public ObservableCollection<object> FriendlyGroups
         {
             get => _friendlyGroups;
@@ -762,7 +748,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>();
                 _selectedFriendlyCollection = null;
                 _selectedFriendlyEntry = null;
-                OnPropertyChanged(nameof(FriendlyDebugSummary));
                 OnPropertyChanged(nameof(SelectedFriendlyCollection));
                 OnPropertyChanged(nameof(SelectedFriendlyEntry));
                 _friendlyExpansionStateStore.Clear();

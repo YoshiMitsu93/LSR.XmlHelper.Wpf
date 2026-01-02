@@ -966,97 +966,90 @@
                         <ColumnDefinition Width="6" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <DockPanel
-                        Grid.Column="0"
-                        Margin="0"
-                        Background="{Binding Appearance.SelectorBackgroundBrush}">
-                        <ComboBox
-                            Margin="0,0,0,8"
-                            DisplayMemberPath="Title"
-                            DockPanel.Dock="Top"
-                            ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}"
-                            ItemsSource="{Binding FriendlyCollections}"
-                            SelectedItem="{Binding SelectedFriendlyCollection}"
-                            Style="{StaticResource Pane2ComboBoxStyle}" />
-                        <ListBox
-                            DisplayMemberPath="Display"
-                            ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}"
-                            ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
-                            SelectedItem="{Binding SelectedFriendlyEntry}"
-                            Style="{StaticResource Pane2ListBoxStyle}">
+
+                    <DockPanel Grid.Column="0"
+                   Margin="0"
+                   Background="{Binding Appearance.SelectorBackgroundBrush}">
+
+                        <ComboBox DockPanel.Dock="Top"
+                      ItemsSource="{Binding FriendlyCollections}"
+                      SelectedItem="{Binding SelectedFriendlyCollection}"
+                      DisplayMemberPath="Title"
+                      Margin="0,0,0,8"
+                      Style="{StaticResource Pane2ComboBoxStyle}"
+                      ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}" />
+
+                        <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
+                     SelectedItem="{Binding SelectedFriendlyEntry}"
+                     DisplayMemberPath="Display"
+                     Style="{StaticResource Pane2ListBoxStyle}"
+                     ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Command="{Binding PlacementTarget.DataContext.DuplicateFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Header="Duplicate entry" />
-                                    <MenuItem Command="{Binding PlacementTarget.DataContext.DeleteFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Header="Delete entry..." />
+                                    <MenuItem Header="Duplicate entry"
+                                  Command="{Binding PlacementTarget.DataContext.DuplicateFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                    <MenuItem Header="Delete entry..."
+                                  Command="{Binding PlacementTarget.DataContext.DeleteFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
                     </DockPanel>
-                    <GridSplitter
-                        Grid.Column="1"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Background="{Binding Appearance.BackgroundBrush}"
-                        ResizeBehavior="PreviousAndNext"
-                        ResizeDirection="Columns" />
-                    <Border
-                        Grid.Column="2"
-                        Background="{Binding Appearance.BackgroundBrush}"
-                        BorderBrush="{Binding Appearance.GridBorderBrush}"
-                        BorderThickness="1">
-                        <DockPanel LastChildFill="True">
-                            <TextBlock
-                                Margin="0,0,0,6"
-                                DockPanel.Dock="Top"
-                                Opacity="0.75"
-                                Text="{Binding FriendlyDebugSummary}"
-                                TextWrapping="Wrap" />
-                            <ListBox
-                                Background="{Binding Appearance.BackgroundBrush}"
-                                BorderThickness="0"
-                                ItemsSource="{Binding FriendlyGroups}"
-                                ScrollViewer.CanContentScroll="False"
-                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                VirtualizingPanel.IsVirtualizing="False"
-                                VirtualizingPanel.VirtualizationMode="Recycling">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="{x:Type ListBoxItem}">
-                                        <Setter Property="Focusable" Value="False" />
-                                        <Setter Property="Padding" Value="0" />
-                                        <Setter Property="Margin" Value="0" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                        <Setter Property="VerticalContentAlignment" Value="Top" />
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                                    <ContentPresenter />
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                            </ListBox>
-                        </DockPanel>
+
+                    <GridSplitter Grid.Column="1"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      ResizeBehavior="PreviousAndNext"
+                      ResizeDirection="Columns"
+                      Background="{Binding Appearance.BackgroundBrush}" />
+
+                    <Border Grid.Column="2"
+                Background="{Binding Appearance.BackgroundBrush}"
+                BorderBrush="{Binding Appearance.GridBorderBrush}"
+                BorderThickness="1">
+                        <ListBox ItemsSource="{Binding FriendlyGroups}"
+                     Background="{Binding Appearance.BackgroundBrush}"
+                     BorderThickness="0"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.CanContentScroll="False"
+                     VirtualizingPanel.IsVirtualizing="False"
+                     VirtualizingPanel.VirtualizationMode="Recycling">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="Focusable" Value="False" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="VerticalContentAlignment" Value="Top" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                <ContentPresenter />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
                     </Border>
-                    <avalonedit:TextEditor
-                        x:Name="XmlEditor"
-                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}"
-                        infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
-                        infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
-                        Background="{Binding Appearance.EditorBackgroundBrush}"
-                        FontFamily="{Binding Appearance.EditorFontFamily}"
-                        FontSize="{Binding Appearance.EditorFontSize}"
-                        FontStyle="{Binding Appearance.EditorFontStyle}"
-                        FontWeight="{Binding Appearance.EditorFontWeight}"
-                        Foreground="{Binding Appearance.EditorTextBrush}"
-                        HorizontalScrollBarVisibility="Auto"
-                        ShowLineNumbers="True"
-                        VerticalScrollBarVisibility="Auto"
-                        Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
                 </Grid>
+
+                <avalonedit:TextEditor x:Name="XmlEditor"
+                           Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
+                           ShowLineNumbers="True"
+                           FontFamily="{Binding Appearance.EditorFontFamily}"
+                           FontSize="{Binding Appearance.EditorFontSize}"
+                           FontWeight="{Binding Appearance.EditorFontWeight}"
+                           FontStyle="{Binding Appearance.EditorFontStyle}"
+                           HorizontalScrollBarVisibility="Auto"
+                           VerticalScrollBarVisibility="Auto"
+                           Background="{Binding Appearance.EditorBackgroundBrush}"
+                           Foreground="{Binding Appearance.EditorTextBrush}"
+                           infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
+                           infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
+                           infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
             </Grid>
         </Grid>
     </DockPanel>
