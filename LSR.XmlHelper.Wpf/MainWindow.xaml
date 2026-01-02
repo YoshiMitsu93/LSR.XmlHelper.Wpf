@@ -1,43 +1,68 @@
-﻿<Window x:Class="LSR.XmlHelper.Wpf.MainWindow" x:Name="MainWindowRoot"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
-        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
-        xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
-        mc:Ignorable="d"
-        Title="{Binding Title}"
-        Icon="Assets/AppIcon.ico"
-        Height="450"
-        Width="900"
-        FontFamily="{Binding Appearance.UiFontFamily}"
-        FontSize="{Binding Appearance.UiFontSize}"
-        FontWeight="{Binding Appearance.UiFontWeight}"
-        FontStyle="{Binding Appearance.UiFontStyle}">
-    
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
+    x:Name="MainWindowRoot"
+    Title="{Binding Title}"
+    Width="900"
+    Height="450"
+    FontFamily="{Binding Appearance.UiFontFamily}"
+    FontSize="{Binding Appearance.UiFontSize}"
+    FontStyle="{Binding Appearance.UiFontStyle}"
+    FontWeight="{Binding Appearance.UiFontWeight}"
+    Icon="Assets/AppIcon.ico"
+    mc:Ignorable="d">
     <Window.InputBindings>
-        <KeyBinding Key="D" Modifiers="Control" Command="{Binding DuplicateFriendlyEntryCommand}" />
-        <KeyBinding Key="D" Modifiers="Control+Shift" Command="{Binding DuplicateFriendlyLookupItemCommand}" />
+        <KeyBinding
+            Key="D"
+            Command="{Binding DuplicateFriendlyEntryCommand}"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="D"
+            Command="{Binding DuplicateFriendlyLookupItemCommand}"
+            Modifiers="Control+Shift" />
         <KeyBinding Key="Delete" Command="{Binding DeleteFriendlyEntryCommand}" />
-        <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding OpenGlobalSearchCommand}" />
-        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
-        <KeyBinding Key="K" Modifiers="Control" Command="{Binding FormatCommand}" />
-        <KeyBinding Key="V" Modifiers="Control+Shift" Command="{Binding ValidateCommand}" />
-        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
-        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveAsCommand}" />
-        <KeyBinding Key="L" Modifiers="Control" Command="{Binding ClearCommand}" />
+        <KeyBinding
+            Key="F"
+            Command="{Binding OpenGlobalSearchCommand}"
+            Modifiers="Control+Shift" />
+        <KeyBinding
+            Key="O"
+            Command="{Binding OpenCommand}"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="K"
+            Command="{Binding FormatCommand}"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="V"
+            Command="{Binding ValidateCommand}"
+            Modifiers="Control+Shift" />
+        <KeyBinding
+            Key="S"
+            Command="{Binding SaveCommand}"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="S"
+            Command="{Binding SaveAsCommand}"
+            Modifiers="Control+Shift" />
+        <KeyBinding
+            Key="L"
+            Command="{Binding ClearCommand}"
+            Modifiers="Control" />
     </Window.InputBindings>
-    
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
-
-        <Style TargetType="{x:Type Menu}"> 
+        <Style TargetType="{x:Type Menu}">
             <Setter Property="Background" Value="{Binding Appearance.MenuBackgroundBrush}" />
             <Setter Property="Foreground" Value="{Binding Appearance.MenuTextBrush}" />
         </Style>
-
         <Style TargetType="{x:Type MenuItem}">
             <Setter Property="Foreground" Value="{Binding Appearance.MenuTextBrush}" />
             <Setter Property="Background" Value="{Binding Appearance.MenuBackgroundBrush}" />
@@ -46,57 +71,50 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type MenuItem}">
                         <Grid SnapsToDevicePixels="True">
-                            <Border x:Name="HeaderBorder"
-                                    Background="{TemplateBinding Background}"
-                                    Padding="{TemplateBinding Padding}">
-                                <ContentPresenter ContentSource="Header"
-                                                  RecognizesAccessKey="True"
-                                                  VerticalAlignment="Center"
-                                                  HorizontalAlignment="Left" />
+                            <Border
+                                x:Name="HeaderBorder"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}">
+                                <ContentPresenter
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    ContentSource="Header"
+                                    RecognizesAccessKey="True" />
                             </Border>
-
-                            <Popup x:Name="Popup"
-                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
-                                   Placement="Bottom"
-                                   AllowsTransparency="True"
-                                   Focusable="False"
-                                   PopupAnimation="Fade">
-                                <Border Background="{Binding DataContext.Appearance.MenuBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        BorderBrush="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        BorderThickness="1"
-                                        SnapsToDevicePixels="True">
-                                    <ScrollViewer CanContentScroll="True"
-                                                  VerticalScrollBarVisibility="Auto"
-                                                  HorizontalScrollBarVisibility="Disabled">
-                                        <StackPanel IsItemsHost="True"
-                                                    KeyboardNavigation.DirectionalNavigation="Cycle" />
+                            <Popup
+                                x:Name="Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade">
+                                <Border
+                                    Background="{Binding DataContext.Appearance.MenuBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    BorderBrush="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    BorderThickness="1"
+                                    SnapsToDevicePixels="True">
+                                    <ScrollViewer
+                                        CanContentScroll="True"
+                                        HorizontalScrollBarVisibility="Disabled"
+                                        VerticalScrollBarVisibility="Auto">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
                                     </ScrollViewer>
                                 </Border>
                             </Popup>
                         </Grid>
-
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HeaderBorder"
-                                        Property="Background"
-                                        Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </Trigger>
-
                             <Trigger Property="IsSubmenuOpen" Value="True">
-                                <Setter TargetName="HeaderBorder"
-                                        Property="Background"
-                                        Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </Trigger>
-
                             <Trigger Property="Role" Value="SubmenuHeader">
                                 <Setter TargetName="Popup" Property="Placement" Value="Right" />
                             </Trigger>
-
                             <Trigger Property="Role" Value="SubmenuItem">
-                                <Setter Property="Foreground"
-                                        Value="{Binding DataContext.Appearance.MenuTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Setter Property="Foreground" Value="{Binding DataContext.Appearance.MenuTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </Trigger>
-
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.55" />
                             </Trigger>
@@ -105,7 +123,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
             <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
@@ -117,14 +134,12 @@
             <Setter Property="GridLinesVisibility" Value="All" />
             <Setter Property="HeadersVisibility" Value="Column" />
         </Style>
-
         <Style TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Background" Value="{Binding DataContext.Appearance.GridHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
         </Style>
-
         <Style TargetType="{x:Type DataGridRow}">
             <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
@@ -137,7 +152,6 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-
         <Style TargetType="{x:Type DataGridCell}">
             <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridLinesBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
@@ -148,7 +162,6 @@
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
                     <Setter Property="Background" Value="Transparent" />
                 </DataTrigger>
-
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True" />
@@ -159,24 +172,20 @@
                 </MultiDataTrigger>
             </Style.Triggers>
         </Style>
-
         <Style TargetType="{x:Type Expander}">
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
         </Style>
-
         <Style TargetType="{x:Type TreeView}">
             <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
             <Setter Property="Foreground" Value="{Binding Appearance.TreeTextBrush}" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
-
         <Style x:Key="XmlTreeItemStyle" TargetType="{x:Type TreeViewItem}">
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="2,1" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TreeViewItem}">
@@ -189,55 +198,54 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition />
                             </Grid.RowDefinitions>
-
-                            <Border Grid.Row="0"
-                                    Grid.ColumnSpan="2"
-                                    Background="{TemplateBinding Background}"
-                                    CornerRadius="2"
-                                    SnapsToDevicePixels="True"
-                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}}"
-                                    HorizontalAlignment="Left" />
-
-                            <ToggleButton x:Name="Expander"
-                                          Grid.Row="0"
-                                          Grid.Column="0"
-                                          Width="16"
-                                          Height="16"
-                                          Margin="0,0,2,0"
-                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-                                          ClickMode="Press"
-                                          Focusable="False"
-                                          Background="Transparent"
-                                          BorderThickness="0">
-                                <Path x:Name="Arrow"
-                                      Width="8"
-                                      Height="8"
-                                      Fill="{TemplateBinding Foreground}"
-                                      Data="M 0 0 L 8 4 L 0 8 Z"
-                                      RenderTransformOrigin="0.5,0.5">
+                            <Border
+                                Grid.Row="0"
+                                Grid.ColumnSpan="2"
+                                Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                HorizontalAlignment="Left"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="2"
+                                SnapsToDevicePixels="True" />
+                            <ToggleButton
+                                x:Name="Expander"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,2,0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                ClickMode="Press"
+                                Focusable="False"
+                                IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Path
+                                    x:Name="Arrow"
+                                    Width="8"
+                                    Height="8"
+                                    Data="M 0 0 L 8 4 L 0 8 Z"
+                                    Fill="{TemplateBinding Foreground}"
+                                    RenderTransformOrigin="0.5,0.5">
                                     <Path.RenderTransform>
                                         <RotateTransform Angle="0" />
                                     </Path.RenderTransform>
                                 </Path>
                             </ToggleButton>
-
-                            <ContentPresenter Grid.Row="0"
-                                              Grid.Column="1"
-                                              Margin="{TemplateBinding Padding}"
-                                              ContentSource="Header"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Center"
-                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                              TextElement.Foreground="{TemplateBinding Foreground}" />
-
-                            <ItemsPresenter x:Name="ItemsHost"
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Margin="18,0,0,0"
-                                            Visibility="Collapsed" />
-
+                            <ContentPresenter
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <ItemsPresenter
+                                x:Name="ItemsHost"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="18,0,0,0"
+                                Visibility="Collapsed" />
                         </Grid>
-
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsExpanded" Value="True">
                                 <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
@@ -247,11 +255,9 @@
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
-
                             <Trigger Property="HasItems" Value="False">
                                 <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
                             </Trigger>
-
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.55" />
                             </Trigger>
@@ -259,88 +265,75 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
-
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
-
         <Style TargetType="{x:Type ListBox}">
             <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
             <Setter Property="Foreground" Value="{Binding Appearance.HeaderTextBrush}" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
-
         <Style TargetType="{x:Type ListBoxItem}">
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="4,2" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
-
-        <Style x:Key="Pane2ListBoxStyle"
-       TargetType="{x:Type ListBox}"
-       BasedOn="{StaticResource {x:Type ListBox}}">
+        <Style
+            x:Key="Pane2ListBoxStyle"
+            BasedOn="{StaticResource {x:Type ListBox}}"
+            TargetType="{x:Type ListBox}">
             <Setter Property="Background" Value="{Binding Appearance.SelectorBackgroundBrush}" />
             <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
             <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
             <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
             <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="True" />
         </Style>
-
-        <Style x:Key="Pane2ListBoxItemStyle"
-               TargetType="{x:Type ListBoxItem}"
-               BasedOn="{StaticResource {x:Type ListBoxItem}}">
+        <Style
+            x:Key="Pane2ListBoxItemStyle"
+            BasedOn="{StaticResource {x:Type ListBoxItem}}"
+            TargetType="{x:Type ListBoxItem}">
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="4,2" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
-
-        <Style x:Key="Pane1FlatListBoxItemStyle"
-       TargetType="{x:Type ListBoxItem}"
-       BasedOn="{StaticResource {x:Type ListBoxItem}}">
+        <Style
+            x:Key="Pane1FlatListBoxItemStyle"
+            BasedOn="{StaticResource {x:Type ListBoxItem}}"
+            TargetType="{x:Type ListBoxItem}">
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeTextBrush, RelativeSource={RelativeSource AncestorType=ListBox}}" />
         </Style>
-
         <Style TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.TreeBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
             <Setter Property="TextElement.Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
             <Setter Property="Padding" Value="6,3" />
             <Style.Triggers>
                 <Trigger Property="IsHighlighted" Value="True">
-                    <Setter Property="Background"
-                            Value="{Binding PlacementTarget.DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                    <Setter Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
-
         <Style TargetType="{x:Type ComboBox}">
             <Setter Property="Background" Value="{Binding Appearance.TreeBackgroundBrush}" />
             <Setter Property="Foreground" Value="{Binding Appearance.HeaderTextBrush}" />
@@ -351,10 +344,10 @@
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         </Style>
-
-        <Style x:Key="Pane2ComboBoxStyle"
-               TargetType="{x:Type ComboBox}"
-               BasedOn="{StaticResource {x:Type ComboBox}}">
+        <Style
+            x:Key="Pane2ComboBoxStyle"
+            BasedOn="{StaticResource {x:Type ComboBox}}"
+            TargetType="{x:Type ComboBox}">
             <Setter Property="Foreground" Value="{Binding Appearance.Pane2ComboTextBrush}" />
             <Setter Property="TextElement.Foreground" Value="{Binding Appearance.Pane2ComboTextBrush}" />
             <Setter Property="Background" Value="{Binding Appearance.Pane2ComboBackgroundBrush}" />
@@ -363,44 +356,50 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ComboBox}">
                         <Grid>
-                            <ToggleButton x:Name="ToggleButton"
-                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                          Focusable="False" Foreground="{TemplateBinding Foreground}"
-                                          Background="{TemplateBinding Background}"
-                                          BorderBrush="{TemplateBinding BorderBrush}"
-                                          BorderThickness="{TemplateBinding BorderThickness}"
-                                          ClickMode="Press">
+                            <ToggleButton
+                                x:Name="ToggleButton"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                ClickMode="Press"
+                                Focusable="False"
+                                Foreground="{TemplateBinding Foreground}"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                                 <Grid>
-                                    <ContentPresenter Margin="{TemplateBinding Padding}"
-                                                      VerticalAlignment="Center"
-                                                      HorizontalAlignment="Left"
-                                                      Content="{TemplateBinding SelectionBoxItem}"
-                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" TextElement.Foreground="{TemplateBinding Foreground}" />
-                                    <Path HorizontalAlignment="Right"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,8,0"
-                                          Fill="{TemplateBinding Foreground}"
-                                          Data="M 0 0 L 4 4 L 8 0 Z" />
+                                    <ContentPresenter
+                                        Margin="{TemplateBinding Padding}"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding SelectionBoxItem}"
+                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                        ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}" />
+                                    <Path
+                                        Margin="0,0,8,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Data="M 0 0 L 4 4 L 8 0 Z"
+                                        Fill="{TemplateBinding Foreground}" />
                                 </Grid>
                             </ToggleButton>
-
-                            <Popup x:Name="Popup" PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}" 
-                                   Placement="Bottom"
-                                   IsOpen="{TemplateBinding IsDropDownOpen}"
-                                   AllowsTransparency="True"
-                                   Focusable="False"
-                                   PopupAnimation="Slide">
-                                <Border BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        Background="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}">
+                            <Popup
+                                x:Name="Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                PopupAnimation="Slide">
+                                <Border
+                                    Background="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
                                     <ScrollViewer SnapsToDevicePixels="True">
                                         <ItemsPresenter />
                                     </ScrollViewer>
                                 </Border>
                             </Popup>
                         </Grid>
-
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.6" />
@@ -410,149 +409,126 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <Style x:Key="Pane2ComboBoxItemStyle"
-               TargetType="{x:Type ComboBoxItem}"
-               BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        <Style
+            x:Key="Pane2ComboBoxItemStyle"
+            BasedOn="{StaticResource {x:Type ComboBoxItem}}"
+            TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Padding" Value="6,3" />
-            <Setter Property="Background"
-                    Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
-            <Setter Property="Foreground"
-                    Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
-            <Setter Property="TextElement.Foreground"
-                    Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+            <Setter Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+            <Setter Property="Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+            <Setter Property="TextElement.Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                        <Border x:Name="Bd"
-                                Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}"
-                                SnapsToDevicePixels="True">
+                        <Border
+                            x:Name="Bd"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            SnapsToDevicePixels="True">
                             <ContentPresenter />
                         </Border>
-
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd"
-                                        Property="Background"
-                                        Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
-                                <Setter Property="Foreground"
-                                        Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
-                                <Setter Property="TextElement.Foreground"
-                                        Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                                <Setter Property="Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                                <Setter Property="TextElement.Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                             </Trigger>
-
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd"
-                                        Property="Background"
-                                        Value="{Binding PlacementTarget.DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-
         <Style TargetType="{x:Type ScrollViewer}">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-
         <HierarchicalDataTemplate DataType="{x:Type vm:XmlFolderNode}" ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="📁" Margin="0,0,6,0" />
+                <TextBlock Margin="0,0,6,0" Text="📁" />
                 <TextBlock Text="{Binding Name}" />
             </StackPanel>
         </HierarchicalDataTemplate>
-
         <DataTemplate DataType="{x:Type vm:XmlFileNode}">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="📄" Margin="0,0,6,0" />
+                <TextBlock Margin="0,0,6,0" Text="📄" />
                 <TextBlock Text="{Binding Name}" />
             </StackPanel>
         </DataTemplate>
-
         <DataTemplate DataType="{x:Type vm:XmlFriendlyFieldGroupViewModel}">
-            <Expander Header="{Binding Title}"
-                      IsExpanded="{Binding IsExpanded}"
-                      Margin="0,0,0,6">
-                <DataGrid ItemsSource="{Binding Fields}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          SelectionUnit="FullRow"
-                          EnableRowVirtualization="True"
-                          EnableColumnVirtualization="True"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.ScrollUnit="Pixel"
-                          ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.IsDeferredScrollingEnabled="False" infra:ScrollViewerMouseWheelBehavior.Enable="True">
+            <Expander
+                Margin="0,0,0,6"
+                Header="{Binding Title}"
+                IsExpanded="{Binding IsExpanded}">
+                <DataGrid
+                    infra:ScrollViewerMouseWheelBehavior.Enable="True"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    EnableColumnVirtualization="True"
+                    EnableRowVirtualization="True"
+                    ItemsSource="{Binding Fields}"
+                    ScrollViewer.CanContentScroll="True"
+                    ScrollViewer.IsDeferredScrollingEnabled="False"
+                    SelectionUnit="FullRow"
+                    VirtualizingPanel.IsVirtualizing="True"
+                    VirtualizingPanel.ScrollUnit="Pixel"
+                    VirtualizingPanel.VirtualizationMode="Recycling">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Duplicate entry"
-                                  Click="Pane3DuplicateEntry_Click" />
-                            <MenuItem Header="Delete entry..."
-                                  Click="Pane3DeleteEntry_Click" />
+                            <MenuItem Click="Pane3DuplicateEntry_Click" Header="Duplicate entry" />
+                            <MenuItem Click="Pane3DeleteEntry_Click" Header="Delete entry..." />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Field"
-                                            Binding="{Binding Name}"
-                                            IsReadOnly="True"
-                                            Width="520">
+                        <DataGridTextColumn
+                            Width="520"
+                            Binding="{Binding Name}"
+                            Header="Field"
+                            IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="Value"
-                                            Binding="{Binding Value, UpdateSourceTrigger=LostFocus}"
-                                            Width="*">
-
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Value, UpdateSourceTrigger=LostFocus}"
+                            Header="Value">
                             <DataGridTextColumn.CellStyle>
-                                <Style TargetType="{x:Type DataGridCell}"
-                                            BasedOn="{StaticResource {x:Type DataGridCell}}">
-                                    <Setter Property="Background"
-                                            Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="{x:Type DataGridCell}">
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                            <Setter Property="Background"
-                                            Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGridTextColumn.CellStyle>
-
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
-
                             <DataGridTextColumn.EditingElementStyle>
                                 <Style TargetType="{x:Type TextBox}">
-                                    <Setter Property="Foreground"
-                                            Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Setter Property="Background"
-                                            Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Setter Property="BorderThickness" Value="0" />
                                 </Style>
                             </DataGridTextColumn.EditingElementStyle>
-
                         </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Expander>
         </DataTemplate>
-
         <DataTemplate DataType="{x:Type vm:XmlFriendlyLookupGroupViewModel}">
-            <Expander Header="{Binding Title}"
-                      IsExpanded="{Binding IsExpanded}"
-                      Margin="0,0,0,6">
+            <Expander
+                Margin="0,0,0,6"
+                Header="{Binding Title}"
+                IsExpanded="{Binding IsExpanded}">
                 <Expander.Resources>
                     <CollectionViewSource x:Key="GroupedLookupItems" Source="{Binding Items}">
                         <CollectionViewSource.GroupDescriptions>
@@ -560,43 +536,41 @@
                         </CollectionViewSource.GroupDescriptions>
                     </CollectionViewSource>
                 </Expander.Resources>
-
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Top"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                Margin="0,0,0,6">
-                        <Button Content="Expand all"
-                                Click="LookupExpandAll_Click" />
-                        <Button Content="Collapse all"
-                                Click="LookupCollapseAll_Click"
-                                Margin="6,0,0,0" />
+                    <StackPanel
+                        Margin="0,0,0,6"
+                        HorizontalAlignment="Right"
+                        DockPanel.Dock="Top"
+                        Orientation="Horizontal">
+                        <Button Click="LookupExpandAll_Click" Content="Expand all" />
+                        <Button
+                            Margin="6,0,0,0"
+                            Click="LookupCollapseAll_Click"
+                            Content="Collapse all" />
                     </StackPanel>
-
-                    <DataGrid ItemsSource="{Binding Source={StaticResource GroupedLookupItems}}"
-                    MinColumnWidth="120"
-                    HeadersVisibility="Column"
-                    GridLinesVisibility="All"
-                    infra:ScrollViewerMouseWheelBehavior.Enable="False"
-                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
-                        SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
-                        PreviewMouseRightButtonDown="LookupGrid_PreviewMouseRightButtonDown"
-                        SelectionChanged="LookupGrid_SelectionChanged"
+                    <DataGrid
+                        MaxHeight="600"
+                        infra:ScrollViewerMouseWheelBehavior.Enable="False"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
-                        SelectionUnit="FullRow"
-                        EnableRowVirtualization="True"
                         EnableColumnVirtualization="True"
-                        VirtualizingPanel.IsVirtualizing="True"
-                        VirtualizingPanel.VirtualizationMode="Recycling"
+                        EnableRowVirtualization="True"
+                        GridLinesVisibility="All"
+                        HeadersVisibility="Column"
+                        ItemsSource="{Binding Source={StaticResource GroupedLookupItems}}"
+                        MinColumnWidth="120"
+                        PreviewMouseRightButtonDown="LookupGrid_PreviewMouseRightButtonDown"
                         ScrollViewer.CanContentScroll="False"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                         ScrollViewer.IsDeferredScrollingEnabled="False"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                        MaxHeight="600">
-
-
+                        SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                        SelectionChanged="LookupGrid_SelectionChanged"
+                        SelectionUnit="FullRow"
+                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                        VirtualizingPanel.IsVirtualizing="True"
+                        VirtualizingPanel.VirtualizationMode="Recycling">
                         <DataGrid.GroupStyle>
                             <GroupStyle>
                                 <GroupStyle.ContainerStyle>
@@ -604,10 +578,11 @@
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
-                                                    <Expander Header="{Binding Name}"
-                                                              Margin="0,0,0,6"
-                                                              Tag="{Binding RelativeSource={RelativeSource AncestorType=DataGrid}, Path=Tag}"
-                                                              infra:LookupGridGroupExpansionBehavior.IsEnabled="True">
+                                                    <Expander
+                                                        Margin="0,0,0,6"
+                                                        infra:LookupGridGroupExpansionBehavior.IsEnabled="True"
+                                                        Header="{Binding Name}"
+                                                        Tag="{Binding RelativeSource={RelativeSource AncestorType=DataGrid}, Path=Tag}">
                                                         <ItemsPresenter />
                                                     </Expander>
                                                 </ControlTemplate>
@@ -619,72 +594,62 @@
                         </DataGrid.GroupStyle>
                         <DataGrid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Duplicate Item"
-                                    InputGestureText="Ctrl+Shift+D"
-                                    Click="Pane3DuplicateItem_Click" />
-                                <MenuItem Header="Delete Item..."
-                                    Click="Pane3DeleteItem_Click" />
+                                <MenuItem
+                                    Click="Pane3DuplicateItem_Click"
+                                    Header="Duplicate Item"
+                                    InputGestureText="Ctrl+Shift+D" />
+                                <MenuItem Click="Pane3DeleteItem_Click" Header="Delete Item..." />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Item"
-                        Binding="{Binding Item}"
-                        IsReadOnly="True"
-                        Width="160"
-                        MinWidth="140">
+                            <DataGridTextColumn
+                                Width="160"
+                                MinWidth="140"
+                                Binding="{Binding Item}"
+                                Header="Item"
+                                IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="{x:Type TextBlock}">
-                                        <Setter Property="Foreground"
-                        Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Foreground" Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
-                            <DataGridTextColumn Header="Field"
-                        Binding="{Binding Field}"
-                        IsReadOnly="True"
-                        Width="320"
-                        MinWidth="260">
+                            <DataGridTextColumn
+                                Width="320"
+                                MinWidth="260"
+                                Binding="{Binding Field}"
+                                Header="Field"
+                                IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="{x:Type TextBlock}">
-                                        <Setter Property="Foreground"
-                        Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Foreground" Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-
-                            <DataGridTextColumn Header="Value"
-                        Binding="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                        Width="*"
-                        MinWidth="300">
+                            <DataGridTextColumn
+                                Width="*"
+                                MinWidth="300"
+                                Binding="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                Header="Value">
                                 <DataGridTextColumn.CellStyle>
-                                    <Style TargetType="{x:Type DataGridCell}"
-                   BasedOn="{StaticResource {x:Type DataGridCell}}">
-                                        <Setter Property="Background"
-                        Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="{x:Type DataGridCell}">
+                                        <Setter Property="Background" Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}"
-                                 Value="True">
-                                                <Setter Property="Background"
-                                Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </DataGridTextColumn.CellStyle>
-
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="{x:Type TextBlock}">
-                                        <Setter Property="Foreground"
-                        Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Foreground" Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
-
                                 <DataGridTextColumn.EditingElementStyle>
                                     <Style TargetType="{x:Type TextBox}">
-                                        <Setter Property="Foreground"
-                        Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                        <Setter Property="Background"
-                        Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Foreground" Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Background" Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                         <Setter Property="BorderThickness" Value="0" />
                                     </Style>
                                 </DataGridTextColumn.EditingElementStyle>
@@ -694,208 +659,219 @@
                 </DockPanel>
             </Expander>
         </DataTemplate>
-
     </Window.Resources>
-
-    <DockPanel LastChildFill="True"
-               Background="{Binding Appearance.BackgroundBrush}">
-
+    <DockPanel Background="{Binding Appearance.BackgroundBrush}" LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open Folder..."
-                          ToolTip="Pick the folder that contains your XML files. (Ctrl+O)"
-                          InputGestureText="Ctrl+O"
-                          Command="{Binding OpenCommand}" />
-                <MenuItem Header="Shared Config _Packs..."
-                          ToolTip="Export or import Appearance and Saved Edits packs."
-                          Command="{Binding OpenSharedConfigPacksCommand}" />   
+                <MenuItem
+                    Command="{Binding OpenCommand}"
+                    Header="_Open Folder..."
+                    InputGestureText="Ctrl+O"
+                    ToolTip="Pick the folder that contains your XML files. (Ctrl+O)" />
+                <MenuItem
+                    Command="{Binding OpenSharedConfigPacksCommand}"
+                    Header="Shared Config _Packs..."
+                    ToolTip="Export or import Appearance and Saved Edits packs." />
                 <Separator />
-                <MenuItem Header="_Save"
-                          ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)"
-                          InputGestureText="Ctrl+S"
-                          IsEnabled="{Binding IsDirty}"
-                          Command="{Binding SaveCommand}" />
-                <MenuItem Header="Save _As..."
-                          ToolTip="Save changes to a new file path. (Ctrl+Shift+S)"
-                          InputGestureText="Ctrl+Shift+S"
-                          IsEnabled="{Binding IsDirty}"
-                          Command="{Binding SaveAsCommand}" />  
-                <MenuItem Header="_Restore from Backup..."
-                          ToolTip="Browse backups for the selected XML file and restore one safely."
-                          Command="{Binding OpenBackupBrowserCommand}" />
+                <MenuItem
+                    Command="{Binding SaveCommand}"
+                    Header="_Save"
+                    InputGestureText="Ctrl+S"
+                    IsEnabled="{Binding IsDirty}"
+                    ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)" />
+                <MenuItem
+                    Command="{Binding SaveAsCommand}"
+                    Header="Save _As..."
+                    InputGestureText="Ctrl+Shift+S"
+                    IsEnabled="{Binding IsDirty}"
+                    ToolTip="Save changes to a new file path. (Ctrl+Shift+S)" />
+                <MenuItem
+                    Command="{Binding OpenBackupBrowserCommand}"
+                    Header="_Restore from Backup..."
+                    ToolTip="Browse backups for the selected XML file and restore one safely." />
                 <Separator />
-                <MenuItem Header="E_xit"
-                          ToolTip="Close the application."
-                          Click="Exit_Click" />
+                <MenuItem
+                    Click="Exit_Click"
+                    Header="E_xit"
+                    ToolTip="Close the application." />
             </MenuItem>
-
             <MenuItem Header="_Edit">
-                <MenuItem Header="_Format"
-                          ToolTip="Format (pretty-print) the XML. (Ctrl+K)"
-                          InputGestureText="Ctrl+K"
-                          Command="{Binding FormatCommand}" />
-                <MenuItem Header="_Validate"
-                          ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)"
-                          InputGestureText="Ctrl+Shift+V"
-                          Command="{Binding ValidateCommand}" />
+                <MenuItem
+                    Command="{Binding FormatCommand}"
+                    Header="_Format"
+                    InputGestureText="Ctrl+K"
+                    ToolTip="Format (pretty-print) the XML. (Ctrl+K)" />
+                <MenuItem
+                    Command="{Binding ValidateCommand}"
+                    Header="_Validate"
+                    InputGestureText="Ctrl+Shift+V"
+                    ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)" />
                 <Separator />
-                <MenuItem Header="_Clear"
-                          ToolTip="Clear the current selection and editor. (Ctrl+L)"
-                          InputGestureText="Ctrl+L"
-                          Command="{Binding ClearCommand}" />   
+                <MenuItem
+                    Command="{Binding ClearCommand}"
+                    Header="_Clear"
+                    InputGestureText="Ctrl+L"
+                    ToolTip="Clear the current selection and editor. (Ctrl+L)" />
             </MenuItem>
-
             <MenuItem Header="_View">
-                <MenuItem Header="_Folders"
-                          ToolTip="Show files in a folder tree."
-                          IsCheckable="True"
-                          IsChecked="{Binding IsFoldersMode}" />
-                <MenuItem Header="_Flat"
-                          ToolTip="Show all XML files in a single list."
-                          IsCheckable="True"
-                          IsChecked="{Binding IsFlatMode}" />
+                <MenuItem
+                    Header="_Folders"
+                    IsCheckable="True"
+                    IsChecked="{Binding IsFoldersMode}"
+                    ToolTip="Show files in a folder tree." />
+                <MenuItem
+                    Header="_Flat"
+                    IsCheckable="True"
+                    IsChecked="{Binding IsFlatMode}"
+                    ToolTip="Show all XML files in a single list." />
                 <Separator />
-                <MenuItem Header="_Appearance..."
-                          ToolTip="Customize fonts and colors."
-                          Command="{Binding OpenAppearanceCommand}" />
-                <MenuItem Header="Saved _Edits..."
-                          ToolTip="Review pending vs committed edits and apply them."
-                          Command="{Binding OpenSavedEditsCommand}" />
+                <MenuItem
+                    Command="{Binding OpenAppearanceCommand}"
+                    Header="_Appearance..."
+                    ToolTip="Customize fonts and colors." />
+                <MenuItem
+                    Command="{Binding OpenSavedEditsCommand}"
+                    Header="Saved _Edits..."
+                    ToolTip="Review pending vs committed edits and apply them." />
                 <Separator />
-                <MenuItem Header="Include _subfolders"
-                          ToolTip="Include XML files from subfolders when scanning."
-                          IsCheckable="True"
-                          IsChecked="{Binding IncludeSubfolders}" />
-                <MenuItem Header="_Friendly view"
-                          ToolTip="Toggle the structured editor view for supported XML formats."
-                          IsCheckable="True"
-                          IsEnabled="{Binding HasFriendlyView}"
-                          IsChecked="{Binding IsFriendlyView}" />
-                <MenuItem Header="_Dark mode"
-                          ToolTip="Toggle dark theme for the editor and friendly view."
-                          IsCheckable="True"
-                          IsChecked="{Binding IsDarkMode}" />
+                <MenuItem
+                    Header="Include _subfolders"
+                    IsCheckable="True"
+                    IsChecked="{Binding IncludeSubfolders}"
+                    ToolTip="Include XML files from subfolders when scanning." />
+                <MenuItem
+                    Header="_Friendly view"
+                    IsCheckable="True"
+                    IsChecked="{Binding IsFriendlyView}"
+                    IsEnabled="{Binding HasFriendlyView}"
+                    ToolTip="Toggle the structured editor view for supported XML formats." />
+                <MenuItem
+                    Header="_Dark mode"
+                    IsCheckable="True"
+                    IsChecked="{Binding IsDarkMode}"
+                    ToolTip="Toggle dark theme for the editor and friendly view." />
                 <Separator />
-                <MenuItem Header="Open _XML Folder"
-                          ToolTip="Open the loaded XML folder."
-                          Click="OpenCurrentXmlFolder_Click" />
-                <MenuItem Header="Open _Helper Root Folder"
-                          ToolTip="Open the helper root folder that contains backup and related folders."
-                          Click="OpenHelperRootFolder_Click" />
-                <MenuItem Header="Open _Backups Folder"
-                          ToolTip="Open the folder where backups are stored."
-                          Click="OpenBackupsFolder_Click" />
+                <MenuItem
+                    Click="OpenCurrentXmlFolder_Click"
+                    Header="Open _XML Folder"
+                    ToolTip="Open the loaded XML folder." />
+                <MenuItem
+                    Click="OpenHelperRootFolder_Click"
+                    Header="Open _Helper Root Folder"
+                    ToolTip="Open the helper root folder that contains backup and related folders." />
+                <MenuItem
+                    Click="OpenBackupsFolder_Click"
+                    Header="Open _Backups Folder"
+                    ToolTip="Open the folder where backups are stored." />
             </MenuItem>
-
             <MenuItem Header="_Tools">
-                <MenuItem Header="Settings &amp; _Info..."
-                          ToolTip="Open the settings and info screen (QoL toggles + app info)."
-                          Click="OpenSettingsInfo_Click" />
+                <MenuItem
+                    Click="OpenSettingsInfo_Click"
+                    Header="Settings &amp; _Info..."
+                    ToolTip="Open the settings and info screen (QoL toggles + app info)." />
             </MenuItem>
-
             <MenuItem Header="_Help">
-                <MenuItem Header="Check for _Updates..."
-                          ToolTip="Check GitHub for the latest release."
-                          Click="CheckForUpdates_Click" />
+                <MenuItem
+                    Click="CheckForUpdates_Click"
+                    Header="Check for _Updates..."
+                    ToolTip="Check GitHub for the latest release." />
                 <Separator />
-                <MenuItem Header="_Documentation..."
-                          ToolTip="Open documentation for features, shortcuts, and how-to guides."
-                          Click="About_Click" />
+                <MenuItem
+                    Click="About_Click"
+                    Header="_Documentation..."
+                    ToolTip="Open documentation for features, shortcuts, and how-to guides." />
             </MenuItem>
-
         </Menu>
-
-        <StackPanel DockPanel.Dock="Top" Margin="8" Orientation="Vertical">
+        <StackPanel
+            Margin="8"
+            DockPanel.Dock="Top"
+            Orientation="Vertical">
             <WrapPanel>
-                
                 <WrapPanel.Resources>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Foreground" Value="{Binding Appearance.TopButtonTextBrush}" />
                         <Setter Property="Background" Value="{Binding Appearance.TopButtonBackgroundBrush}" />
                     </Style>
                 </WrapPanel.Resources>
-                
-                <Button Content="Open Folder"
-                        MinWidth="100"
-                        Margin="0,0,8,0"
-                        ToolTip="Pick the folder that contains your XML files. (Ctrl+O)"
-                        Command="{Binding OpenCommand}" />
-
-                <Button Content="Format"
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        ToolTip="Format (pretty-print) the XML. (Ctrl+K)"
-                        Command="{Binding FormatCommand}" />
-
-                <Button Content="Validate"
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)"
-                        Command="{Binding ValidateCommand}" />
-
-                <Button Content="Duplicate"
-                        MinWidth="90"
-                        Margin="0,0,8,0"
-                        ToolTip="Duplicate the selected Friendly entry (Ctrl+D)."
-                        Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                        Command="{Binding DuplicateFriendlyEntryCommand}" />
-
-                <Button Content="Duplicate Item"
-                        MinWidth="110"
-                        Margin="0,0,8,0"
-                        ToolTip="Duplicate the selected list item in Friendly View (e.g. MenuItem) (Ctrl+Shift+D)."
-                        Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}"
-                        Command="{Binding DuplicateFriendlyLookupItemCommand}" />
-
-                <Button Content="Save"
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)"
-                        IsEnabled="{Binding IsDirty}"
-                        Command="{Binding SaveCommand}" />
-
-                <Button Content="Save As..."
-                        MinWidth="90"
-                        Margin="0,0,8,0"
-                        ToolTip="Save changes to a new file path. (Ctrl+Shift+S)"
-                        IsEnabled="{Binding IsDirty}"
-                        Command="{Binding SaveAsCommand}" />
-
-                <Button Content="Clear"
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        ToolTip="Clear the current selection and editor. (Ctrl+L)"
-                        Command="{Binding ClearCommand}" />
-                <Button Width="34"
-        Height="34"
-        Margin="0,0,8,0"
-        ToolTip="Find in current XML (Ctrl+F)."
-        Background="{Binding Appearance.TopButtonBackgroundBrush}"
-        BorderBrush="{Binding Appearance.TopButtonTextBrush}"
-        Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
-        Click="OpenLocalSearch_Click">
+                <Button
+                    MinWidth="100"
+                    Margin="0,0,8,0"
+                    Command="{Binding OpenCommand}"
+                    Content="Open Folder"
+                    ToolTip="Pick the folder that contains your XML files. (Ctrl+O)" />
+                <Button
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding FormatCommand}"
+                    Content="Format"
+                    ToolTip="Format (pretty-print) the XML. (Ctrl+K)" />
+                <Button
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding ValidateCommand}"
+                    Content="Validate"
+                    ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)" />
+                <Button
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding DuplicateFriendlyEntryCommand}"
+                    Content="Duplicate"
+                    ToolTip="Duplicate the selected Friendly entry (Ctrl+D)."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}" />
+                <Button
+                    MinWidth="110"
+                    Margin="0,0,8,0"
+                    Command="{Binding DuplicateFriendlyLookupItemCommand}"
+                    Content="Duplicate Item"
+                    ToolTip="Duplicate the selected list item in Friendly View (e.g. MenuItem) (Ctrl+Shift+D)."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource BoolToVis}}" />
+                <Button
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding SaveCommand}"
+                    Content="Save"
+                    IsEnabled="{Binding IsDirty}"
+                    ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)" />
+                <Button
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding SaveAsCommand}"
+                    Content="Save As..."
+                    IsEnabled="{Binding IsDirty}"
+                    ToolTip="Save changes to a new file path. (Ctrl+Shift+S)" />
+                <Button
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding ClearCommand}"
+                    Content="Clear"
+                    ToolTip="Clear the current selection and editor. (Ctrl+L)" />
+                <Button
+                    Width="34"
+                    Height="34"
+                    Margin="0,0,8,0"
+                    Background="{Binding Appearance.TopButtonBackgroundBrush}"
+                    BorderBrush="{Binding Appearance.TopButtonTextBrush}"
+                    Click="OpenLocalSearch_Click"
+                    ToolTip="Find in current XML (Ctrl+F)."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}">
                     <Viewbox Width="18" Height="18">
-                        <Path Fill="{Binding Appearance.TopButtonTextBrush}"
-              Data="M15.5,14H14.71L14.43,13.73C15.35,12.67 15.9,11.29 15.9,9.8C15.9,6.49 13.21,3.8 9.9,3.8C6.59,3.8 3.9,6.49 3.9,9.8C3.9,13.11 6.59,15.8 9.9,15.8C11.39,15.8 12.77,15.25 13.83,14.33L14.1,14.6V15.4L18.2,19.5L19.5,18.2L15.5,14ZM9.9,14.1C7.53,14.1 5.6,12.17 5.6,9.8C5.6,7.43 7.53,5.5 9.9,5.5C12.27,5.5 14.2,7.43 14.2,9.8C14.2,12.17 12.27,14.1 9.9,14.1Z" />
+                        <Path Data="M15.5,14H14.71L14.43,13.73C15.35,12.67 15.9,11.29 15.9,9.8C15.9,6.49 13.21,3.8 9.9,3.8C6.59,3.8 3.9,6.49 3.9,9.8C3.9,13.11 6.59,15.8 9.9,15.8C11.39,15.8 12.77,15.25 13.83,14.33L14.1,14.6V15.4L18.2,19.5L19.5,18.2L15.5,14ZM9.9,14.1C7.53,14.1 5.6,12.17 5.6,9.8C5.6,7.43 7.53,5.5 9.9,5.5C12.27,5.5 14.2,7.43 14.2,9.8C14.2,12.17 12.27,14.1 9.9,14.1Z" Fill="{Binding Appearance.TopButtonTextBrush}" />
                     </Viewbox>
                 </Button>
-
-                <Button Width="34"
-        Height="34"
-        Margin="0,0,8,0"
-        ToolTip="Search all XML files (Ctrl+Shift+F)."
-        Background="{Binding Appearance.TopButtonBackgroundBrush}"
-        BorderBrush="{Binding Appearance.TopButtonTextBrush}"
-        Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
-        Command="{Binding OpenGlobalSearchCommand}">
+                <Button
+                    Width="34"
+                    Height="34"
+                    Margin="0,0,8,0"
+                    Background="{Binding Appearance.TopButtonBackgroundBrush}"
+                    BorderBrush="{Binding Appearance.TopButtonTextBrush}"
+                    Command="{Binding OpenGlobalSearchCommand}"
+                    ToolTip="Search all XML files (Ctrl+Shift+F)."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}">
                     <Viewbox Width="18" Height="18">
-                        <Path Fill="{Binding Appearance.TopButtonTextBrush}"
-        Data="M10,4H4C2.9,4 2,4.9 2,6V16C2,17.1 2.9,18 4,18H9.2C9.7,18.6 10.3,19.1 11,19.4C12.3,20 13.8,20 15.1,19.4C16.4,18.8 17.4,17.8 18,16.5C18.6,15.2 18.6,13.7 18,12.4C17.4,11.1 16.4,10.1 15.1,9.5C13.8,9 12.3,9 11,9.5C9.7,10.1 8.7,11.1 8.1,12.4C7.5,13.7 7.5,15.2 8.1,16.5C8.2,16.7 8.3,16.9 8.4,17H4C3.4,17 3,16.6 3,16V6C3,5.4 3.4,5 4,5H9.6L11.6,7H20V8H11.2L10,6.8V4ZM13,11C14.7,11 16,12.3 16,14C16,15.7 14.7,17 13,17C11.3,17 10,15.7 10,14C10,12.3 11.3,11 13,11ZM19,20L16.6,17.6L17.3,16.9L19.7,19.3L19,20Z" />
+                        <Path Data="M10,4H4C2.9,4 2,4.9 2,6V16C2,17.1 2.9,18 4,18H9.2C9.7,18.6 10.3,19.1 11,19.4C12.3,20 13.8,20 15.1,19.4C16.4,18.8 17.4,17.8 18,16.5C18.6,15.2 18.6,13.7 18,12.4C17.4,11.1 16.4,10.1 15.1,9.5C13.8,9 12.3,9 11,9.5C9.7,10.1 8.7,11.1 8.1,12.4C7.5,13.7 7.5,15.2 8.1,16.5C8.2,16.7 8.3,16.9 8.4,17H4C3.4,17 3,16.6 3,16V6C3,5.4 3.4,5 4,5H9.6L11.6,7H20V8H11.2L10,6.8V4ZM13,11C14.7,11 16,12.3 16,14C16,15.7 14.7,17 13,17C11.3,17 10,15.7 10,14C10,12.3 11.3,11 13,11ZM19,20L16.6,17.6L17.3,16.9L19.7,19.3L19,20Z" Fill="{Binding Appearance.TopButtonTextBrush}" />
                     </Viewbox>
                 </Button>
-
             </WrapPanel>
-
             <WrapPanel Margin="0,6,0,0">
                 <WrapPanel.Resources>
                     <Style TargetType="{x:Type TextBlock}">
@@ -908,80 +884,81 @@
                         <Setter Property="Foreground" Value="{Binding Appearance.GridTextBrush}" />
                     </Style>
                 </WrapPanel.Resources>
-
-                <TextBlock Text="View:" VerticalAlignment="Center" Margin="0,0,6,0" />
-
-                <RadioButton Content="Folders"
-                             VerticalAlignment="Center"
-                             Margin="0,0,8,0"
-                             ToolTip="Show files in a folder tree."
-                             IsChecked="{Binding IsFoldersMode}" />
-
-                <RadioButton Content="Flat"
-                             VerticalAlignment="Center"
-                             Margin="0,0,16,0"
-                             ToolTip="Show all XML files in a single list."
-                             IsChecked="{Binding IsFlatMode}" />
-
-                <CheckBox Content="Include subfolders"
-                          VerticalAlignment="Center"
-                          Margin="0,0,16,0"
-                          ToolTip="Include XML files from subfolders when scanning."
-                          IsChecked="{Binding IncludeSubfolders}" />
-
-                <CheckBox Content="Friendly view"
-                          VerticalAlignment="Center"
-                          Margin="0,0,16,0"
-                          ToolTip="Toggle the structured editor view for supported XML formats."
-                          IsEnabled="{Binding HasFriendlyView}"
-                          IsChecked="{Binding IsFriendlyView}" />
-
-                <CheckBox Content="Dark mode"
-                          VerticalAlignment="Center"
-                          ToolTip="Toggle dark theme for the editor and friendly view."
-                          IsChecked="{Binding IsDarkMode}" />
+                <TextBlock
+                    Margin="0,0,6,0"
+                    VerticalAlignment="Center"
+                    Text="View:" />
+                <RadioButton
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Content="Folders"
+                    IsChecked="{Binding IsFoldersMode}"
+                    ToolTip="Show files in a folder tree." />
+                <RadioButton
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Flat"
+                    IsChecked="{Binding IsFlatMode}"
+                    ToolTip="Show all XML files in a single list." />
+                <CheckBox
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Include subfolders"
+                    IsChecked="{Binding IncludeSubfolders}"
+                    ToolTip="Include XML files from subfolders when scanning." />
+                <CheckBox
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Friendly view"
+                    IsChecked="{Binding IsFriendlyView}"
+                    IsEnabled="{Binding HasFriendlyView}"
+                    ToolTip="Toggle the structured editor view for supported XML formats." />
+                <CheckBox
+                    VerticalAlignment="Center"
+                    Content="Dark mode"
+                    IsChecked="{Binding IsDarkMode}"
+                    ToolTip="Toggle dark theme for the editor and friendly view." />
             </WrapPanel>
         </StackPanel>
-
         <StatusBar DockPanel.Dock="Bottom">
             <TextBlock Text="{Binding Status}" />
         </StatusBar>
-
         <Grid Margin="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="280" />
                 <ColumnDefinition Width="6" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0"
-                    BorderThickness="1"
-                    BorderBrush="{Binding Appearance.BackgroundBrush}"
-                    Padding="6"
-                    Background="{Binding Appearance.TreeBackgroundBrush}">
+            <Border
+                Grid.Column="0"
+                Padding="6"
+                Background="{Binding Appearance.TreeBackgroundBrush}"
+                BorderBrush="{Binding Appearance.BackgroundBrush}"
+                BorderThickness="1">
                 <Grid Background="{Binding Appearance.TreeBackgroundBrush}">
-                    <TreeView x:Name="XmlTreeView" ItemsSource="{Binding XmlTree}"
-                              ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
-                              HorizontalContentAlignment="Stretch"
-                              SelectedItemChanged="TreeView_SelectedItemChanged"
-                              KeyDown="TreeView_KeyDown"
-                              Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
-
-                    <ListBox ItemsSource="{Binding XmlFiles}"
-                             SelectedItem="{Binding SelectedXmlFile}"
-                             DisplayMemberPath="DisplayPath"
-                             ItemContainerStyle="{StaticResource Pane1FlatListBoxItemStyle}"
-                             Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
+                    <TreeView
+                        x:Name="XmlTreeView"
+                        HorizontalContentAlignment="Stretch"
+                        ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
+                        ItemsSource="{Binding XmlTree}"
+                        KeyDown="TreeView_KeyDown"
+                        SelectedItemChanged="TreeView_SelectedItemChanged"
+                        Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
+                    <ListBox
+                        DisplayMemberPath="DisplayPath"
+                        ItemContainerStyle="{StaticResource Pane1FlatListBoxItemStyle}"
+                        ItemsSource="{Binding XmlFiles}"
+                        SelectedItem="{Binding SelectedXmlFile}"
+                        Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
                 </Grid>
             </Border>
-
-            <GridSplitter Grid.Column="1"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          ResizeBehavior="PreviousAndNext"
-                          ResizeDirection="Columns"
-                          Background="{Binding Appearance.BackgroundBrush}" />
-
+            <GridSplitter
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="{Binding Appearance.BackgroundBrush}"
+                ResizeBehavior="PreviousAndNext"
+                ResizeDirection="Columns" />
             <Grid Grid.Column="2">
                 <Grid Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource BoolToVis}}">
                     <Grid.ColumnDefinitions>
@@ -989,90 +966,97 @@
                         <ColumnDefinition Width="6" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <DockPanel Grid.Column="0"
-                               Margin="0"
-                               Background="{Binding Appearance.SelectorBackgroundBrush}">
-
-                        <ComboBox DockPanel.Dock="Top"
-                                  ItemsSource="{Binding FriendlyCollections}"
-                                  SelectedItem="{Binding SelectedFriendlyCollection}"
-                                  DisplayMemberPath="Title"
-                                  Margin="0,0,0,8"
-                                  Style="{StaticResource Pane2ComboBoxStyle}"
-                                  ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}" />
-
-                        <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
-                                 SelectedItem="{Binding SelectedFriendlyEntry}"
-                                 DisplayMemberPath="Display"
-                                 Style="{StaticResource Pane2ListBoxStyle}"
-                                 ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}">
+                    <DockPanel
+                        Grid.Column="0"
+                        Margin="0"
+                        Background="{Binding Appearance.SelectorBackgroundBrush}">
+                        <ComboBox
+                            Margin="0,0,0,8"
+                            DisplayMemberPath="Title"
+                            DockPanel.Dock="Top"
+                            ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}"
+                            ItemsSource="{Binding FriendlyCollections}"
+                            SelectedItem="{Binding SelectedFriendlyCollection}"
+                            Style="{StaticResource Pane2ComboBoxStyle}" />
+                        <ListBox
+                            DisplayMemberPath="Display"
+                            ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}"
+                            ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
+                            SelectedItem="{Binding SelectedFriendlyEntry}"
+                            Style="{StaticResource Pane2ListBoxStyle}">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Duplicate entry"
-                      Command="{Binding PlacementTarget.DataContext.DuplicateFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                    <MenuItem Header="Delete entry..."
-                      Command="{Binding PlacementTarget.DataContext.DeleteFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                    <MenuItem Command="{Binding PlacementTarget.DataContext.DuplicateFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Header="Duplicate entry" />
+                                    <MenuItem Command="{Binding PlacementTarget.DataContext.DeleteFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Header="Delete entry..." />
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
-
                     </DockPanel>
-
-                    <GridSplitter Grid.Column="1"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch"
-                                  ResizeBehavior="PreviousAndNext"
-                                  ResizeDirection="Columns"
-                                  Background="{Binding Appearance.BackgroundBrush}" />
-
-                    <Border Grid.Column="2"
-                            Background="{Binding Appearance.BackgroundBrush}"
-                            BorderBrush="{Binding Appearance.GridBorderBrush}"
-                            BorderThickness="1">
-                        <ListBox ItemsSource="{Binding FriendlyGroups}"
-                                 Background="{Binding Appearance.BackgroundBrush}"
-                                 BorderThickness="0"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 ScrollViewer.CanContentScroll="False"
-                                 VirtualizingPanel.IsVirtualizing="False"
-                                 VirtualizingPanel.VirtualizationMode="Recycling">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="{x:Type ListBoxItem}">
-                                    <Setter Property="Focusable" Value="False" />
-                                    <Setter Property="Padding" Value="0" />
-                                    <Setter Property="Margin" Value="0" />
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                    <Setter Property="VerticalContentAlignment" Value="Top" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                                <ContentPresenter />
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                        </ListBox>
+                    <GridSplitter
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="{Binding Appearance.BackgroundBrush}"
+                        ResizeBehavior="PreviousAndNext"
+                        ResizeDirection="Columns" />
+                    <Border
+                        Grid.Column="2"
+                        Background="{Binding Appearance.BackgroundBrush}"
+                        BorderBrush="{Binding Appearance.GridBorderBrush}"
+                        BorderThickness="1">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock
+                                Margin="0,0,0,6"
+                                DockPanel.Dock="Top"
+                                Opacity="0.75"
+                                Text="{Binding FriendlyDebugSummary}"
+                                TextWrapping="Wrap" />
+                            <ListBox
+                                Background="{Binding Appearance.BackgroundBrush}"
+                                BorderThickness="0"
+                                ItemsSource="{Binding FriendlyGroups}"
+                                ScrollViewer.CanContentScroll="False"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                VirtualizingPanel.IsVirtualizing="False"
+                                VirtualizingPanel.VirtualizationMode="Recycling">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ListBoxItem}">
+                                        <Setter Property="Focusable" Value="False" />
+                                        <Setter Property="Padding" Value="0" />
+                                        <Setter Property="Margin" Value="0" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        <Setter Property="VerticalContentAlignment" Value="Top" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                    <ContentPresenter />
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </DockPanel>
                     </Border>
+                    <avalonedit:TextEditor
+                        x:Name="XmlEditor"
+                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}"
+                        infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
+                        infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
+                        Background="{Binding Appearance.EditorBackgroundBrush}"
+                        FontFamily="{Binding Appearance.EditorFontFamily}"
+                        FontSize="{Binding Appearance.EditorFontSize}"
+                        FontStyle="{Binding Appearance.EditorFontStyle}"
+                        FontWeight="{Binding Appearance.EditorFontWeight}"
+                        Foreground="{Binding Appearance.EditorTextBrush}"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="True"
+                        VerticalScrollBarVisibility="Auto"
+                        Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
                 </Grid>
-
-                <avalonedit:TextEditor x:Name="XmlEditor"
-                                       Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
-                                       ShowLineNumbers="True"
-                                       FontFamily="{Binding Appearance.EditorFontFamily}"
-                                       FontSize="{Binding Appearance.EditorFontSize}"
-                                       FontWeight="{Binding Appearance.EditorFontWeight}"
-                                       FontStyle="{Binding Appearance.EditorFontStyle}"
-                                       HorizontalScrollBarVisibility="Auto"
-                                       VerticalScrollBarVisibility="Auto"
-                                       Background="{Binding Appearance.EditorBackgroundBrush}"
-                                       Foreground="{Binding Appearance.EditorTextBrush}"
-                                       infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
-                                       infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
-                                       infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
             </Grid>
         </Grid>
     </DockPanel>
