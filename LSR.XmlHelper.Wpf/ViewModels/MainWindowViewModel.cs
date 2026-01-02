@@ -31,6 +31,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly XmlFriendlyViewService _friendly;
         private readonly XmlGlobalSearchService _globalSearch;
         private readonly AppSettingsService _settingsService;
+        private readonly bool _isFirstRun;
         private AppSettings _settings;
         private readonly EditHistoryService _editHistory;
         private readonly XmlBackupRequestService _backupRequest;
@@ -57,7 +58,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private bool _hasFriendlyView;
         private bool _isFriendlyView;
         private XmlFriendlyDocument? _friendlyDocument;
-        private bool _isDarkMode = true;
+        private bool _isDarkMode = false;
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
@@ -81,7 +82,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _globalSearch = new XmlGlobalSearchService();
 
             _settingsService = new AppSettingsService();
-            _settings = _settingsService.Load();
+            _settings = _settingsService.Load(out _isFirstRun);
             _editHistory = new EditHistoryService(_settings, _settingsService, _friendly, _xml);
             _backupRequest = new XmlBackupRequestService();
 
@@ -127,6 +128,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         }
 
         public AppearanceService Appearance => _appearance;
+        public bool IsFirstRun => _isFirstRun;
         public string? RootFolderPath => _rootFolder;
         public RelayCommand OpenAppearanceCommand { get; }
         public RelayCommand OpenBackupBrowserCommand { get; }

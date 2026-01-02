@@ -34,6 +34,17 @@ namespace LSR.XmlHelper.Wpf
             DataContext = new MainWindowViewModel();
             if (DataContext is MainWindowViewModel vm)
                 vm.RawNavigationRequested += VmOnRawNavigationRequested;
+            Loaded += MainWindow_Loaded;
+        }
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (!vm.IsFirstRun)
+                return;
+
+            About_Click(this, new RoutedEventArgs());
         }
 
         protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)

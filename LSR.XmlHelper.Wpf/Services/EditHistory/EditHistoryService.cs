@@ -325,8 +325,11 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
 
                 if (!TryGetEntry(doc, e.CollectionTitle, e.EntryKey, e.EntryOccurrence, out var fieldEntry))
                 {
-                    error = $"Entry not found: {e.EntryKey}";
-                    return false;
+                    if (!TryResolveEntryByUniqueField(doc, e.CollectionTitle, e.FieldPath, out fieldEntry))
+                    {
+                        error = $"Entry not found: {e.EntryKey}";
+                        return false;
+                    }
                 }
 
                 if (!fieldEntry.TrySetField(e.FieldPath, e.NewValue, out var fieldErr))
@@ -466,8 +469,11 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
 
             if (!TryGetEntry(doc, collectionTitle, entryKey, entryOccurrence, out var friendlyEntry))
             {
-                error = $"Entry not found: {entryKey}";
-                return false;
+                if (!TryResolveEntryByUniqueField(doc, collectionTitle, fieldPath, out friendlyEntry))
+                {
+                    error = $"Entry not found: {entryKey}";
+                    return false;
+                }
             }
 
             if (!friendlyEntry.Fields.TryGetValue(fieldPath, out var field))
@@ -536,6 +542,39 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
             entry = null!;
             return false;
         }
+
+        private static bool TryResolveEntryByUniqueField(XmlFriendlyDocument doc, string? collectionTitle, string fieldPath, out XmlFriendlyEntry entry)
+        {
+            IEnumerable<XmlFriendlyCollection> collections = doc.Collections;
+
+            if (!string.IsNullOrWhiteSpace(collectionTitle))
+            {
+                var matchCollection = doc.Collections.FirstOrDefault(c => string.Equals(c.Title, collectionTitle, StringComparison.OrdinalIgnoreCase));
+                if (matchCollection is not null)
+                    collections = new[] { matchCollection };
+            }
+
+            var matches = new List<XmlFriendlyEntry>();
+
+            foreach (var c in collections)
+            {
+                foreach (var e in c.Entries)
+                {
+                    if (e.Fields.ContainsKey(fieldPath))
+                        matches.Add(e);
+                }
+            }
+
+            if (matches.Count == 1)
+            {
+                entry = matches[0];
+                return true;
+            }
+
+            entry = null!;
+            return false;
+        }
+
         private static void RemovePreservingWhitespace(System.Xml.Linq.XElement element)
         {
             var next = element.NextNode as System.Xml.Linq.XText;

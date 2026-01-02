@@ -387,7 +387,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void ApplySelectedCommitted()
         {
-            Apply(CommittedRows.Where(r => r.IsSelected).Select(r => r.Item).ToList());
+            Apply(CommittedRows.Where(r => r.IsSelected && !string.Equals(r.Status, "Missing", StringComparison.OrdinalIgnoreCase)).Select(r => r.Item).ToList());
         }
 
         private bool CanApplySelectedCommitted()
@@ -397,7 +397,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void ApplyAllCommitted()
         {
-            Apply(CommittedRows.Where(r => CommittedRowFilter(r)).Select(r => r.Item).ToList());
+            Apply(CommittedRows.Where(r => CommittedRowFilter(r) && !string.Equals(r.Status, "Missing", StringComparison.OrdinalIgnoreCase)).Select(r => r.Item).ToList());
         }
 
         private bool CanApplyAllCommitted()

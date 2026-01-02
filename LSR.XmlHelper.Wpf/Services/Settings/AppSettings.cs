@@ -10,7 +10,7 @@ namespace LSR.XmlHelper.Wpf.Services
 
         public bool IncludeSubfolders { get; set; }
 
-        public bool IsDarkMode { get; set; } = true;
+        public bool IsDarkMode { get; set; } = false;
 
         public bool IsFriendlyView { get; set; } = true;
 

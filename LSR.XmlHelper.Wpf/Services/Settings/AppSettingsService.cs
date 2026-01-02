@@ -22,10 +22,23 @@ namespace LSR.XmlHelper.Wpf.Services
 
         public AppSettings Load()
         {
+            return Load(out _);
+        
+        }
+
+        public AppSettings Load(out bool isFirstRun)
+        {
+            isFirstRun = false;
+
             try
             {
                 if (!File.Exists(_settingsPath))
-                    return new AppSettings();
+                {
+                    isFirstRun = true;
+                    var first = new AppSettings();
+                    Save(first);
+                    return first;
+                }
 
                 var json = File.ReadAllText(_settingsPath);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json);
