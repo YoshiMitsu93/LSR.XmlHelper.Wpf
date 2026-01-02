@@ -6,8 +6,8 @@
         Height="700"
         Width="980"
         WindowStartupLocation="CenterOwner"
-        Background="{Binding Appearance.BackgroundBrush}"
-        Foreground="{Binding Appearance.TextBrush}"
+        Background="White"
+        Foreground="Black"
         FontFamily="{Binding Appearance.UiFontFamily}"
         FontSize="{Binding Appearance.UiFontSize}"
         FontWeight="{Binding Appearance.UiFontWeight}"
@@ -57,7 +57,7 @@
                                 <DataTemplate>
                                     <Border Margin="0,8,0,4"
                                             Padding="6,4"
-                                            Background="{Binding DataContext.Appearance.MenuBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            Background="White">
                                         <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                                     </Border>
                                 </DataTemplate>

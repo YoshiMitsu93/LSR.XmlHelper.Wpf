@@ -661,6 +661,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             IsDirty = false;
+            _editHistory.CommitForFile(path);
             Status = $"Saved: {Path.GetFileName(path)}";
             return true;
         }
@@ -691,6 +692,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             IsDirty = false;
+            _editHistory.CommitForFile(dlg.FileName);
             Status = $"Saved: {Path.GetFileName(dlg.FileName)}";
             return true;
         }
