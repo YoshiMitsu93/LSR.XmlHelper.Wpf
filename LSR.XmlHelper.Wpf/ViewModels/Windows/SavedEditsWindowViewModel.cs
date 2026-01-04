@@ -9,6 +9,8 @@ using System.Linq;
 using LSR.XmlHelper.Wpf.Services.EditSummary;
 using Microsoft.Win32;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
@@ -24,15 +26,19 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly Func<string?> _getRootFolderPath;
         private readonly Func<IEnumerable<EditHistoryItem>, bool> _tryApplyToCurrent;
         private readonly XmlBackupRequestService _backupRequest;
-
         private string? _selectedFilePath;
         private string _filterText = "";
         private DateTime? _dateFrom;
         private DateTime? _dateTo;
-
         private bool _showActive = true;
         private bool _showOutdated = true;
         private bool _showMissing = true;
+        private readonly SynchronizationContext? _uiContext;
+        private CancellationTokenSource? _statusRefreshCts;
+        private bool _suppressBuildRows;
+        private IReadOnlyList<EditHistoryItem> _pendingSnapshot = Array.Empty<EditHistoryItem>();
+        private IReadOnlyList<EditHistoryItem> _committedSnapshot = Array.Empty<EditHistoryItem>();
+        private Dictionary<Guid, (string Status, string? CurrentValue)> _committedStatusMap = new Dictionary<Guid, (string Status, string? CurrentValue)>();
 
         public SavedEditsWindowViewModel(EditHistoryService history, Func<string?> getCurrentFilePath, Func<IEnumerable<EditHistoryItem>, bool> tryApplyToCurrent, XmlBackupRequestService backupRequest, Func<string?> getRootFolderPath)
         {
@@ -41,6 +47,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _tryApplyToCurrent = tryApplyToCurrent;
             _backupRequest = backupRequest;
             _getRootFolderPath = getRootFolderPath;
+            _uiContext = SynchronizationContext.Current;
 
             ApplySelectedPendingCommand = new RelayCommand(ApplySelectedPending, CanApplySelectedPending);
             ApplyAllPendingCommand = new RelayCommand(ApplyAllPending, CanApplyAllPending);
@@ -67,7 +74,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             set
             {
                 if (SetProperty(ref _selectedFilePath, value))
-                    BuildRows();
+                {
+                    if (!_suppressBuildRows)
+                        BuildRows();
+                }
             }
         }
 
@@ -160,16 +170,22 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            _pendingSnapshot = _history.Pending.OrderByDescending(e => e.TimestampUtc).ToList();
+            _committedSnapshot = _history.Committed.OrderByDescending(e => e.TimestampUtc).ToList();
+            _committedStatusMap = new Dictionary<Guid, (string Status, string? CurrentValue)>();
+
             FilePaths.Clear();
             FilePaths.Add("(All files)");
             foreach (var f in files)
                 FilePaths.Add(f!);
 
             var current = _getCurrentFilePath();
+            _suppressBuildRows = true;
             if (!string.IsNullOrWhiteSpace(current) && files.Any(f => string.Equals(f, current, StringComparison.OrdinalIgnoreCase)))
                 SelectedFilePath = current;
             else
                 SelectedFilePath = "(All files)";
+            _suppressBuildRows = false;
 
             BuildRows();
         }
@@ -179,21 +195,21 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             PendingRows.Clear();
             CommittedRows.Clear();
 
-            foreach (var e in _history.Pending.OrderByDescending(e => e.TimestampUtc))
+            foreach (var e in _pendingSnapshot)
                 PendingRows.Add(new SavedEditRowViewModel(e));
 
-            var committed = _history.Committed.OrderByDescending(e => e.TimestampUtc).ToList();
-
-            var fileMap = BuildCommittedStatusMap(committed);
-
-            foreach (var e in committed)
+            foreach (var e in _committedSnapshot)
             {
                 var row = new SavedEditRowViewModel(e);
 
-                if (e.FilePath is not null && fileMap.TryGetValue(e.Id, out var status))
+                if (e.FilePath is not null && _committedStatusMap.TryGetValue(e.Id, out var status))
                 {
                     row.Status = status.Status;
                     row.CurrentValue = status.CurrentValue;
+                }
+                else if (e.FilePath is not null)
+                {
+                    row.Status = "Checking...";
                 }
 
                 CommittedRows.Add(row);
@@ -201,9 +217,81 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             RefreshFilters();
             RaiseCanExecuteChanged();
+            StartCommittedStatusRefresh();
         }
 
-        private Dictionary<Guid, (string Status, string? CurrentValue)> BuildCommittedStatusMap(IReadOnlyList<EditHistoryItem> committed)
+        private void StartCommittedStatusRefresh()
+        {
+            _statusRefreshCts?.Cancel();
+            _statusRefreshCts?.Dispose();
+            _statusRefreshCts = null;
+
+            if (_committedSnapshot.Count == 0)
+                return;
+
+            var cts = new CancellationTokenSource();
+            _statusRefreshCts = cts;
+
+            var token = cts.Token;
+            var selection = SelectedFilePath;
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    return BuildCommittedStatusMap(_committedSnapshot, selection, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+            })
+            .ContinueWith(t =>
+            {
+                if (t.IsFaulted || t.Result is null)
+                    return;
+
+                PostToUi(() => ApplyCommittedStatusMap(t.Result));
+            }, TaskScheduler.Default);
+        }
+
+        private void ApplyCommittedStatusMap(Dictionary<Guid, (string Status, string? CurrentValue)> map)
+        {
+            _committedStatusMap = map;
+
+            foreach (var row in CommittedRows)
+            {
+                if (row.Item.FilePath is null)
+                    continue;
+
+                if (map.TryGetValue(row.Item.Id, out var status))
+                {
+                    row.Status = status.Status;
+                    row.CurrentValue = status.CurrentValue;
+                }
+                else
+                {
+                    row.Status = "Checking...";
+                    row.CurrentValue = null;
+                }
+            }
+
+            RefreshFilters();
+        }
+
+        private void PostToUi(Action action)
+        {
+            if (_uiContext is null || SynchronizationContext.Current == _uiContext)
+            {
+                action();
+                return;
+            }
+
+            _uiContext.Post(_ => action(), null);
+        }
+
+
+        private Dictionary<Guid, (string Status, string? CurrentValue)> BuildCommittedStatusMap(IReadOnlyList<EditHistoryItem> committed, string? selectedFilePath, CancellationToken token)
         {
             var map = new Dictionary<Guid, (string Status, string? CurrentValue)>();
             var byFile = committed
@@ -213,19 +301,30 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             foreach (var g in byFile)
             {
-                if (!IsFileIncluded(g.Key))
+                if (token.IsCancellationRequested)
+                    return map;
+
+                if (!IsFileIncluded(g.Key, selectedFilePath))
                     continue;
 
                 if (!_history.TryLoadXml(g.Key, out var xml, out _))
                 {
                     foreach (var e in g)
+                    {
+                        if (token.IsCancellationRequested)
+                            return map;
+
                         map[e.Id] = ("Missing", null);
+                    }
 
                     continue;
                 }
 
                 foreach (var e in g)
                 {
+                    if (token.IsCancellationRequested)
+                        return map;
+
                     if (e.Operation == EditHistoryOperation.DuplicateEntry)
                     {
                         if (_history.TryEntryExists(xml, e.CollectionTitle, e.EntryKey, e.EntryOccurrence))
@@ -278,7 +377,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var e = row.Item;
 
-            if (!IsFileIncluded(e.FilePath))
+            if (!IsFileIncluded(e.FilePath, SelectedFilePath))
                 return false;
 
             if (!IsDateIncluded(e.TimestampUtc.LocalDateTime))
@@ -297,7 +396,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             var e = row.Item;
 
-            if (!IsFileIncluded(e.FilePath))
+            if (!IsFileIncluded(e.FilePath, SelectedFilePath))
                 return false;
 
             if (!IsDateIncluded(e.TimestampUtc.LocalDateTime))
@@ -312,12 +411,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             return true;
         }
 
-        private bool IsFileIncluded(string? filePath)
+        private bool IsFileIncluded(string? filePath, string? selectedFilePath)
         {
-            if (string.IsNullOrWhiteSpace(SelectedFilePath) || string.Equals(SelectedFilePath, "(All files)", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(selectedFilePath) ||
+                string.Equals(selectedFilePath, "(All files)", StringComparison.OrdinalIgnoreCase))
                 return true;
 
-            return string.Equals(filePath ?? "", SelectedFilePath, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(filePath ?? "", selectedFilePath, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsDateIncluded(DateTime date)
