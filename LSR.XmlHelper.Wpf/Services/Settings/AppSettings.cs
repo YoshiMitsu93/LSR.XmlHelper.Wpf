@@ -14,6 +14,9 @@ namespace LSR.XmlHelper.Wpf.Services
 
         public bool IsFriendlyView { get; set; } = true;
 
+        public string GlobalSearchScope { get; set; } = ViewModels.GlobalSearchScope.Both.ToString();
+        public bool GlobalSearchUseParallelProcessing { get; set; } = true;
+
         public AppearanceSettings Appearance { get; set; } = new AppearanceSettings();
 
         public EditHistorySettings EditHistory { get; set; } = new EditHistorySettings();

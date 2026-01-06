@@ -459,6 +459,7 @@
         <DataTemplate DataType="{x:Type vm:XmlFriendlyFieldGroupViewModel}">
             <Expander
                 Margin="0,0,0,6"
+                infra:BringIntoViewOnExpandBehavior.Enable="True"
                 Header="{Binding Title}"
                 IsExpanded="{Binding IsExpanded}">
                 <DataGrid
@@ -471,6 +472,7 @@
                     ItemsSource="{Binding Fields}"
                     ScrollViewer.CanContentScroll="True"
                     ScrollViewer.IsDeferredScrollingEnabled="False"
+                    SelectedItem="{Binding SelectedField, Mode=TwoWay}"
                     SelectionUnit="FullRow"
                     VirtualizingPanel.IsVirtualizing="True"
                     VirtualizingPanel.ScrollUnit="Pixel"
@@ -481,6 +483,16 @@
                             <MenuItem Click="Pane3DeleteEntry_Click" Header="Delete entry..." />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn
                             Width="520"
@@ -550,6 +562,9 @@
                     </StackPanel>
                     <DataGrid
                         MaxHeight="600"
+                        infra:DataGridScrollIntoViewOnSelectionBehavior.Enable="True"
+                        infra:DataGridScrollIntoViewOnSelectionBehavior.ScrollRequestId="{Binding DataContext.FriendlyLookupScrollRequestId, RelativeSource={RelativeSource AncestorType=Window}}"
+                        infra:DataGridScrollIntoViewOnSelectionBehavior.TargetColumnHeader="Value"
                         infra:ScrollViewerMouseWheelBehavior.Enable="False"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
@@ -566,7 +581,6 @@
                         ScrollViewer.IsDeferredScrollingEnabled="False"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         SelectedItem="{Binding DataContext.SelectedFriendlyLookupItem, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
-                        SelectionChanged="LookupGrid_SelectionChanged"
                         SelectionUnit="FullRow"
                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                         VirtualizingPanel.IsVirtualizing="True"
@@ -601,6 +615,16 @@
                                 <MenuItem Click="Pane3DeleteItem_Click" Header="Delete Item..." />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 Width="160"
@@ -852,8 +876,7 @@
                     Background="{Binding Appearance.TopButtonBackgroundBrush}"
                     BorderBrush="{Binding Appearance.TopButtonTextBrush}"
                     Click="OpenLocalSearch_Click"
-                    ToolTip="Find in current XML (Ctrl+F)."
-                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}">
+                    ToolTip="Find in current XML (Ctrl+F).">
                     <Viewbox Width="18" Height="18">
                         <Path Data="M15.5,14H14.71L14.43,13.73C15.35,12.67 15.9,11.29 15.9,9.8C15.9,6.49 13.21,3.8 9.9,3.8C6.59,3.8 3.9,6.49 3.9,9.8C3.9,13.11 6.59,15.8 9.9,15.8C11.39,15.8 12.77,15.25 13.83,14.33L14.1,14.6V15.4L18.2,19.5L19.5,18.2L15.5,14ZM9.9,14.1C7.53,14.1 5.6,12.17 5.6,9.8C5.6,7.43 7.53,5.5 9.9,5.5C12.27,5.5 14.2,7.43 14.2,9.8C14.2,12.17 12.27,14.1 9.9,14.1Z" Fill="{Binding Appearance.TopButtonTextBrush}" />
                     </Viewbox>
@@ -865,8 +888,7 @@
                     Background="{Binding Appearance.TopButtonBackgroundBrush}"
                     BorderBrush="{Binding Appearance.TopButtonTextBrush}"
                     Command="{Binding OpenGlobalSearchCommand}"
-                    ToolTip="Search all XML files (Ctrl+Shift+F)."
-                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}">
+                    ToolTip="Search all XML files (Ctrl+Shift+F).">
                     <Viewbox Width="18" Height="18">
                         <Path Data="M10,4H4C2.9,4 2,4.9 2,6V16C2,17.1 2.9,18 4,18H9.2C9.7,18.6 10.3,19.1 11,19.4C12.3,20 13.8,20 15.1,19.4C16.4,18.8 17.4,17.8 18,16.5C18.6,15.2 18.6,13.7 18,12.4C17.4,11.1 16.4,10.1 15.1,9.5C13.8,9 12.3,9 11,9.5C9.7,10.1 8.7,11.1 8.1,12.4C7.5,13.7 7.5,15.2 8.1,16.5C8.2,16.7 8.3,16.9 8.4,17H4C3.4,17 3,16.6 3,16V6C3,5.4 3.4,5 4,5H9.6L11.6,7H20V8H11.2L10,6.8V4ZM13,11C14.7,11 16,12.3 16,14C16,15.7 14.7,17 13,17C11.3,17 10,15.7 10,14C10,12.3 11.3,11 13,11ZM19,20L16.6,17.6L17.3,16.9L19.7,19.3L19,20Z" Fill="{Binding Appearance.TopButtonTextBrush}" />
                     </Viewbox>
@@ -945,6 +967,7 @@
                         SelectedItemChanged="TreeView_SelectedItemChanged"
                         Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
                     <ListBox
+                        infra:ListBoxScrollIntoViewOnSelectionBehavior.Enable="True"
                         DisplayMemberPath="DisplayPath"
                         ItemContainerStyle="{StaticResource Pane1FlatListBoxItemStyle}"
                         ItemsSource="{Binding XmlFiles}"
@@ -967,53 +990,61 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <DockPanel Grid.Column="0"
-                   Margin="0"
-                   Background="{Binding Appearance.SelectorBackgroundBrush}">
+                    <DockPanel
+                        Grid.Column="0"
+                        Margin="0"
+                        Background="{Binding Appearance.SelectorBackgroundBrush}">
 
-                        <ComboBox DockPanel.Dock="Top"
-                      ItemsSource="{Binding FriendlyCollections}"
-                      SelectedItem="{Binding SelectedFriendlyCollection}"
-                      DisplayMemberPath="Title"
-                      Margin="0,0,0,8"
-                      Style="{StaticResource Pane2ComboBoxStyle}"
-                      ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}" />
+                        <ComboBox
+                            Margin="0,0,0,8"
+                            DisplayMemberPath="Title"
+                            DockPanel.Dock="Top"
+                            ItemContainerStyle="{StaticResource Pane2ComboBoxItemStyle}"
+                            ItemsSource="{Binding FriendlyCollections}"
+                            SelectedItem="{Binding SelectedFriendlyCollection}"
+                            Style="{StaticResource Pane2ComboBoxStyle}" />
 
-                        <ListBox ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
-                     SelectedItem="{Binding SelectedFriendlyEntry}"
-                     DisplayMemberPath="Display"
-                     Style="{StaticResource Pane2ListBoxStyle}"
-                     ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}">
+                        <ListBox
+                            infra:ListBoxScrollIntoViewOnSelectionBehavior.Enable="True"
+                            DisplayMemberPath="Display"
+                            ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}"
+                            ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
+                            SelectedItem="{Binding SelectedFriendlyEntry}"
+                            Style="{StaticResource Pane2ListBoxStyle}">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Duplicate entry"
-                                  Command="{Binding PlacementTarget.DataContext.DuplicateFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                    <MenuItem Header="Delete entry..."
-                                  Command="{Binding PlacementTarget.DataContext.DeleteFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                    <MenuItem Command="{Binding PlacementTarget.DataContext.DuplicateFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Header="Duplicate entry" />
+                                    <MenuItem Command="{Binding PlacementTarget.DataContext.DeleteFriendlyEntryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Header="Delete entry..." />
                                 </ContextMenu>
                             </ListBox.ContextMenu>
                         </ListBox>
                     </DockPanel>
 
-                    <GridSplitter Grid.Column="1"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      ResizeBehavior="PreviousAndNext"
-                      ResizeDirection="Columns"
-                      Background="{Binding Appearance.BackgroundBrush}" />
+                    <GridSplitter
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="{Binding Appearance.BackgroundBrush}"
+                        ResizeBehavior="PreviousAndNext"
+                        ResizeDirection="Columns" />
 
-                    <Border Grid.Column="2"
-                Background="{Binding Appearance.BackgroundBrush}"
-                BorderBrush="{Binding Appearance.GridBorderBrush}"
-                BorderThickness="1">
-                        <ListBox ItemsSource="{Binding FriendlyGroups}"
-                     Background="{Binding Appearance.BackgroundBrush}"
-                     BorderThickness="0"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ScrollViewer.CanContentScroll="False"
-                     VirtualizingPanel.IsVirtualizing="False"
-                     VirtualizingPanel.VirtualizationMode="Recycling">
+                    <Border
+                        Grid.Column="2"
+                        Background="{Binding Appearance.BackgroundBrush}"
+                        BorderBrush="{Binding Appearance.GridBorderBrush}"
+                        BorderThickness="1">
+                        <ListBox
+                            x:Name="FriendlyGroupsList"
+                            Background="{Binding Appearance.BackgroundBrush}"
+                            BorderThickness="0"
+                            ItemsSource="{Binding FriendlyGroups}"
+                            ScrollViewer.CanContentScroll="False"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            SelectedItem="{Binding SelectedFriendlyGroup, Mode=OneWay}"
+                            SelectionChanged="FriendlyGroupsList_SelectionChanged"
+                            VirtualizingPanel.IsVirtualizing="False"
+                            VirtualizingPanel.VirtualizationMode="Recycling">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="{x:Type ListBoxItem}">
                                     <Setter Property="Focusable" Value="False" />
@@ -1036,20 +1067,21 @@
                     </Border>
                 </Grid>
 
-                <avalonedit:TextEditor x:Name="XmlEditor"
-                           Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}"
-                           ShowLineNumbers="True"
-                           FontFamily="{Binding Appearance.EditorFontFamily}"
-                           FontSize="{Binding Appearance.EditorFontSize}"
-                           FontWeight="{Binding Appearance.EditorFontWeight}"
-                           FontStyle="{Binding Appearance.EditorFontStyle}"
-                           HorizontalScrollBarVisibility="Auto"
-                           VerticalScrollBarVisibility="Auto"
-                           Background="{Binding Appearance.EditorBackgroundBrush}"
-                           Foreground="{Binding Appearance.EditorTextBrush}"
-                           infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
-                           infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
-                           infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}" />
+                <avalonedit:TextEditor
+                    x:Name="XmlEditor"
+                    infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}"
+                    infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
+                    infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
+                    Background="{Binding Appearance.EditorBackgroundBrush}"
+                    FontFamily="{Binding Appearance.EditorFontFamily}"
+                    FontSize="{Binding Appearance.EditorFontSize}"
+                    FontStyle="{Binding Appearance.EditorFontStyle}"
+                    FontWeight="{Binding Appearance.EditorFontWeight}"
+                    Foreground="{Binding Appearance.EditorTextBrush}"
+                    HorizontalScrollBarVisibility="Auto"
+                    ShowLineNumbers="True"
+                    VerticalScrollBarVisibility="Auto"
+                    Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
             </Grid>
         </Grid>
     </DockPanel>

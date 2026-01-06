@@ -14,9 +14,20 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
                 typeof(LookupGridGroupExpansionBehavior),
                 new PropertyMetadata(false, OnIsEnabledChanged));
 
+        private static readonly DependencyProperty SubscriptionProperty =
+            DependencyProperty.RegisterAttached(
+                "Subscription",
+                typeof(Action<string>),
+                typeof(LookupGridGroupExpansionBehavior),
+                new PropertyMetadata(null));
+
         public static bool GetIsEnabled(DependencyObject obj) => (bool)obj.GetValue(IsEnabledProperty);
 
         public static void SetIsEnabled(DependencyObject obj, bool value) => obj.SetValue(IsEnabledProperty, value);
+
+        private static Action<string>? GetSubscription(DependencyObject obj) => (Action<string>?)obj.GetValue(SubscriptionProperty);
+
+        private static void SetSubscription(DependencyObject obj, Action<string>? value) => obj.SetValue(SubscriptionProperty, value);
 
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -53,8 +64,30 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
 
             if (vm.TryGetLookupGridGroupIsExpanded(groupName, out var expanded))
                 expander.IsExpanded = expanded;
-        }
 
+            var existing = GetSubscription(expander);
+            if (existing is not null)
+                vm.LookupGridGroupExpandRequested -= existing;
+
+            Action<string> handler = requested =>
+            {
+                if (!string.Equals(requested, groupName, StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                expander.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    expander.IsExpanded = true;
+                    expander.BringIntoView();
+                }));
+
+                expander.Dispatcher.BeginInvoke(
+                    new Action(vm.RequestFriendlyLookupScroll),
+                    System.Windows.Threading.DispatcherPriority.Loaded);
+            };
+
+            SetSubscription(expander, handler);
+            vm.LookupGridGroupExpandRequested += handler;
+        }
         private static void Expander_Expanded(object sender, RoutedEventArgs e)
         {
             SetState(sender, true);
@@ -67,7 +100,19 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
 
         private static void Expander_Unloaded(object sender, RoutedEventArgs e)
         {
-            SetState(sender, (sender as Expander)?.IsExpanded ?? false);
+            if (sender is not Expander expander)
+                return;
+
+            var vm = expander.Tag as MainWindowViewModel;
+            if (vm is null)
+                return;
+
+            var handler = GetSubscription(expander);
+            if (handler is null)
+                return;
+
+            vm.LookupGridGroupExpandRequested -= handler;
+            SetSubscription(expander, null);
         }
 
         private static void SetState(object sender, bool isExpanded)

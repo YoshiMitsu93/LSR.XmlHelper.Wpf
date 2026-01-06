@@ -1,5 +1,4 @@
-﻿// LSR.XmlHelper.Wpf\ViewModels\XmlFriendlyFieldGroupViewModel.cs
-using LSR.XmlHelper.Wpf.Infrastructure;
+﻿using LSR.XmlHelper.Wpf.Infrastructure;
 using System.Collections.ObjectModel;
 
 namespace LSR.XmlHelper.Wpf.ViewModels
@@ -7,7 +6,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
     public sealed class XmlFriendlyFieldGroupViewModel : ObservableObject
     {
         private bool _isExpanded = true;
-
+        private XmlFriendlyFieldViewModel? _selectedField;
         public XmlFriendlyFieldGroupViewModel(string title, ObservableCollection<XmlFriendlyFieldViewModel> fields)
         {
             Title = title;
@@ -22,6 +21,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         {
             get => _isExpanded;
             set => SetProperty(ref _isExpanded, value);
+        }
+        public XmlFriendlyFieldViewModel? SelectedField
+        {
+            get => _selectedField;
+            set => SetProperty(ref _selectedField, value);
         }
     }
 }

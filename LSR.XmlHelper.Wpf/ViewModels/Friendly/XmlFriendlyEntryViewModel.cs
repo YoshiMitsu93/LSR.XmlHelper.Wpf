@@ -6,9 +6,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class XmlFriendlyEntryViewModel : ObservableObject
     {
-        private readonly string _displayOverride;
+        private readonly string? _displayOverride;
 
-        public XmlFriendlyEntryViewModel(XmlFriendlyEntry entry, string displayOverride = null)
+        public XmlFriendlyEntryViewModel(XmlFriendlyEntry entry, string? displayOverride = null)
         {
             Entry = entry;
             _displayOverride = displayOverride;
@@ -17,6 +17,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public XmlFriendlyEntry Entry { get; }
 
         public string Display => string.IsNullOrWhiteSpace(_displayOverride) ? Entry.Display : _displayOverride;
+
         public void RefreshDisplay()
         {
             OnPropertyChanged(nameof(Display));

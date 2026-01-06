@@ -1,14 +1,27 @@
-﻿<Window x:Class="LSR.XmlHelper.Wpf.Views.GlobalSearchWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Global Search"
-        Width="860"
-        Height="520"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="CanResize">
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.GlobalSearchWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure.Converters"
+    xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
+    Title="Global Search"
+    Width="860"
+    Height="520"
+    FocusManager.FocusedElement="{Binding ElementName=QueryTextBox}"
+    ResizeMode="CanResize"
+    WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <conv:RelativePathConverter x:Key="RelativePathConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Window.Resources>
     <DockPanel Margin="10">
         <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
-            <TextBlock Text="Search all XML files (raw text)" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8" />
+
+            <TextBlock
+                Margin="0,0,0,8"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="Search all XML files" />
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -16,57 +29,189 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0"
-                         Height="28"
-                         VerticalContentAlignment="Center"
-                         Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox
+                    x:Name="QueryTextBox"
+                    Grid.Column="0"
+                    Height="28"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
 
-                <CheckBox Grid.Column="1"
-                          Margin="10,0,10,0"
-                          VerticalAlignment="Center"
-                          Content="Case sensitive"
-                          IsChecked="{Binding CaseSensitive}" />
+                <CheckBox
+                    Grid.Column="1"
+                    Margin="10,0,10,0"
+                    VerticalAlignment="Center"
+                    Content="Case sensitive"
+                    IsChecked="{Binding CaseSensitive}" />
 
-                <Button Grid.Column="2"
-                        MinWidth="90"
+                <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                    <TextBlock
+                        Margin="0,0,0,2"
+                        Opacity="0.8"
+                        Text="Search mode" />
+                    <ComboBox
+                        Width="150"
                         Height="28"
-                        Margin="0,0,8,0"
-                        Content="Search"
-                        Command="{Binding SearchCommand}" />
+                        VerticalContentAlignment="Center"
+                        SelectedValue="{Binding SearchScope}"
+                        SelectedValuePath="Tag">
+                        <ComboBoxItem Content="Raw XML" Tag="{x:Static vm:GlobalSearchScope.RawXml}" />
+                        <ComboBoxItem Content="Friendly View" Tag="{x:Static vm:GlobalSearchScope.FriendlyView}" />
+                        <ComboBoxItem Content="Both" Tag="{x:Static vm:GlobalSearchScope.Both}" />
+                    </ComboBox>
+                    <CheckBox
+                        Margin="0,6,0,0"
+                        Content="Include subfolders"
+                        IsChecked="{Binding IncludeSubfolders}"
+                        IsEnabled="{Binding IsSearchOptionsEnabled}"
+                        ToolTip="When off, only searches the selected folder. Turning this off can massively improve performance." />
+                    <CheckBox
+                        Margin="0,4,0,0"
+                        Content="Use parallel processing"
+                        IsChecked="{Binding UseParallelProcessing}"
+                        IsEnabled="{Binding IsParallelProcessingToggleEnabled}"
+                        ToolTip="When on, Friendly View can be faster, but the current-file label shows the last started file. When off, the current-file label is exact." />
 
-                <Button Grid.Column="3"
-                        MinWidth="90"
-                        Height="28"
-                        Content="Cancel"
-                        Command="{Binding CancelCommand}" />
+                </StackPanel>
+
+                <Button
+                    Grid.Column="3"
+                    Height="28"
+                    MinWidth="110"
+                    Margin="0,0,8,0"
+                    Command="{Binding SearchCommand}"
+                    Content="Search"
+                    IsDefault="True" />
+
+                <Button
+                    Grid.Column="4"
+                    Height="28"
+                    MinWidth="110"
+                    Command="{Binding CancelCommand}"
+                    Content="Cancel" />
             </Grid>
 
-            <TextBlock Text="{Binding Status}" Margin="0,8,0,8" />
+            <TextBlock
+                Margin="0,6,0,0"
+                Opacity="0.8"
+                Text="{Binding ScopeHint}" />
+            <StackPanel Margin="0,8,0,8">
+                <TextBlock Text="{Binding Status}" />
+                <ProgressBar
+                    Height="6"
+                    Margin="0,6,0,0"
+                    IsIndeterminate="{Binding IsSearchProgressIndeterminate, Mode=OneWay}"
+                    Maximum="100"
+                    Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Value="{Binding SearchProgressPercent, Mode=OneWay}" />
+                <TextBlock
+                    Margin="0,2,0,0"
+                    Opacity="0.7"
+                    Text="{Binding SearchProgressText}"
+                    Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </StackPanel>
+
         </StackPanel>
 
-        <DataGrid ItemsSource="{Binding Hits}"
-                  SelectedItem="{Binding SelectedHit, Mode=TwoWay}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  MouseDoubleClick="Results_MouseDoubleClick">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="File" Binding="{Binding FilePath}" Width="260" />
-                <DataGridTextColumn Header="Line" Binding="{Binding LineNumber}" Width="70" />
-                <DataGridTextColumn Header="Col" Binding="{Binding ColumnNumber}" Width="70" />
-                <DataGridTextColumn Header="Preview" Binding="{Binding PreviewLine}" Width="*" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="{Binding RawTabHeader}" />
+                </TabItem.Header>
 
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button MinWidth="110"
-                    Height="28"
-                    Margin="0,0,8,0"
-                    Content="Open"
-                    Command="{Binding OpenSelectedCommand}" />
-            <Button MinWidth="110" Height="28" Content="Close" Click="Close_Click" />
+                <DataGrid
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Hits}"
+                    MouseDoubleClick="Results_MouseDoubleClick"
+                    SelectedItem="{Binding SelectedHit, Mode=TwoWay}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="260" Header="File">
+                            <DataGridTextColumn.Binding>
+                                <MultiBinding Converter="{StaticResource RelativePathConverter}">
+                                    <Binding Path="FilePath" />
+                                    <Binding Path="DataContext.RootFolderForDisplay" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                </MultiBinding>
+                            </DataGridTextColumn.Binding>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding LineNumber}"
+                            Header="Line" />
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding ColumnNumber}"
+                            Header="Col" />
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding PreviewLine}"
+                            Header="Preview" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="{Binding FriendlyTabHeader}" />
+                </TabItem.Header>
+
+                <DataGrid
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding FriendlyHits}"
+                    MouseDoubleClick="Results_MouseDoubleClick"
+                    SelectedItem="{Binding SelectedFriendlyHit, Mode=TwoWay}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="240" Header="File">
+                            <DataGridTextColumn.Binding>
+                                <MultiBinding Converter="{StaticResource RelativePathConverter}">
+                                    <Binding Path="FilePath" />
+                                    <Binding Path="DataContext.RootFolderForDisplay" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                </MultiBinding>
+                            </DataGridTextColumn.Binding>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn
+                            Width="150"
+                            Binding="{Binding CollectionTitle}"
+                            Header="Collection" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding EntryKey}"
+                            Header="Entry" />
+                        <DataGridTextColumn
+                            Width="140"
+                            Binding="{Binding FieldName}"
+                            Header="Field" />
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Preview}"
+                            Header="Preview" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel
+            Margin="0,10,0,0"
+            HorizontalAlignment="Right"
+            DockPanel.Dock="Bottom"
+            Orientation="Horizontal">
+            <Button
+                Height="28"
+                MinWidth="110"
+                Margin="0,0,8,0"
+                Command="{Binding OpenSelectedCommand}"
+                Content="Open" />
+            <Button
+                Height="28"
+                MinWidth="110"
+                Click="Close_Click"
+                Content="Close"
+                IsCancel="True" />
         </StackPanel>
     </DockPanel>
 </Window>

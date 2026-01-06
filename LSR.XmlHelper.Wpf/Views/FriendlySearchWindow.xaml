@@ -1,0 +1,46 @@
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.FriendlySearchWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Find (Friendly View)"
+    Width="420"
+    Height="160"
+    WindowStartupLocation="CenterScreen"
+    ResizeMode="CanMinimize"
+    ShowInTaskbar="True"
+    FocusManager.FocusedElement="{Binding ElementName=QueryTextBox}">
+    
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding FindNextCommand}" />
+    </Window.InputBindings>
+    
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBox x:Name="QueryTextBox"
+                 Grid.Row="0"
+                 Margin="0,0,0,8"
+                 Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
+
+        <CheckBox Grid.Row="1"
+                  Margin="0,0,0,12"
+                  Content="Case sensitive"
+                  IsChecked="{Binding CaseSensitive}" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Width="90"
+                    Margin="0,0,8,0"
+                    IsDefault="True"
+                    Command="{Binding FindNextCommand}"
+                    Content="Find next" />
+            <Button Width="90"
+                    IsCancel="True"
+                    Content="Close"
+                    Click="Close_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

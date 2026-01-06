@@ -14,7 +14,9 @@ namespace LSR.XmlHelper.Core.Services
             string query,
             bool caseSensitive,
             int maxResults,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            IProgress<int>? fileProcessedProgress = null,
+            IProgress<string>? currentFileProgress = null)
         {
             if (filePaths is null)
                 throw new ArgumentNullException(nameof(filePaths));
@@ -32,37 +34,47 @@ namespace LSR.XmlHelper.Core.Services
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-                    continue;
+                if (!string.IsNullOrWhiteSpace(path))
+                    currentFileProgress?.Report(path);
 
-                string text;
                 try
                 {
-                    text = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+                    if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                        continue;
+
+                    string text;
+                    try
+                    {
+                        text = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    var startIndex = 0;
+                    while (true)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var idx = text.IndexOf(query, startIndex, comparison);
+                        if (idx < 0)
+                            break;
+
+                        var (line, col) = GetLineAndColumn(text, idx);
+                        var preview = GetPreviewLine(text, idx);
+
+                        hits.Add(new GlobalSearchHit(path, idx, query.Length, line, col, preview));
+
+                        if (hits.Count >= maxResults)
+                            return hits;
+
+                        startIndex = idx + (query.Length > 0 ? query.Length : 1);
+                    }
                 }
-                catch
+                finally
                 {
-                    continue;
-                }
-
-                var startIndex = 0;
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var idx = text.IndexOf(query, startIndex, comparison);
-                    if (idx < 0)
-                        break;
-
-                    var (line, col) = GetLineAndColumn(text, idx);
-                    var preview = GetPreviewLine(text, idx);
-
-                    hits.Add(new GlobalSearchHit(path, idx, query.Length, line, col, preview));
-
-                    if (hits.Count >= maxResults)
-                        return hits;
-
-                    startIndex = idx + (query.Length > 0 ? query.Length : 1);
+                    fileProcessedProgress?.Report(1);
                 }
             }
 

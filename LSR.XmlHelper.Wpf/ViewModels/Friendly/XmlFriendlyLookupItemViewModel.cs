@@ -11,6 +11,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             Item = item;
             Field = field;
             _field = backingField;
+
+            _field.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(XmlFriendlyFieldViewModel.IsSearchMatch))
+                    OnPropertyChanged(nameof(IsSearchMatch));
+            };
         }
 
         public string Item { get; }
@@ -18,6 +24,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string Field { get; }
 
         public string FullName => _field.Name;
+        public bool IsSearchMatch => _field.IsSearchMatch;
 
         public string Value
         {

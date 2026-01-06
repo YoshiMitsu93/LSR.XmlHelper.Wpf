@@ -6,6 +6,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
     public sealed class XmlFriendlyFieldViewModel : ObservableObject
     {
         private string _value;
+        private bool _isSearchMatch;
+
+        public bool IsSearchMatch
+        {
+            get => _isSearchMatch;
+            set => SetProperty(ref _isSearchMatch, value);
+        }
 
         public XmlFriendlyFieldViewModel(string name, string value)
         {

@@ -7,7 +7,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 {
     public sealed class XmlFriendlyCollectionViewModel
     {
-        private readonly string _singleEntryDisplayTitle;
+        private readonly string? _singleEntryDisplayTitle;
         private LazyVmList<XmlFriendlyEntry, XmlFriendlyEntryViewModel>? _entries;
 
         public XmlFriendlyCollectionViewModel(XmlFriendlyCollection collection)

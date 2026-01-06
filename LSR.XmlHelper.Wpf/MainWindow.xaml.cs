@@ -19,6 +19,7 @@ namespace LSR.XmlHelper.Wpf
     {
         private readonly XmlHelperRootService _helperRoot = new XmlHelperRootService();
         private SearchPanel? _searchPanel;
+        private Views.FriendlySearchWindow? _friendlySearchWindow;
 
         public MainWindow()
         {
@@ -54,34 +55,95 @@ namespace LSR.XmlHelper.Wpf
             if (e.Handled)
                 return;
 
-            if (e.Key != System.Windows.Input.Key.D)
-                return;
-
             var mods = System.Windows.Input.Keyboard.Modifiers;
+            var ctrl = (mods & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control;
+            var shift = (mods & System.Windows.Input.ModifierKeys.Shift) == System.Windows.Input.ModifierKeys.Shift;
 
-            if ((mods & System.Windows.Input.ModifierKeys.Control) != System.Windows.Input.ModifierKeys.Control)
-                return;
-
-            if (DataContext is not MainWindowViewModel vm)
-                return;
-
-            if (!vm.IsFriendlyView || vm.SelectedFriendlyEntry is null)
-                return;
-
-            if ((mods & System.Windows.Input.ModifierKeys.Shift) == System.Windows.Input.ModifierKeys.Shift)
+            if (ctrl && shift && e.Key == System.Windows.Input.Key.F)
             {
-                if (vm.SelectedFriendlyLookupItem is null)
-                    return;
+                if (DataContext is ViewModels.MainWindowViewModel vm)
+                {
+                    if (vm.OpenGlobalSearchCommand.CanExecute(null))
+                        vm.OpenGlobalSearchCommand.Execute(null);
+                }
 
-                vm.DuplicateSelectedFriendlyLookupItem();
                 e.Handled = true;
                 return;
             }
 
-            vm.DuplicateSelectedFriendlyEntry();
+            if (ctrl && !shift && e.Key == System.Windows.Input.Key.F)
+            {
+                if (DataContext is ViewModels.MainWindowViewModel vm && vm.IsFriendlyView)
+                {
+                    ShowFriendlySearchWindow(vm.FindNextFriendly);
+                    e.Handled = true;
+                    return;
+                }
+
+                _searchPanel?.Open();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key != System.Windows.Input.Key.D)
+                return;
+
+            if (!ctrl)
+                return;
+
+            if (DataContext is not MainWindowViewModel vm2)
+                return;
+
+            if (!vm2.IsFriendlyView || vm2.SelectedFriendlyEntry is null)
+                return;
+
+            if (shift)
+            {
+                if (vm2.SelectedFriendlyLookupItem is null)
+                    return;
+
+                vm2.DuplicateSelectedFriendlyLookupItem();
+                e.Handled = true;
+                return;
+            }
+
+            vm2.DuplicateSelectedFriendlyEntry();
             e.Handled = true;
         }
+        private void ShowFriendlySearchWindow(Action<string, bool> findNext)
+        {
+            if (_friendlySearchWindow is null)
+            {
+                _friendlySearchWindow = new Views.FriendlySearchWindow
+                {
+                    DataContext = new ViewModels.FriendlySearchWindowViewModel(findNext)
+                };
 
+                _friendlySearchWindow.Closed += (_, __) => _friendlySearchWindow = null;
+            }
+
+            if (!_friendlySearchWindow.IsVisible)
+                _friendlySearchWindow.Show();
+
+            if (_friendlySearchWindow.WindowState == WindowState.Minimized)
+                _friendlySearchWindow.WindowState = WindowState.Normal;
+
+            _friendlySearchWindow.Activate();
+        }
+
+        private void FriendlyGroupsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.ListBox lb)
+                return;
+
+            if (lb.SelectedItem is null)
+                return;
+
+            lb.Dispatcher.BeginInvoke(() =>
+            {
+                lb.ScrollIntoView(lb.SelectedItem);
+            });
+        }
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (DataContext is not MainWindowViewModel vm)
@@ -99,25 +161,6 @@ namespace LSR.XmlHelper.Wpf
 
             if (dep is System.Windows.Controls.DataGridRow row)
                 row.IsSelected = true;
-        }
-        private void LookupGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (sender is not System.Windows.Controls.DataGrid grid)
-                return;
-
-            var selected = grid.SelectedItem;
-
-            if (DataContext is MainWindowViewModel vm)
-                vm.SelectedFriendlyLookupItem = selected as XmlFriendlyLookupItemViewModel;
-
-            if (selected is null)
-                return;
-
-            grid.Dispatcher.BeginInvoke(new System.Action(() =>
-            {
-                if (grid.Items.Contains(selected))
-                    grid.ScrollIntoView(selected);
-            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void FriendlyGrid_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -527,6 +570,12 @@ namespace LSR.XmlHelper.Wpf
 
         private void OpenLocalSearch_Click(object sender, RoutedEventArgs e)
         {
+            if (DataContext is ViewModels.MainWindowViewModel vm && vm.IsFriendlyView)
+            {
+                ShowFriendlySearchWindow(vm.FindNextFriendly);
+                return;
+            }
+
             _searchPanel?.Open();
         }
 

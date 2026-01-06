@@ -1,5 +1,5 @@
-﻿using LSR.XmlHelper.Core.Services;
-using LSR.XmlHelper.Core.Models;
+﻿using LSR.XmlHelper.Core.Models;
+using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Services;
 using LSR.XmlHelper.Wpf.Services.EditHistory;
@@ -11,14 +11,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Windows;
 using Media = System.Windows.Media;
-using WinForms = System.Windows.Forms;
-using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
 using MessageBoxResult = System.Windows.MessageBoxResult;
+using WinForms = System.Windows.Forms;
+using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace LSR.XmlHelper.Wpf.ViewModels
 {
@@ -48,7 +48,24 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _xmlText = "";
         private string? _rootFolder;
         private RawNavigationRequest? _pendingRawNavigation;
+        private string _friendlySearchQuery = "";
+        private bool _friendlySearchCaseSensitive;
+        private int _friendlySearchCollectionIndex;
+        private int _friendlySearchEntryIndex;
+        private int _friendlySearchFieldIndex = -1;
+        private string? _friendlySearchFieldName;
+        private string? _pendingFriendlySearchQuery;
+        private bool _pendingFriendlySearchCaseSensitive;
+        private string? _pendingFriendlySearchFieldName;
+        private string? _pendingGlobalFriendlyNavigateCollectionTitle;
+        private string? _pendingGlobalFriendlyNavigateEntryKey;
+        private int? _pendingGlobalFriendlyNavigateEntryOccurrence;
+        private string? _pendingGlobalFriendlyNavigateFieldName;    
+        private GlobalSearchWindow? _globalSearchWindow;
+        private GlobalSearchScope _globalSearchScope = GlobalSearchScope.Both;
+        private bool _globalSearchUseParallelProcessing = true;
         public event EventHandler<RawNavigationRequest>? RawNavigationRequested;
+        public event Action<string>? LookupGridGroupExpandRequested;
         private bool _isDirty;
         private XmlFileListItem? _selectedXmlFile;
         private XmlExplorerNode? _selectedTreeNode;
@@ -63,6 +80,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
         private XmlFriendlyLookupItemViewModel? _selectedFriendlyLookupItem;
+        private int _friendlyLookupScrollRequestId;
         private string? _pendingLookupGroupTitle;
         private string? _pendingLookupItemName;
         private string? _pendingLookupField;
@@ -71,6 +89,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
         private ObservableCollection<XmlFriendlyFieldGroupViewModel> _friendlyFieldGroups = new();
         private ObservableCollection<object> _friendlyGroups = new();
+        private object? _selectedFriendlyGroup;
 
         public MainWindowViewModel()
         {
@@ -213,6 +232,18 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
+        public bool GlobalSearchUseParallelProcessing
+        {
+            get => _globalSearchUseParallelProcessing;
+            set
+            {
+                if (!SetProperty(ref _globalSearchUseParallelProcessing, value))
+                    return;
+
+                _settings.GlobalSearchUseParallelProcessing = value;
+                SaveSettings();
+            }
+        }
 
         public bool IsFlatMode
         {
@@ -307,7 +338,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
+        public int FriendlyLookupScrollRequestId
+        {
+            get => _friendlyLookupScrollRequestId;
+            private set => SetProperty(ref _friendlyLookupScrollRequestId, value);
+        }
 
+        public void RequestFriendlyLookupScroll()
+        {
+            FriendlyLookupScrollRequestId++;
+        }
         public XmlFriendlyLookupItemViewModel? SelectedFriendlyLookupItem
         {
             get => _selectedFriendlyLookupItem;
@@ -336,6 +376,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         {
             get => _friendlyGroups;
             private set => SetProperty(ref _friendlyGroups, value);
+        }
+
+        public object? SelectedFriendlyGroup
+        {
+            get => _selectedFriendlyGroup;
+            set => SetProperty(ref _selectedFriendlyGroup, value);
         }
 
         public XmlFileListItem? SelectedXmlFile
@@ -425,27 +471,68 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenGlobalSearch()
         {
-            var root = _rootFolder;
-            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
+            var desiredTab = IsFriendlyView ? 1 : 0;
+            var desiredScope = _globalSearchScope == GlobalSearchScope.Both
+                ? GlobalSearchScope.Both
+                : (IsFriendlyView ? GlobalSearchScope.FriendlyView : GlobalSearchScope.RawXml);
+
+            if (_globalSearchWindow is null)
             {
-                MessageBox.Show("Pick a folder first by using Open Folder.", "Global Search", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                void onScopeChanged(GlobalSearchScope scope)
+                {
+                    _globalSearchScope = scope;
+                    _settings.GlobalSearchScope = scope.ToString();
+                    SaveSettings();
+                }
+
+                var vm = new GlobalSearchWindowViewModel(
+                    _discovery,
+                    _globalSearch,
+                    () => RootFolderPath,
+                    () => IncludeSubfolders,
+                    v => IncludeSubfolders = v,
+                    () => GlobalSearchUseParallelProcessing,
+                    v => GlobalSearchUseParallelProcessing = v,
+                    NavigateToGlobalHit,
+                    NavigateToGlobalFriendlyHit,
+                    desiredTab,
+                    desiredScope,
+                    onScopeChanged);
+
+                _globalSearchWindow = new GlobalSearchWindow
+                {
+                    DataContext = vm
+                };
+
+                _globalSearchWindow.Closed += (_, _) => _globalSearchWindow = null;
+            }
+            else
+            {
+                if (_globalSearchWindow.DataContext is GlobalSearchWindowViewModel vm)
+                {
+                    vm.SelectedTabIndex = desiredTab;
+                    vm.SearchScope = desiredScope;
+                }
             }
 
-            var vm = new GlobalSearchWindowViewModel(
-                _discovery,
-                _globalSearch,
-                () => _rootFolder,
-                () => IncludeSubfolders,
-                NavigateToRawHit);
+            if (!_globalSearchWindow.IsVisible)
+                _globalSearchWindow.Show();
 
-            var win = new GlobalSearchWindow
-            {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+            if (_globalSearchWindow.WindowState == WindowState.Minimized)
+                _globalSearchWindow.WindowState = WindowState.Normal;
 
-            win.ShowDialog();
+            _globalSearchWindow.Activate();
+        }
+
+        private void NavigateToGlobalHit(GlobalSearchHit hit, string query, bool caseSensitive)
+        {
+            if (hit is null)
+                return;
+
+            if (IsFriendlyView)
+                IsFriendlyView = false;
+
+            NavigateToRawHit(hit);
         }
 
         private void NavigateToRawHit(GlobalSearchHit hit)
@@ -460,6 +547,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 var node = FindFileNodeByPath(XmlTree, hit.FilePath);
                 if (node is not null)
                 {
+                    if (ReferenceEquals(node, SelectedTreeNode) && node.FullPath is not null &&
+                        string.Equals(_currentFilePath, node.FullPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        TryRaiseRawNavigationForLoadedFile(node.FullPath);
+                        return;
+                    }
+
                     SelectedTreeNode = node;
                     return;
                 }
@@ -471,6 +565,70 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 if (match is not null)
                 {
+                    if (ReferenceEquals(match, SelectedXmlFile) &&
+                        string.Equals(_currentFilePath, match.FullPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        TryRaiseRawNavigationForLoadedFile(match.FullPath);
+                        return;
+                    }
+
+                    SelectedXmlFile = match;
+                    return;
+                }
+            }
+
+            _ = LoadFileAsync(hit.FilePath);
+        }
+
+        private void NavigateToGlobalFriendlyHit(GlobalFriendlySearchHit hit, string query, bool caseSensitive)
+        {
+            if (hit is null)
+                return;
+
+            _pendingFriendlySearchQuery = query;
+            _pendingFriendlySearchCaseSensitive = caseSensitive;
+
+            _pendingGlobalFriendlyNavigateCollectionTitle = hit.CollectionTitle;
+            _pendingGlobalFriendlyNavigateEntryKey = hit.EntryKey;
+            _pendingGlobalFriendlyNavigateEntryOccurrence = hit.EntryOccurrence;
+            _pendingGlobalFriendlyNavigateFieldName = hit.FieldKey;
+
+            if (!IsFriendlyView)
+                IsFriendlyView = true;
+
+            if (IsFoldersMode)
+            {
+                var node = FindFileNodeByPath(XmlTree, hit.FilePath);
+                if (node is not null)
+                {
+                    var fullPath = node.FullPath;
+
+                    if (!string.IsNullOrWhiteSpace(fullPath) &&
+                        ReferenceEquals(node, SelectedTreeNode) &&
+                        string.Equals(_currentFilePath, fullPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        TryApplyGlobalFriendlyNavigateForLoadedFile(fullPath);
+                        return;
+                    }
+
+                    SelectedTreeNode = node;
+                    return;
+                }
+            }
+            else
+            {
+                var match = XmlFiles.FirstOrDefault(x =>
+                    string.Equals(x.FullPath, hit.FilePath, StringComparison.OrdinalIgnoreCase));
+
+                if (match is not null)
+                {
+                    if (ReferenceEquals(match, SelectedXmlFile) &&
+                        string.Equals(_currentFilePath, match.FullPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        TryApplyGlobalFriendlyNavigateForLoadedFile(match.FullPath);
+                        return;
+                    }
+
                     SelectedXmlFile = match;
                     return;
                 }
@@ -742,11 +900,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private void RefreshFriendlyFromXml()
         {
             CancelPendingFriendlyUiBuild();
-
             if (_friendlyDocument is null)
             {
                 HasFriendlyView = false;
-
                 FriendlyCollections = new ObservableCollection<XmlFriendlyCollectionViewModel>();
                 _selectedFriendlyCollection = null;
                 _selectedFriendlyEntry = null;
@@ -758,26 +914,29 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            var selectedCollectionTitle = SelectedFriendlyCollection?.Collection.Title;
-            var selectedEntryKey = SelectedFriendlyEntry?.Entry.Key;
+            var selectedCollectionTitle = _pendingGlobalFriendlyNavigateCollectionTitle ?? SelectedFriendlyCollection?.Collection.Title;
+            var selectedEntryKey = _pendingGlobalFriendlyNavigateEntryKey ?? SelectedFriendlyEntry?.Entry.Key;
+            var selectedEntryOccurrence = _pendingGlobalFriendlyNavigateEntryOccurrence;
+            _pendingFriendlySearchFieldName = _pendingGlobalFriendlyNavigateFieldName;
+            _pendingGlobalFriendlyNavigateCollectionTitle = null;
+            _pendingGlobalFriendlyNavigateEntryKey = null;
+            _pendingGlobalFriendlyNavigateEntryOccurrence = null;
+            _pendingGlobalFriendlyNavigateFieldName = null;
+
             _friendlyExpansionStateStore.Capture(FriendlyGroups);
             _friendlyUiBuildCts = new CancellationTokenSource();
             var token = _friendlyUiBuildCts.Token;
-
             var myVersion = _xmlVersion;
             var doc = _friendlyDocument;
 
-            _ = Task.Run(() => BuildFriendlyUiState(doc, selectedCollectionTitle, selectedEntryKey, token), token).ContinueWith(t =>
+            _ = Task.Run(() => BuildFriendlyUiState(doc, selectedCollectionTitle, selectedEntryKey, selectedEntryOccurrence, token), token).ContinueWith(t =>
             {
-                if (t.IsCanceled || t.IsFaulted)
+                if (t.IsCanceled || t.IsFaulted || myVersion != _xmlVersion)
                     return;
-
-                if (myVersion != _xmlVersion)
-                    return;
-
                 ApplyFriendlyUiState(t.Result);
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
+
         private void CancelPendingFriendlyUiBuild()
         {
             try
@@ -863,12 +1022,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             FriendlyFieldGroups = state.FieldGroups;
             _friendlyExpansionStateStore.Apply(state.Groups);
             FriendlyGroups = state.Groups;
+
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         private static FriendlyUiState BuildFriendlyUiState(
             XmlFriendlyDocument doc,
             string? selectedCollectionTitle,
             string? selectedEntryKey,
+            int? selectedEntryOccurrence,
             CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -877,24 +1039,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var collections = new ObservableCollection<XmlFriendlyCollectionViewModel>(cols);
 
             XmlFriendlyCollectionViewModel? selectedCollection = null;
-
             if (!string.IsNullOrWhiteSpace(selectedCollectionTitle))
                 selectedCollection = collections.FirstOrDefault(c => string.Equals(c.Collection.Title, selectedCollectionTitle, StringComparison.OrdinalIgnoreCase));
-
             selectedCollection ??= collections.FirstOrDefault();
 
             XmlFriendlyEntryViewModel? selectedEntry = null;
-
             if (selectedCollection is not null && !string.IsNullOrWhiteSpace(selectedEntryKey))
-                selectedEntry = selectedCollection.Entries.FirstOrDefault(e => string.Equals(e.Entry.Key, selectedEntryKey, StringComparison.OrdinalIgnoreCase));
+            {
+                if (selectedEntryOccurrence.HasValue)
+                    selectedEntry = selectedCollection.Entries.FirstOrDefault(e => string.Equals(e.Entry.Key, selectedEntryKey, StringComparison.OrdinalIgnoreCase) && e.Entry.Occurrence == selectedEntryOccurrence.Value);
+                if (selectedEntry is null)
+                    selectedEntry = selectedCollection.Entries.FirstOrDefault(e => string.Equals(e.Entry.Key, selectedEntryKey, StringComparison.OrdinalIgnoreCase));
+            }
 
-            return new FriendlyUiState(
-                collections,
-                selectedCollection,
-                selectedEntry,
-                new ObservableCollection<XmlFriendlyFieldViewModel>(),
-                new ObservableCollection<XmlFriendlyFieldGroupViewModel>(),
-                new ObservableCollection<object>());
+            return new FriendlyUiState(collections, selectedCollection, selectedEntry, new ObservableCollection<XmlFriendlyFieldViewModel>(), new ObservableCollection<XmlFriendlyFieldGroupViewModel>(), new ObservableCollection<object>());
         }
 
         private void ClearFriendlyFields()
@@ -1052,9 +1210,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var previousItem = previous?.Item;
             var previousField = previous?.Field;
 
-            foreach (var f in state.Fields)
-                f.PropertyChanged += FriendlyField_PropertyChanged;
-
             FriendlyFields = state.Fields;
             FriendlyFieldGroups = state.FieldGroups;
             _friendlyExpansionStateStore.Apply(state.Groups);
@@ -1084,10 +1239,87 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             if (match is not null)
+            {
                 SelectedFriendlyLookupItem = match;
+                FriendlyLookupScrollRequestId++;
+            }
+
+            ApplyFriendlySearchHighlight(state);
         }
 
+        private void ApplyFriendlySearchHighlight(FriendlyFieldsState state)
+        {
+            var query = _pendingFriendlySearchQuery;
+            var caseSensitive = _pendingFriendlySearchCaseSensitive;
+            var targetFieldName = _pendingFriendlySearchFieldName;
 
+            _pendingFriendlySearchQuery = null;
+            _pendingFriendlySearchFieldName = null;
+
+            foreach (var f in state.Fields)
+                f.IsSearchMatch = false;
+
+            var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            XmlFriendlyFieldViewModel? target = null;
+
+            if (!string.IsNullOrWhiteSpace(targetFieldName))
+                target = state.Fields.FirstOrDefault(f => string.Equals(f.Name, targetFieldName, StringComparison.OrdinalIgnoreCase));
+
+            if (target is null && !string.IsNullOrWhiteSpace(query))
+            {
+                foreach (var f in state.Fields)
+                {
+                    if (f.Name.IndexOf(query, comparison) >= 0 || (f.Value ?? "").IndexOf(query, comparison) >= 0)
+                    {
+                        target = f;
+                        break;
+                    }
+                }
+            }
+
+            if (target is null)
+                return;
+
+            target.IsSearchMatch = true;
+
+            foreach (var obj in state.Groups)
+            {
+                if (obj is XmlFriendlyFieldGroupViewModel group)
+                {
+                    if (!group.Fields.Contains(target))
+                        continue;
+
+                    group.IsExpanded = true;
+                    group.SelectedField = null;
+                    group.SelectedField = target;
+
+                    SelectedFriendlyGroup = null;
+                    SelectedFriendlyGroup = group;
+                    return;
+                }
+
+                if (obj is XmlFriendlyLookupGroupViewModel lookupGroup)
+                {
+                    var lookupItem = lookupGroup.Items.FirstOrDefault(i =>
+                        string.Equals(i.FullName, target.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (lookupItem is null)
+                        continue;
+
+                    lookupGroup.IsExpanded = true;
+                    SetLookupGridGroupIsExpanded(lookupItem.Item, true);
+                    LookupGridGroupExpandRequested?.Invoke(lookupItem.Item);
+
+                    SelectedFriendlyGroup = null;
+                    SelectedFriendlyGroup = lookupGroup;
+
+                    SelectedFriendlyLookupItem = null;
+                    SelectedFriendlyLookupItem = lookupItem;
+                    return;
+                }
+            }
+        }
         private static ObservableCollection<object> BuildUnifiedGroups(ObservableCollection<XmlFriendlyFieldViewModel> fields)
         {
             static string GetGroupTitle(string fieldName)
@@ -1356,7 +1588,208 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             Status = "Edited.";
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
+        public void FindNextFriendly(string query, bool caseSensitive)
+        {
+            if (!IsFriendlyView)
+                return;
 
+            if (_friendlyDocument is null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(query))
+                return;
+
+            static int CompareSegment(string a, string b)
+            {
+                static (string Name, int? Index) Parse(string s)
+                {
+                    if (string.IsNullOrWhiteSpace(s))
+                        return ("", null);
+
+                    var lb = s.LastIndexOf('[');
+                    if (lb > 0 && s.EndsWith("]", StringComparison.Ordinal))
+                    {
+                        var indexText = s.Substring(lb + 1, s.Length - lb - 2);
+                        if (int.TryParse(indexText, out var idx) && idx >= 0)
+                            return (s.Substring(0, lb), idx);
+                    }
+
+                    return (s, null);
+                }
+
+                var pa = Parse(a);
+                var pb = Parse(b);
+
+                var nameCompare = StringComparer.OrdinalIgnoreCase.Compare(pa.Name, pb.Name);
+                if (nameCompare != 0)
+                    return nameCompare;
+
+                if (pa.Index.HasValue && pb.Index.HasValue)
+                    return pa.Index.Value.CompareTo(pb.Index.Value);
+
+                if (pa.Index.HasValue)
+                    return 1;
+
+                if (pb.Index.HasValue)
+                    return -1;
+
+                return StringComparer.OrdinalIgnoreCase.Compare(a, b);
+            }
+
+            static int CompareFieldPath(string? a, string? b)
+            {
+                if (ReferenceEquals(a, b))
+                    return 0;
+
+                if (a is null)
+                    return -1;
+
+                if (b is null)
+                    return 1;
+
+                var aParts = a.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                var bParts = b.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                var len = Math.Min(aParts.Length, bParts.Length);
+
+                for (var i = 0; i < len; i++)
+                {
+                    var cmp = CompareSegment(aParts[i], bParts[i]);
+                    if (cmp != 0)
+                        return cmp;
+                }
+
+                return aParts.Length.CompareTo(bParts.Length);
+            }
+
+            var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            if (!string.Equals(_friendlySearchQuery, query, StringComparison.Ordinal) || _friendlySearchCaseSensitive != caseSensitive)
+            {
+                _friendlySearchQuery = query;
+                _friendlySearchCaseSensitive = caseSensitive;
+
+                _friendlySearchCollectionIndex = 0;
+                _friendlySearchEntryIndex = 0;
+                _friendlySearchFieldIndex = -1;
+                _friendlySearchFieldName = null;
+            }
+
+            var matches = new List<(int CollectionIndex, int EntryIndex, int FieldIndex, string? FieldName)>();
+
+            for (var c = 0; c < _friendlyDocument.Collections.Count; c++)
+            {
+                var col = _friendlyDocument.Collections[c];
+                for (var e = 0; e < col.Entries.Count; e++)
+                {
+                    var entry = col.Entries[e];
+
+                    var ordered = entry.Fields
+                        .OrderBy(kv => kv.Key, Comparer<string>.Create(CompareFieldPath))
+                        .ToList();
+
+                    for (var f = 0; f < ordered.Count; f++)
+                    {
+                        var fieldKey = ordered[f].Key ?? "";
+                        var fieldValue = ordered[f].Value?.Value ?? "";
+
+                        if (fieldKey.IndexOf(query, comparison) < 0 && fieldValue.IndexOf(query, comparison) < 0)
+                            continue;
+
+                        matches.Add((CollectionIndex: c, EntryIndex: e, FieldIndex: f, FieldName: fieldKey));
+                    }
+                }
+            }
+
+            if (matches.Count == 0)
+            {
+                MessageBox.Show("No matches found.", "Find", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var currentIndex = -1;
+            var currentFieldName = _friendlySearchFieldName;
+
+            for (var i = 0; i < matches.Count; i++)
+            {
+                var m = matches[i];
+
+                if (m.CollectionIndex != _friendlySearchCollectionIndex || m.EntryIndex != _friendlySearchEntryIndex)
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(currentFieldName) &&
+                    !string.IsNullOrWhiteSpace(m.FieldName) &&
+                    string.Equals(m.FieldName, currentFieldName, StringComparison.OrdinalIgnoreCase))
+                {
+                    currentIndex = i;
+                    break;
+                }
+
+                if (m.FieldIndex == _friendlySearchFieldIndex)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            var nextIndex = currentIndex + 1;
+            if (nextIndex >= matches.Count)
+                nextIndex = 0;
+
+            var next = matches[nextIndex];
+
+            _friendlySearchCollectionIndex = next.CollectionIndex;
+            _friendlySearchEntryIndex = next.EntryIndex;
+            _friendlySearchFieldIndex = next.FieldIndex;
+            _friendlySearchFieldName = next.FieldName;
+
+            _pendingFriendlySearchQuery = query;
+            _pendingFriendlySearchCaseSensitive = caseSensitive;
+            _pendingFriendlySearchFieldName = next.FieldName;
+
+            NavigateFriendlyTo(next.CollectionIndex, next.EntryIndex, next.FieldIndex, next.FieldName, query, caseSensitive);
+
+            if (FriendlyFields is not null && FriendlyFields.Count > 0)
+                QueueRebuildFieldsForSelectedEntry();
+        }
+
+        private void NavigateFriendlyTo(int collectionIndex, int entryIndex, int fieldIndex, string? fieldName, string query, bool caseSensitive)
+        {
+            if (_friendlyDocument is null)
+                return;
+
+            if (collectionIndex < 0 || collectionIndex >= _friendlyDocument.Collections.Count)
+                return;
+
+            var col = FriendlyCollections.ElementAtOrDefault(collectionIndex);
+            if (col is null)
+                return;
+
+            var entryVm = col.Entries.ElementAtOrDefault(entryIndex);
+            if (entryVm is null)
+                return;
+
+            _friendlySearchCollectionIndex = collectionIndex;
+            _friendlySearchEntryIndex = entryIndex;
+            _friendlySearchFieldIndex = fieldIndex;
+            _friendlySearchFieldName = fieldName;
+
+            _pendingFriendlySearchQuery = query;
+            _pendingFriendlySearchCaseSensitive = caseSensitive;
+            _pendingFriendlySearchFieldName = fieldName;
+
+            var sameCollection = ReferenceEquals(col, SelectedFriendlyCollection);
+            if (!sameCollection)
+                SelectedFriendlyCollection = col;
+
+            if (ReferenceEquals(entryVm, SelectedFriendlyEntry))
+            {
+                QueueRebuildFieldsForSelectedEntry();
+                return;
+            }
+
+            SelectedFriendlyEntry = entryVm;
+        }
         public void DuplicateSelectedFriendlyEntry()
         {
             if (!IsFriendlyView)
@@ -2014,6 +2447,17 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             RawNavigationRequested?.Invoke(this, req);
         }
 
+        private void TryApplyGlobalFriendlyNavigateForLoadedFile(string loadedPath)
+        {
+            if (!string.Equals(_currentFilePath, loadedPath, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (_friendlyDocument is null)
+                return;
+
+            RefreshFriendlyFromXml();
+        }
+
         private async Task RebuildFriendlyFromCurrentXmlAsync(CancellationToken token)
         {
             var xml = XmlText ?? "";
@@ -2035,7 +2479,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _friendlyDocument = doc;
             RefreshFriendlyFromXml();
         }
-
         private void ApplySettingsToState()
         {
             _rootFolder = string.IsNullOrWhiteSpace(_settings.LastFolder) ? null : _settings.LastFolder;
@@ -2044,8 +2487,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _viewMode = parsed;
 
             _includeSubfolders = _settings.IncludeSubfolders;
+            _globalSearchUseParallelProcessing = _settings.GlobalSearchUseParallelProcessing;
             _isDarkMode = _settings.IsDarkMode;
             _isFriendlyView = _settings.IsFriendlyView;
+
+            if (Enum.TryParse<GlobalSearchScope>(_settings.GlobalSearchScope ?? "", ignoreCase: true, out var scope))
+                _globalSearchScope = scope;
+            else
+                _globalSearchScope = GlobalSearchScope.Both;
         }
 
         private void SaveSettings()

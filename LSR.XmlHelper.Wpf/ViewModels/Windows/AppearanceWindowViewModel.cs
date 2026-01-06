@@ -168,7 +168,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _gridRowSelectedBackground = "#FF2F2F2F";
         private string _gridCellSelectedBackground = "#FF2F2F2F";
         private string _gridCellSelectedText = "#FFD4D4D4";
-        private string _pane3GroupHeaderText = "#FFD4D4D4";
 
         private string _fieldColumnText = "#FFD4D4D4";
         private string _valueColumnText = "#FFD4D4D4";
