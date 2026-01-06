@@ -9,6 +9,7 @@
     Height="520"
     FocusManager.FocusedElement="{Binding ElementName=QueryTextBox}"
     ResizeMode="CanResize"
+    ShowInTaskbar="True"
     WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <conv:RelativePathConverter x:Key="RelativePathConverter" />

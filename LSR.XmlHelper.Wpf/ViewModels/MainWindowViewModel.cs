@@ -501,6 +501,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _globalSearchWindow = new GlobalSearchWindow
                 {
+                    Owner = System.Windows.Application.Current?.MainWindow,
                     DataContext = vm
                 };
 
