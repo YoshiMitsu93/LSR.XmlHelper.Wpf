@@ -564,7 +564,6 @@
                         MaxHeight="600"
                         infra:DataGridScrollIntoViewOnSelectionBehavior.Enable="True"
                         infra:DataGridScrollIntoViewOnSelectionBehavior.ScrollRequestId="{Binding DataContext.FriendlyLookupScrollRequestId, RelativeSource={RelativeSource AncestorType=Window}}"
-                        infra:DataGridScrollIntoViewOnSelectionBehavior.TargetColumnHeader="Value"
                         infra:ScrollViewerMouseWheelBehavior.Enable="False"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"

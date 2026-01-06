@@ -163,64 +163,6 @@ namespace LSR.XmlHelper.Wpf
                 row.IsSelected = true;
         }
 
-        private void FriendlyGrid_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (sender is not System.Windows.Controls.DataGrid grid)
-                return;
-
-            if (e.Key == System.Windows.Input.Key.Enter)
-            {
-                if (grid.CurrentColumn == null)
-                    return;
-
-                if (grid.CurrentColumn.IsReadOnly || grid.IsReadOnly)
-                {
-                    e.Handled = true;
-                    return;
-                }
-
-                if (grid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell, true))
-                {
-                    grid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
-                    e.Handled = true;
-                    return;
-                }
-
-                grid.BeginEdit();
-                e.Handled = true;
-                return;
-            }
-
-            if (e.Key != System.Windows.Input.Key.Up && e.Key != System.Windows.Input.Key.Down)
-                return;
-
-            if (grid.Items.Count == 0)
-                return;
-
-            if (grid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell, true))
-                grid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
-
-            var currentIndex = grid.Items.IndexOf(grid.CurrentItem);
-            if (currentIndex < 0)
-                currentIndex = grid.SelectedIndex;
-
-            var delta = e.Key == System.Windows.Input.Key.Up ? -1 : 1;
-            var targetIndex = currentIndex + delta;
-
-            if (targetIndex < 0 || targetIndex >= grid.Items.Count)
-                return;
-
-            var item = grid.Items[targetIndex];
-            grid.SelectedItem = item;
-            grid.ScrollIntoView(item);
-
-            if (grid.CurrentColumn != null)
-                grid.CurrentCell = new System.Windows.Controls.DataGridCellInfo(item, grid.CurrentColumn);
-
-            grid.Focus();
-            e.Handled = true;
-        }
-
         private void TreeView_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key != System.Windows.Input.Key.Enter)

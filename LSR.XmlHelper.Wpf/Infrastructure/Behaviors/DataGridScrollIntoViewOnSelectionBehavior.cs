@@ -17,13 +17,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
                 typeof(DataGridScrollIntoViewOnSelectionBehavior),
                 new PropertyMetadata(false, OnEnableChanged));
 
-        public static readonly DependencyProperty TargetColumnHeaderProperty =
-            DependencyProperty.RegisterAttached(
-                "TargetColumnHeader",
-                typeof(string),
-                typeof(DataGridScrollIntoViewOnSelectionBehavior),
-                new PropertyMetadata(string.Empty));
-
         public static readonly DependencyProperty ScrollRequestIdProperty =
             DependencyProperty.RegisterAttached(
                 "ScrollRequestId",
@@ -34,10 +27,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
         public static bool GetEnable(DependencyObject obj) => (bool)obj.GetValue(EnableProperty);
 
         public static void SetEnable(DependencyObject obj, bool value) => obj.SetValue(EnableProperty, value);
-
-        public static string GetTargetColumnHeader(DependencyObject obj) => (string)obj.GetValue(TargetColumnHeaderProperty);
-
-        public static void SetTargetColumnHeader(DependencyObject obj, string value) => obj.SetValue(TargetColumnHeaderProperty, value);
 
         public static int GetScrollRequestId(DependencyObject obj) => (int)obj.GetValue(ScrollRequestIdProperty);
 
@@ -82,11 +71,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
             ScrollToSelected(grid, alignOuterToTop);
         }
 
-        private static void ScrollToSelected(DataGrid grid)
-        {
-            ScrollToSelected(grid, false);
-        }
-
         private static void ScrollToSelected(DataGrid grid, bool alignOuterToTop)
         {
             ScrollToSelected(grid, alignOuterToTop, 0);
@@ -94,79 +78,27 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
 
         private static void ScrollToSelected(DataGrid grid, bool alignOuterToTop, int attempt)
         {
-            var selected = grid.SelectedItem;
-            if (selected is null)
+            if (!alignOuterToTop)
                 return;
 
-            var header = GetTargetColumnHeader(grid);
-            var col = ResolveTargetColumn(grid, header);
+            if (grid.SelectedItem is not ViewModels.XmlFriendlyLookupItemViewModel lookup)
+                return;
 
             grid.Dispatcher.BeginInvoke(() =>
             {
                 grid.UpdateLayout();
 
-                if (col is not null)
-                    grid.ScrollIntoView(selected, col);
-                else
-                    grid.ScrollIntoView(selected);
-
-                grid.Dispatcher.BeginInvoke(() =>
+                var expander = FindLookupGroupExpander(grid, lookup.Item);
+                if (expander is null)
                 {
-                    grid.UpdateLayout();
+                    if (attempt < 12)
+                        grid.Dispatcher.BeginInvoke(() => ScrollToSelected(grid, alignOuterToTop, attempt + 1), DispatcherPriority.Background);
 
-                    var rowObj = grid.ItemContainerGenerator.ContainerFromItem(selected);
-                    if (rowObj is not DataGridRow row)
-                    {
-                        if (alignOuterToTop && selected is ViewModels.XmlFriendlyLookupItemViewModel lookup)
-                        {
-                            var expander = FindLookupGroupExpander(grid, lookup.Item);
-                            if (expander is not null)
-                            {
-                                expander.BringIntoView();
-                                grid.Dispatcher.BeginInvoke(() => ScrollOuterToTargets(grid, expander, expander, true), DispatcherPriority.Background);
-                            }
-                        }
+                    return;
+                }
 
-                        if (attempt < 8)
-                            grid.Dispatcher.BeginInvoke(() => ScrollToSelected(grid, alignOuterToTop, attempt + 1), DispatcherPriority.Background);
-
-                        return;
-                    }
-
-                    if (col is null)
-                    {
-                        row.BringIntoView();
-
-                        var innerTarget = row;
-                        var outerTarget = alignOuterToTop ? (FrameworkElement?)FindVisualAncestor<Expander>(row) ?? row : row;
-                        grid.Dispatcher.BeginInvoke(() => ScrollOuterToTargets(grid, innerTarget, outerTarget, alignOuterToTop), DispatcherPriority.Background);
-                        return;
-                    }
-
-                    var cell = GetCell(row, col.DisplayIndex);
-                    if (cell is not null)
-                    {
-                        cell.BringIntoView();
-
-                        var innerTarget = (FrameworkElement)cell;
-                        var outerTarget = alignOuterToTop ? (FrameworkElement?)FindVisualAncestor<Expander>(cell) ?? cell : cell;
-                        grid.Dispatcher.BeginInvoke(() => ScrollOuterToTargets(grid, innerTarget, outerTarget, alignOuterToTop), DispatcherPriority.Background);
-                        return;
-                    }
-
-                    grid.ScrollIntoView(selected, col);
-                    grid.UpdateLayout();
-
-                    cell = GetCell(row, col.DisplayIndex);
-                    if (cell is not null)
-                        cell.BringIntoView();
-                    else
-                        row.BringIntoView();
-
-                    var target = (FrameworkElement?)cell ?? row;
-                    var outerAnchor = alignOuterToTop ? (FrameworkElement?)FindVisualAncestor<Expander>(target) ?? target : target;
-                    grid.Dispatcher.BeginInvoke(() => ScrollOuterToTargets(grid, target, outerAnchor, alignOuterToTop), DispatcherPriority.Background);
-                }, DispatcherPriority.Loaded);
+                expander.BringIntoView();
+                grid.Dispatcher.BeginInvoke(() => ScrollOuterToTargets(grid, expander, expander, true), DispatcherPriority.Background);
             }, DispatcherPriority.Loaded);
         }
 
@@ -194,19 +126,9 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
 
         private static void ScrollOuterToTargets(DataGrid grid, FrameworkElement innerTarget, FrameworkElement outerTarget, bool alignOuterToTop)
         {
-            var inner = FindVisualChild<ScrollViewer>(grid);
-            if (inner is not null)
-                ScrollViewerToTarget(inner, innerTarget, false);
-
             var outer = FindVisualAncestor<ScrollViewer>(grid);
             if (outer is null)
                 return;
-
-            if (ReferenceEquals(outer, inner))
-            {
-                ScrollViewerToTarget(outer, alignOuterToTop ? outerTarget : innerTarget, alignOuterToTop);
-                return;
-            }
 
             ScrollViewerToTarget(outer, outerTarget, alignOuterToTop);
         }
@@ -273,49 +195,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
                     return match;
 
                 current = VisualTreeHelper.GetParent(current);
-            }
-
-            return null;
-        }
-
-
-        private static DataGridColumn? ResolveTargetColumn(DataGrid grid, string header)
-        {
-            if (string.IsNullOrWhiteSpace(header))
-                return null;
-
-            return grid.Columns.FirstOrDefault(c =>
-                string.Equals(Convert.ToString(c.Header), header, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static DataGridCell? GetCell(DataGridRow row, int displayIndex)
-        {
-            var presenter = FindVisualChild<DataGridCellsPresenter>(row);
-            if (presenter is null)
-            {
-                row.ApplyTemplate();
-                presenter = FindVisualChild<DataGridCellsPresenter>(row);
-            }
-
-            if (presenter is null)
-                return null;
-
-            var cellObj = presenter.ItemContainerGenerator.ContainerFromIndex(displayIndex);
-            return cellObj as DataGridCell;
-        }
-
-        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-        {
-            var count = VisualTreeHelper.GetChildrenCount(parent);
-            for (var i = 0; i < count; i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T tChild)
-                    return tChild;
-
-                var desc = FindVisualChild<T>(child);
-                if (desc is not null)
-                    return desc;
             }
 
             return null;
