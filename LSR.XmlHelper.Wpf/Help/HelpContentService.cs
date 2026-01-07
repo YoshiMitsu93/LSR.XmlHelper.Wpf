@@ -189,14 +189,17 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                     "Search",
                     1,
                     "Find in current XML (Ctrl+F)",
-                    "Search inside the currently open XML file (Raw editor).",
-                    "Use Ctrl+F to search within the open XML.\n\n" +
+                    "Search inside the current XML in Raw XML or Friendly View.",
+                    "Use Ctrl+F to search within the current XML.\n\n" +
+                    "It works in:\n" +
+                    "- Raw XML\n" +
+                    "- Friendly View\n\n" +
                     "Good for:\n" +
-                    "- Finding a specific tag or value\n" +
+                    "- Finding a specific tag, field, or value\n" +
                     "- Jumping to a known identifier\n\n" +
                     "Tip:\n" +
                     "If you don’t know which file contains something, use Global Search instead.",
-                    "find", "ctrl+f", "local"
+                    "find", "ctrl+f", "local", "friendly", "raw"
                 ),
 
                 new HelpTopic(
@@ -204,19 +207,40 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                     "Search",
                     2,
                     "Global Search (Ctrl+Shift+F)",
-                    "Search across all XML files in the opened folder and jump to matches.",
-                    "Global Search looks through all XML files in your opened folder (and subfolders if enabled).\n\n" +
-                    "Results include:\n" +
-                    "- File name\n" +
-                    "- Line/column\n" +
-                    "- Preview of the match\n\n" +
-                    "Double-click a result to open and jump directly to it.\n\n" +
-                    "Beginner example:\n" +
-                    "If you want to find where a specific weapon name or id is defined, Global Search is usually the fastest way.",
-                    "global search", "ctrl+shift+f", "search all"
+                    "Search Raw XML, Friendly View, or Both across your loaded folder.",
+                    "Global Search scans XML files in your opened folder.\n\n" +
+                    "Search mode:\n" +
+                    "- Raw XML: scans text only (fast)\n" +
+                    "- Friendly View: parses fields (slower)\n" +
+                    "- Both: runs both scans (slowest)\n\n" +
+                    "Include subfolders:\n" +
+                    "- OFF: only scans the selected folder\n" +
+                    "- ON: scans nested folders too (slower on huge trees)\n\n" +
+                    "Friendly View only: Use parallel processing:\n" +
+                    "- ON: faster, but current-file label shows the last started file\n" +
+                    "- OFF: slower, but current-file label stays exact\n\n" +
+                    "Double-click a result to open and jump directly to it.",
+                    "global search", "ctrl+shift+f", "search all", "friendly", "raw", "parallel", "include subfolders"
                 ),
 
-                                new HelpTopic(
+                new HelpTopic(
+                    6,
+                    "Compare",
+                    1,
+                    "XML Compare",
+                    "Compare two XML files and selectively import exactly what you want.",
+                    "XML Compare lets you load your folder, then browse or drag and drop an XML from anywhere to compare.\n\n" +
+                    "It breaks differences into a clean list so you can cherry pick changes.\n\n" +
+                    "You can:\n" +
+                    "- Import selected changes into Saved Edits so everything is tracked\n" +
+                    "- Apply selected changes directly to your XML instantly\n" +
+                    "- Merge older configs into one clean setup\n" +
+                    "- Export config packs containing multiple XML configs, alongside any other changes you choose\n\n" +
+                    "This makes migrating old configs painless and gives you full visibility and control over what actually changed.",
+                    "compare", "xml compare", "merge", "import", "saved edits", "config pack", "export"
+                ),
+
+                new HelpTopic(
                     6,
                     "Import / Export",
                     1,
