@@ -75,6 +75,4 @@
 ### Updates and Maintenance
 - Built in Check for Updates using GitHub Releases
 
-Release/EXE: https://github.com/YoshiMitsu93/LSR.XmlHelper.Wpf/releases/tag/v1.0.1  
-
 VirusTotal: https://www.virustotal.com/gui/file-analysis/ODU0MzBjNjdmMDdlMDUxMmYwMjYyZTlkNzUzYWE2NTc6MTc2Nzc1NDM1MQ==
