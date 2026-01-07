@@ -18,6 +18,7 @@ using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
 using MessageBoxResult = System.Windows.MessageBoxResult;
 using WinForms = System.Windows.Forms;
+using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace LSR.XmlHelper.Wpf.ViewModels
@@ -117,7 +118,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OpenCommand = new RelayCommand(OpenFolder);
             FormatCommand = new RelayCommand(Format, () => !string.IsNullOrWhiteSpace(XmlText));
             ValidateCommand = new RelayCommand(Validate, () => !string.IsNullOrWhiteSpace(XmlText));
-            SaveCommand = new RelayCommand(Save, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
+            SaveCommand = new RelayCommand(Save, () => !string.IsNullOrWhiteSpace(XmlText));
             SaveAsCommand = new RelayCommand(SaveAs, () => !string.IsNullOrWhiteSpace(XmlText));
             ClearCommand = new RelayCommand(Clear, () => GetSelectedFilePath() is not null || !string.IsNullOrWhiteSpace(XmlText));
             DuplicateFriendlyEntryCommand = new RelayCommand(DuplicateSelectedFriendlyEntry, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null);
@@ -129,6 +130,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OpenGlobalSearchCommand = new RelayCommand(OpenGlobalSearch);
             OpenSavedEditsCommand = new RelayCommand(OpenSavedEdits);
             OpenSharedConfigPacksCommand = new RelayCommand(OpenSharedConfigPacks, () => !string.IsNullOrWhiteSpace(_rootFolder));
+            OpenCompareXmlCommand = new RelayCommand(OpenCompareXml, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
 
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
@@ -154,6 +156,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand OpenGlobalSearchCommand { get; }
         public RelayCommand OpenSavedEditsCommand { get; }
         public RelayCommand OpenSharedConfigPacksCommand { get; }
+        public RelayCommand OpenCompareXmlCommand { get; }
 
         public string Title
         {
@@ -183,6 +186,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _xmlText = value;
                 OnPropertyChanged();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
 
                 if (!_suppressDirtyTracking)
                     IsDirty = true;
@@ -712,6 +716,57 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             win.ShowDialog();
         }
 
+        public void StartCompareXml(string externalXmlPath)
+        {
+            if (string.IsNullOrWhiteSpace(_rootFolder) || XmlFiles.Count == 0)
+            {
+                MessageBox.Show("Open a folder with XML files first.", "Compare XML", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            OpenCompareXmlWindow(externalXmlPath);
+        }
+
+        private void OpenCompareXml()
+        {
+            if (string.IsNullOrWhiteSpace(_rootFolder) || XmlFiles.Count == 0)
+            {
+                MessageBox.Show("Open a folder with XML files first.", "Compare XML", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            OpenCompareXmlWindow(null);
+        }
+
+        private void OpenCompareXmlWindow(string? externalXmlPath)
+        {
+            var importer = new Services.Compare.CompareEditsImportService(_settingsService, _settings);
+            var comparer = new Services.Compare.XmlCompareService(_friendly);
+            var applier = new Services.Compare.CompareEditsApplyService(_editHistory, _saver, _backupRequest);
+
+            var preferredTarget = GetSelectedFilePath();
+            var currentOpenPath = GetSelectedFilePath();
+            var currentOpenXmlText = XmlText;
+
+            var vm = new ViewModels.Windows.CompareXmlWindowViewModel(
+                XmlFiles.ToList(),
+                preferredTarget,
+                externalXmlPath,
+                currentOpenPath,
+                currentOpenXmlText,
+                comparer,
+                importer,
+                applier);
+
+            var win = new Views.CompareXmlWindow
+            {
+                Owner = System.Windows.Application.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            win.ShowDialog();
+        }
+
         private void OpenBackupBrowser()
         {
             if (!TryConfirmDiscardOrSaveIfDirty())
@@ -1211,6 +1266,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var previousItem = previous?.Item;
             var previousField = previous?.Field;
 
+            DetachFriendlyFieldHandlers(_friendlyFields);
+
+            foreach (var f in state.Fields)
+                f.PropertyChanged += FriendlyField_PropertyChanged;
+
             FriendlyFields = state.Fields;
             FriendlyFieldGroups = state.FieldGroups;
             _friendlyExpansionStateStore.Apply(state.Groups);
@@ -1246,8 +1306,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             ApplyFriendlySearchHighlight(state);
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
-
         private void ApplyFriendlySearchHighlight(FriendlyFieldsState state)
         {
             var query = _pendingFriendlySearchQuery;
@@ -2110,12 +2170,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void Save()
         {
-            if (!IsDirty)
-            {
-                Status = "No changes to save.";
-                return;
-            }
-
             var path = GetSelectedFilePath();
             if (path is null)
             {
@@ -2152,12 +2206,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void SaveAs()
         {
-            if (!IsDirty)
-            {
-                Status = "No changes to save.";
-                return;
-            }
-
             var current = GetSelectedFilePath();
 
             var dlg = new WpfSaveFileDialog

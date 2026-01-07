@@ -16,6 +16,9 @@
     FontStyle="{Binding Appearance.UiFontStyle}"
     FontWeight="{Binding Appearance.UiFontWeight}"
     Icon="Assets/AppIcon.ico"
+    AllowDrop="True"
+    PreviewDragOver="MainWindowRoot_PreviewDragOver"
+    Drop="MainWindowRoot_Drop"
     mc:Ignorable="d">
     <Window.InputBindings>
         <KeyBinding
@@ -300,7 +303,7 @@
             <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
             <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
             <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
-            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="True" />
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
         </Style>
         <Style
             x:Key="Pane2ListBoxItemStyle"
@@ -695,18 +698,20 @@
                     Command="{Binding OpenSharedConfigPacksCommand}"
                     Header="Shared Config _Packs..."
                     ToolTip="Export or import Appearance and Saved Edits packs." />
+                <MenuItem
+                    Command="{Binding OpenCompareXmlCommand}"
+                    Header="_Compare XML..."
+                    ToolTip="Compare the current XML against another XML and import differences as Saved Edits." />
                 <Separator />
                 <MenuItem
                     Command="{Binding SaveCommand}"
                     Header="_Save"
                     InputGestureText="Ctrl+S"
-                    IsEnabled="{Binding IsDirty}"
                     ToolTip="Save changes to the current XML file (backup is created when saving edits). (Ctrl+S)" />
                 <MenuItem
                     Command="{Binding SaveAsCommand}"
                     Header="Save _As..."
                     InputGestureText="Ctrl+Shift+S"
-                    IsEnabled="{Binding IsDirty}"
                     ToolTip="Save changes to a new file path. (Ctrl+Shift+S)" />
                 <MenuItem
                     Command="{Binding OpenBackupBrowserCommand}"
