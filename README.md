@@ -1,8 +1,9 @@
-### Core Application V1.0.1
+### Core Application V1.0.2
 - WPF desktop application for editing LSR XML files
 - Folder based workflow with automatic XML discovery
 - Supports working with multiple XML files in a single session
 - Clear separation between UI, XML parsing, and save logic
+- Automatic update check on startup
 
 ### File Management
 - Open a folder and automatically load supported LSR XML files
@@ -20,9 +21,11 @@
   - Manual editing support
   - Format XML (Ctrl+K)
   - Validate XML structure (Ctrl+Shift+V)
+  - Replace and Replace All (Ctrl+H)
 - Friendly View editor
   - Structured editing without touching raw XML
   - Edit attributes and values safely
+  - Bulk editing support (hold Ctrl and click multiple values)
   - Add new entries
   - Delete entries
   - Duplicate entries
@@ -74,5 +77,3 @@
 
 ### Updates and Maintenance
 - Built in Check for Updates using GitHub Releases
-
-VirusTotal: https://www.virustotal.com/gui/file-analysis/ODU0MzBjNjdmMDdlMDUxMmYwMjYyZTlkNzUzYWE2NTc6MTc2Nzc1NDM1MQ==
