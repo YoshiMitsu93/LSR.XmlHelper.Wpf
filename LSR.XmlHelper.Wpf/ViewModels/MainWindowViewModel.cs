@@ -7,6 +7,8 @@ using LSR.XmlHelper.Wpf.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using LSR.XmlHelper.Wpf.Services.Friendly;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -80,6 +82,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
+        private readonly ObservableCollection<XmlFriendlyEntryViewModel> _selectedFriendlyEntries = new();
         private XmlFriendlyLookupItemViewModel? _selectedFriendlyLookupItem;
         private int _friendlyLookupScrollRequestId;
         private string? _pendingLookupGroupTitle;
@@ -87,6 +90,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string? _pendingLookupField;
         private readonly FriendlyGroupExpansionStateStore _friendlyExpansionStateStore = new();
         private readonly LookupGridGroupExpansionStateStore _lookupGridGroupExpansionStateStore = new();
+        private readonly FriendlyBulkFieldEditService _friendlyBulkFieldEditService = new();
+        private readonly ObservableCollection<XmlFriendlyFieldViewModel> _selectedFriendlyFields = new();
+        private bool _suppressFriendlyBulkValueApply;
         private ObservableCollection<XmlFriendlyFieldViewModel> _friendlyFields = new();
         private ObservableCollection<XmlFriendlyFieldGroupViewModel> _friendlyFieldGroups = new();
         private ObservableCollection<object> _friendlyGroups = new();
@@ -131,6 +137,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OpenSavedEditsCommand = new RelayCommand(OpenSavedEdits);
             OpenSharedConfigPacksCommand = new RelayCommand(OpenSharedConfigPacks, () => !string.IsNullOrWhiteSpace(_rootFolder));
             OpenCompareXmlCommand = new RelayCommand(OpenCompareXml, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
+            OpenCompareXmlCommand = new RelayCommand(OpenCompareXml, () => !string.IsNullOrWhiteSpace(_rootFolder) && Directory.Exists(_rootFolder) && XmlFiles.Any());
 
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
@@ -342,6 +349,23 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
+
+        public ObservableCollection<XmlFriendlyEntryViewModel> SelectedFriendlyEntries => _selectedFriendlyEntries;
+        public ObservableCollection<XmlFriendlyFieldViewModel> SelectedFriendlyFields => _selectedFriendlyFields;
+
+        private void SelectedFriendlyEntries_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (_selectedFriendlyEntries.Count == 0)
+            {
+                SelectedFriendlyEntry = null;
+                return;
+            }
+
+            var first = _selectedFriendlyEntries[0];
+            if (!ReferenceEquals(first, SelectedFriendlyEntry))
+                SelectedFriendlyEntry = first;
+        }
+
         public int FriendlyLookupScrollRequestId
         {
             get => _friendlyLookupScrollRequestId;
@@ -1115,6 +1139,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         {
             DetachFriendlyFieldHandlers(_friendlyFields);
 
+            _selectedFriendlyFields.Clear();
+
             FriendlyFields = new ObservableCollection<XmlFriendlyFieldViewModel>();
             FriendlyFieldGroups = new ObservableCollection<XmlFriendlyFieldGroupViewModel>();
             FriendlyGroups = new ObservableCollection<object>();
@@ -1567,15 +1593,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             if (e.PropertyName != nameof(XmlFriendlyFieldViewModel.Value))
                 return;
 
+            if (_suppressFriendlyBulkValueApply)
+                return;
+
             if (sender is not XmlFriendlyFieldViewModel field)
                 return;
 
             var entry = SelectedFriendlyEntry?.Entry;
             if (entry is null)
                 return;
-
-            entry.Fields.TryGetValue(field.Name, out var existingField);
-            var previousValue = existingField?.Value;
 
             var entryKeyBeforeEdit = entry.Key;
 
@@ -1599,6 +1625,91 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     matchesBefore++;
                 }
             }
+
+            var selectedFields = _selectedFriendlyFields
+                .Where(f => f is not null)
+                .Distinct()
+                .ToList();
+
+            if (selectedFields.Count > 1 && selectedFields.Contains(field))
+            {
+                var applied = 0;
+                var failed = 0;
+
+                _suppressFriendlyBulkValueApply = true;
+                try
+                {
+                    foreach (var f in selectedFields)
+                    {
+                        entry.Fields.TryGetValue(f.Name, out var existingField);
+                        var prev = existingField?.Value;
+
+                        if (!entry.TrySetField(f.Name, field.Value, out _))
+                        {
+                            failed++;
+                            continue;
+                        }
+
+                        f.Value = field.Value;
+
+                        var filePathBulk = GetSelectedFilePath();
+                        if (!string.IsNullOrWhiteSpace(filePathBulk))
+                        {
+                            _editHistory.AddPending(
+                                filePathBulk,
+                                SelectedFriendlyCollection?.Title,
+                                entryKeyBeforeEdit,
+                                occurrenceBeforeEdit,
+                                f.Name,
+                                prev,
+                                field.Value);
+                        }
+
+                        applied++;
+                    }
+                }
+                finally
+                {
+                    _suppressFriendlyBulkValueApply = false;
+                }
+
+                entry.InvalidateFields();
+                SelectedFriendlyEntry?.RefreshDisplay();
+
+                if (_friendlyDocument is null)
+                    return;
+
+                var updatedXmlBulk = _friendly.ToXml(_friendlyDocument);
+
+                _suppressFriendlyRebuild = true;
+                try
+                {
+                    _suppressDirtyTracking = true;
+                    try
+                    {
+                        _xmlText = updatedXmlBulk;
+                        OnPropertyChanged(nameof(XmlText));
+                    }
+                    finally
+                    {
+                        _suppressDirtyTracking = false;
+                    }
+                }
+                finally
+                {
+                    _suppressFriendlyRebuild = false;
+                }
+
+                IsDirty = true;
+                Status = failed > 0
+                    ? $"Edited {applied} value(s). {failed} failed."
+                    : $"Edited {applied} value(s).";
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                return;
+            }
+
+            entry.Fields.TryGetValue(field.Name, out var existingSingle);
+            var previousValue = existingSingle?.Value;
 
             if (!entry.TrySetField(field.Name, field.Value, out _))
                 return;
@@ -1633,13 +1744,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var filePath = GetSelectedFilePath();
             if (!string.IsNullOrWhiteSpace(filePath))
             {
-                var occurrence = occurrenceBeforeEdit;
-
                 _editHistory.AddPending(
                     filePath,
                     SelectedFriendlyCollection?.Title,
                     entryKeyBeforeEdit,
-                    occurrence,
+                    occurrenceBeforeEdit,
                     field.Name,
                     previousValue,
                     field.Value);
@@ -1649,6 +1758,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             Status = "Edited.";
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
+
         public void FindNextFriendly(string query, bool caseSensitive)
         {
             if (!IsFriendlyView)

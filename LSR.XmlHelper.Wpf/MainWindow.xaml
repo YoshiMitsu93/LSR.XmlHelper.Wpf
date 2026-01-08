@@ -11,14 +11,14 @@
     Title="{Binding Title}"
     Width="900"
     Height="450"
+    AllowDrop="True"
+    Drop="MainWindowRoot_Drop"
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
     FontStyle="{Binding Appearance.UiFontStyle}"
     FontWeight="{Binding Appearance.UiFontWeight}"
     Icon="Assets/AppIcon.ico"
-    AllowDrop="True"
     PreviewDragOver="MainWindowRoot_PreviewDragOver"
-    Drop="MainWindowRoot_Drop"
     mc:Ignorable="d">
     <Window.InputBindings>
         <KeyBinding
@@ -163,7 +163,7 @@
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </DataTrigger>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
@@ -466,6 +466,11 @@
                 Header="{Binding Title}"
                 IsExpanded="{Binding IsExpanded}">
                 <DataGrid
+                    infra:DataGridSelectedItemsBehavior.Enable="True"
+                    infra:DataGridSelectedItemsBehavior.SelectedItems="{Binding DataContext.SelectedFriendlyFields, RelativeSource={RelativeSource AncestorType=Window}}"
+                    infra:DataGridForceExtendedSelectionBehavior.Enable="True"
+                    infra:DataGridPreserveMultiSelectionOnEditBehavior.Enable="True"
+                    infra:DataGridBulkEditSelectedRowsBehavior.Enable="True"
                     infra:ScrollViewerMouseWheelBehavior.Enable="True"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
@@ -475,7 +480,8 @@
                     ItemsSource="{Binding Fields}"
                     ScrollViewer.CanContentScroll="True"
                     ScrollViewer.IsDeferredScrollingEnabled="False"
-                    SelectedItem="{Binding SelectedField, Mode=TwoWay}"
+                    SelectedItem="{Binding SelectedField, Mode=OneWayToSource}"
+                    SelectionMode="Extended"
                     SelectionUnit="FullRow"
                     VirtualizingPanel.IsVirtualizing="True"
                     VirtualizingPanel.ScrollUnit="Pixel"
@@ -493,6 +499,10 @@
                                     <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" />
                                     <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" />
                                 </DataTrigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{Binding Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Foreground" Value="{Binding Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </Trigger>
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
@@ -1014,6 +1024,7 @@
                             ItemContainerStyle="{StaticResource Pane2ListBoxItemStyle}"
                             ItemsSource="{Binding SelectedFriendlyCollection.Entries}"
                             SelectedItem="{Binding SelectedFriendlyEntry}"
+                            SelectionMode="Single"
                             Style="{StaticResource Pane2ListBoxStyle}">
                             <ListBox.ContextMenu>
                                 <ContextMenu>
