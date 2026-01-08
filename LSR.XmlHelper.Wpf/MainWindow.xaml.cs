@@ -12,6 +12,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using LSR.XmlHelper.Wpf.Services.Updates;
 using System.Windows;
+using System.Windows.Input;
+
 
 namespace LSR.XmlHelper.Wpf
 {
@@ -20,6 +22,7 @@ namespace LSR.XmlHelper.Wpf
         private readonly XmlHelperRootService _helperRoot = new XmlHelperRootService();
         private SearchPanel? _searchPanel;
         private Views.FriendlySearchWindow? _friendlySearchWindow;
+        private Views.ReplaceWindow? _replaceWindow;
 
         public MainWindow()
         {
@@ -34,7 +37,10 @@ namespace LSR.XmlHelper.Wpf
 
             DataContext = new MainWindowViewModel();
             if (DataContext is MainWindowViewModel vm)
+            {
                 vm.RawNavigationRequested += VmOnRawNavigationRequested;
+                vm.PropertyChanged += Vm_PropertyChanged;
+            }
             Loaded += MainWindow_Loaded;
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -60,6 +66,26 @@ namespace LSR.XmlHelper.Wpf
             e.Effects = System.Windows.DragDropEffects.None;
             e.Handled = true;
         }
+
+        private void Vm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(MainWindowViewModel.IsFriendlyView))
+                return;
+
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (vm.IsFriendlyView == false)
+                return;
+
+            if (_replaceWindow is null)
+                return;
+
+            var w = _replaceWindow;
+            _replaceWindow = null;
+            w.Close();
+        }
+
 
         private void MainWindowRoot_Drop(object sender, System.Windows.DragEventArgs e)
         {
@@ -561,6 +587,38 @@ namespace LSR.XmlHelper.Wpf
             }
 
             _searchPanel?.Open();
+        }
+
+        private void Replace_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel vm && vm.IsFriendlyView)
+                return;
+
+            var editor = FindName("XmlEditor") as TextEditor;
+            if (editor is null)
+                return;
+
+            if (_replaceWindow is null)
+            {
+                _replaceWindow = new Views.ReplaceWindow(editor);
+                _replaceWindow.Owner = this;
+                _replaceWindow.Closed += (_, __) => _replaceWindow = null;
+                _replaceWindow.Show();
+                _replaceWindow.Activate();
+                return;
+            }
+
+            _replaceWindow.Activate();
+        }
+
+        private void Replace_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (DataContext is MainWindowViewModel vm)
+                e.CanExecute = vm.IsFriendlyView == false;
+            else
+                e.CanExecute = true;
+
+            e.Handled = true;
         }
 
         private void Pane3DuplicateEntry_Click(object sender, RoutedEventArgs e)

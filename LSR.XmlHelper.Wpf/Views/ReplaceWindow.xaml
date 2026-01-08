@@ -1,0 +1,56 @@
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.ReplaceWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Replace"
+    Width="520"
+    Height="260"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,8" Text="Find what:" />
+        <TextBox x:Name="FindWhatTextBox" Grid.Row="0" Grid.Column="1" Margin="0,0,10,8" MinWidth="260"
+                 ToolTip="Text to search for." />
+
+        <Button x:Name="FindNextButton" Grid.Row="0" Grid.Column="2" Width="140" Margin="0,0,0,8"
+                Content="Find Next" Click="FindNext_Click"
+                ToolTip="Find the next occurrence of the search text." />
+
+        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,8" Text="Replace with:" />
+        <TextBox x:Name="ReplaceWithTextBox" Grid.Row="1" Grid.Column="1" Margin="0,0,10,8"
+                 ToolTip="Replacement text." />
+
+        <Button x:Name="ReplaceButton" Grid.Row="1" Grid.Column="2" Width="140" Margin="0,0,0,8"
+                Content="Replace" Click="Replace_Click"
+                ToolTip="Replace the currently selected match, then move to the next match." />
+
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,8">
+            <CheckBox x:Name="MatchCaseCheckBox" Margin="0,0,14,0" Content="Match case"
+                      ToolTip="When enabled, matching is case-sensitive." />
+            <CheckBox x:Name="WrapAroundCheckBox" IsChecked="True" Content="Wrap around"
+                      ToolTip="When enabled, search continues from the top after reaching the end." />
+        </StackPanel>
+
+        <Button x:Name="ReplaceAllButton" Grid.Row="2" Grid.Column="2" Width="140" Margin="0,0,0,8"
+                Content="Replace All" Click="ReplaceAll_Click"
+                ToolTip="Replace all occurrences in the Raw XML editor." />
+
+        <Grid Grid.Row="3" Grid.Column="2">
+            <Button Width="140" Height="28" VerticalAlignment="Top" Content="Close" Click="Close_Click"
+                    ToolTip="Close the Replace window." />
+        </Grid>
+    </Grid>
+</Window>

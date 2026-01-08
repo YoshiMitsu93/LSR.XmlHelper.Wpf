@@ -131,6 +131,33 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                 ),
 
                 new HelpTopic(
+                    3,
+                    "Editing (Raw XML)",
+                    4,
+                    "Replace (Ctrl+H)",
+                    "Replace text in Raw XML, including Replace All.",
+                    "Replace lets you quickly swap text in the Raw XML editor.\n\n" +
+                    "Open Replace:\n" +
+                    "- Press Ctrl+H\n" +
+                    "- Or use Edit > Replace...\n\n" +
+                    "Replace workflow:\n" +
+                    "1) Type the text you want to find\n" +
+                    "2) Type the text to replace it with\n" +
+                    "3) Use Find Next to step through matches\n" +
+                    "4) Use Replace to replace the current match\n" +
+                    "5) Use Replace All to replace every match in the current Raw XML\n\n" +
+                    "Options:\n" +
+                    "- Match case: case-sensitive matching\n" +
+                    "- Wrap around: continues from the top after reaching the end\n\n" +
+                    "Notes:\n" +
+                    "- Replace works only in Raw XML\n" +
+                    "- Friendly View has bulk editing for field values instead\n\n" +
+                    "Tip:\n" +
+                    "If you are unsure about a Replace All, use Find Next and Replace first to confirm you are hitting the right text.",
+                    "replace", "ctrl+h", "replace all", "raw xml", "search", "find"
+                ),
+
+                new HelpTopic(
                     4,
                     "Friendly View",
                     1,
@@ -182,6 +209,32 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                     "Beginner workflow:\n" +
                     "Duplicate → Rename/Adjust values → Validate → Save",
                     "duplicate", "ctrl+d", "ctrl+shift+d"
+                ),
+
+                new HelpTopic(
+                    4,
+                    "Friendly View",
+                    4,
+                    "Bulk edit fields (multi-select)",
+                    "Edit multiple field values at the same time in Friendly View.",
+                    "Bulk editing lets you change the same field value across multiple entries at once.\n\n" +
+                    "How to use it:\n" +
+                    "1) Go to Friendly View\n" +
+                    "2) Select an entry so fields appear in the right pane\n" +
+                    "3) Hold Ctrl and click multiple fields with the same name\n" +
+                    "4) Click into the Value column and start typing\n\n" +
+                    "What happens:\n" +
+                    "- All selected fields update live as you type\n" +
+                    "- You do not need to press Enter to see changes\n\n" +
+                    "Cancel behavior:\n" +
+                    "- Press Escape to revert all selected fields to their original values\n\n" +
+                    "Important notes:\n" +
+                    "- Bulk edit only applies to the Value column\n" +
+                    "- Fields must be compatible (same field type)\n" +
+                    "- Bulk editing does not change structure, only values\n\n" +
+                    "Tip:\n" +
+                    "This is ideal for renaming, adjusting repeated values, or syncing parameters across entries quickly.",
+                    "bulk edit", "multi select", "ctrl click", "friendly view", "pane 3"
                 ),
 
                 new HelpTopic(

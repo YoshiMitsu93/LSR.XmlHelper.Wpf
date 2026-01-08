@@ -140,14 +140,16 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
             if (dg is null)
                 return false;
 
-            session = dg.GetValue(SessionProperty) as EditSession;
-            if (session is null)
+            var existing = dg.GetValue(SessionProperty) as EditSession;
+            if (existing is null)
                 return false;
 
-            if (ReferenceEquals(session.Editor, tb) == false)
+            if (ReferenceEquals(existing.Editor, tb) == false)
                 return false;
 
-            session.CurrentEditedRow = dg.CurrentItem as XmlFriendlyFieldViewModel;
+            existing.CurrentEditedRow = dg.CurrentItem as XmlFriendlyFieldViewModel;
+
+            session = existing;
             return true;
         }
 

@@ -1519,7 +1519,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             var output = new List<object>();
 
             if (normalRows.TryGetValue("General", out var generalList))
-            {
+            {   
                 output.Add(new XmlFriendlyFieldGroupViewModel("General", new ObservableCollection<XmlFriendlyFieldViewModel>(generalList)));
                 normalRows.Remove("General");
                 normalGroupsInOrder.RemoveAll(x => string.Equals(x, "General", StringComparison.OrdinalIgnoreCase));

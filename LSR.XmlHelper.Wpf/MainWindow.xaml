@@ -58,7 +58,17 @@
             Key="L"
             Command="{Binding ClearCommand}"
             Modifiers="Control" />
+        <KeyBinding
+            Key="H"
+            Command="{x:Static ApplicationCommands.Replace}"
+            Modifiers="Control" />
     </Window.InputBindings>
+    <Window.CommandBindings>
+        <CommandBinding
+            CanExecute="Replace_CanExecute"
+            Command="{x:Static ApplicationCommands.Replace}"
+            Executed="Replace_Executed" />
+    </Window.CommandBindings>
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
@@ -466,11 +476,11 @@
                 Header="{Binding Title}"
                 IsExpanded="{Binding IsExpanded}">
                 <DataGrid
-                    infra:DataGridSelectedItemsBehavior.Enable="True"
-                    infra:DataGridSelectedItemsBehavior.SelectedItems="{Binding DataContext.SelectedFriendlyFields, RelativeSource={RelativeSource AncestorType=Window}}"
+                    infra:DataGridBulkEditSelectedRowsBehavior.Enable="True"
                     infra:DataGridForceExtendedSelectionBehavior.Enable="True"
                     infra:DataGridPreserveMultiSelectionOnEditBehavior.Enable="True"
-                    infra:DataGridBulkEditSelectedRowsBehavior.Enable="True"
+                    infra:DataGridSelectedItemsBehavior.Enable="True"
+                    infra:DataGridSelectedItemsBehavior.SelectedItems="{Binding DataContext.SelectedFriendlyFields, RelativeSource={RelativeSource AncestorType=Window}}"
                     infra:ScrollViewerMouseWheelBehavior.Enable="True"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
@@ -745,6 +755,12 @@
                     InputGestureText="Ctrl+Shift+V"
                     ToolTip="Validate that the XML is well-formed. (Ctrl+Shift+V)" />
                 <Separator />
+                <MenuItem
+                    Command="{x:Static ApplicationCommands.Replace}"
+                    Header="_Replace..."
+                    InputGestureText="Ctrl+H"
+                    ToolTip="Only available in Raw XML. Switch to Raw XML to use Replace. (Ctrl+H)"
+                    ToolTipService.ShowOnDisabled="True" />
                 <MenuItem
                     Command="{Binding ClearCommand}"
                     Header="_Clear"
