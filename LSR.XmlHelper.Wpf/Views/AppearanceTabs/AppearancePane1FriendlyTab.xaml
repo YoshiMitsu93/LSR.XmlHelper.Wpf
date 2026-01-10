@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearancePane1FriendlyTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock Text="Tree / Selectors" Style="{DynamicResource SubHeader}" />
+
+        <TextBlock x:Name="AnchorPane1Friendly" Text="Pane 1 - File Tree / File List"
+                   Style="{DynamicResource SectionHeader}"
+                   ToolTip="Colors for the left file/folder tree and file list (Pane 1 in the main window)." />
+
+        <TextBlock Text="Tree &amp; List Items"
+                   Style="{DynamicResource SubHeader}"
+                   ToolTip="Text and background for items in the left file tree and file list (Pane 1)." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Tree Text" VerticalAlignment="Center"
+                       ToolTip="Text color for the left file tree/file list (Pane 1)." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeText}"
+                     ToolTip="Text color for the left file tree/file list (Pane 1)." />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewTreeTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="TreeText"
+                    Height="22"
+                    ToolTip="Text color for the left file tree/file list (Pane 1)." />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Tree Background" VerticalAlignment="Center"
+                       ToolTip="Background color for the left file tree/file list (Pane 1). Use #00000000 for transparent." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeBackground}"
+                     ToolTip="Background color for the left file tree/file list (Pane 1). Use #00000000 for transparent." />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewTreeBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="TreeBackground"
+                    Height="22"
+                    ToolTip="Background color for the left file tree/file list (Pane 1). Use #00000000 for transparent." />
+        </Grid>
+
+        <TextBlock Text="Selection"
+                   Style="{DynamicResource SubHeader}"
+                   ToolTip="Hover and selected highlights for file tree/list items." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Hover Background" VerticalAlignment="Center"
+                       ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TreeItemHoverBackground}"
+                     ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewTreeHoverBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="TreeItemHoverBackground"
+                    Height="22"
+                    ToolTip="Hover highlight for items in the left file tree/file list (Pane 1)." />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Selected Background" VerticalAlignment="Center"
+                       ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TreeItemSelectedBackground}"
+                     ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewTreeSelectedBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="TreeItemSelectedBackground"
+                    Height="22"
+                    ToolTip="Selected highlight for items in the left file tree/file list (Pane 1)." />
+        </Grid>
+    </StackPanel>
+</UserControl>

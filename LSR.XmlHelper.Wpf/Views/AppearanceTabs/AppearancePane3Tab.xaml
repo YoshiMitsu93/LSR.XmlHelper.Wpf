@@ -1,0 +1,313 @@
+﻿<UserControl
+    x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearancePane3Tab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System.Windows;assembly=PresentationFramework">
+    <StackPanel>
+        <TextBlock
+            x:Name="AnchorPane3"
+            Style="{StaticResource SectionHeader}"
+            Text="Pane 3 - Details Grid"
+            ToolTip="Colors for the Field/Value details table (Pane 3 in the main window)." />
+
+        <TextBlock
+            Style="{StaticResource SubHeader}"
+            Text="General"
+            ToolTip="Applies to the whole details grid (background, borders, row hover)." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Grid Border"
+                ToolTip="Border color around the details grid (Pane 3)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding GridBorder}"
+                ToolTip="Border color around the details grid (Pane 3)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridBorderBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridBorder"
+                Style="{StaticResource SwatchButtonStyle}"
+                ToolTip="Border color around the details grid (Pane 3)." />
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Grid Lines"
+                ToolTip="Grid line color inside the details grid (Pane 3)." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding GridLines}"
+                ToolTip="Grid line color inside the details grid (Pane 3)." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridLinesBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridLines"
+                Style="{StaticResource SwatchButtonStyle}"
+                ToolTip="Grid line color inside the details grid (Pane 3)." />
+
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Grid Row Hover Background"
+                ToolTip="Row hover highlight background in the details grid (Pane 3)." />
+            <TextBox
+                Grid.Row="4"
+                Grid.Column="1"
+                Text="{Binding GridRowHoverBackground}"
+                ToolTip="Row hover highlight background in the details grid (Pane 3)." />
+            <Button
+                Grid.Row="4"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridRowHoverBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridRowHoverBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Row hover highlight background in the details grid (Pane 3)." />
+        </Grid>
+
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Headers"
+            ToolTip="Header text colors." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Group Header Text"
+                ToolTip="Text color for group headers (Pane 3)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding GridHeaderText}"
+                ToolTip="Text color for group headers (Pane 3)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridHeaderTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridHeaderText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for group headers (Pane 3)." />
+        </Grid>
+
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Selection"
+            ToolTip="Row/cell selection colors." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.Resources>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static sys:SystemColors.ControlTextBrushKey}}" />
+                </Style>
+            </Grid.Resources>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Selected Row Background"
+                ToolTip="Background color for selected row (Pane 3)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding GridRowSelectedBackground}"
+                ToolTip="Background color for selected row (Pane 3)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridRowSelectedBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridRowSelectedBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for selected row (Pane 3)." />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Selected Cell Background"
+                ToolTip="Background color for selected cell (Pane 3)." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding GridCellSelectedBackground}"
+                ToolTip="Background color for selected cell (Pane 3)." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridCellSelectedBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridCellSelectedBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for selected cell (Pane 3)." />
+        </Grid>
+
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Field Column"
+            ToolTip="Field (left) column text color." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Field Column Text"
+                ToolTip="Text color for Field column (left column) (Pane 3)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding FieldColumnText}"
+                ToolTip="Text color for Field column (left column) (Pane 3)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewFieldColumnTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="FieldColumnText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for Field column (left column) (Pane 3)." />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Field Column Background"
+                ToolTip="Background color for Field column (left column) (Pane 3)." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding FieldColumnBackground}"
+                ToolTip="Background color for Field column (left column) (Pane 3)." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewFieldColumnBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="FieldColumnBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for Field column (left column) (Pane 3)." />
+        </Grid>
+
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Value Column"
+            ToolTip="Value (right) column colors." />
+
+        <Grid Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Value Column Text"
+                ToolTip="Text color for the Value column (right column) (Pane 3)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding ValueColumnText}"
+                ToolTip="Text color for the Value column (right column) (Pane 3)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewValueColumnTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="ValueColumnText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for the Value column (right column) (Pane 3)." />
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Value Column Background"
+                ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding ValueColumnBackground}"
+                ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewValueColumnBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="ValueColumnBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
+        </Grid>
+    </StackPanel>
+</UserControl>

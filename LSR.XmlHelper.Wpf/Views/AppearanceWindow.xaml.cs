@@ -116,7 +116,6 @@ namespace LSR.XmlHelper.Wpf.Views
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => AppearanceScrollViewer.ScrollToTop()));
         }
 
-
         private void VmOnCloseRequested(object? sender, bool dialogResult)
         {
             DialogResult = dialogResult;

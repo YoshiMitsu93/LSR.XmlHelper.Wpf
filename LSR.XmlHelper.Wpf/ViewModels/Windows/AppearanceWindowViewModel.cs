@@ -160,16 +160,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _treeItemSelectedBackground = "#FF2F2F2F";
 
         private string _gridText = "#FFD4D4D4";
-        private string _gridBackground = "#FF1E1E1E";
         private string _gridBorder = "#FF555555";
         private string _gridLines = "#FF555555";
         private string _gridRowHoverBackground = "#FF252525";
         private string _gridHeaderText = "#FFD4D4D4";
         private string _gridRowSelectedBackground = "#FF2F2F2F";
         private string _gridCellSelectedBackground = "#FF2F2F2F";
-        private string _gridCellSelectedText = "#FFD4D4D4";
 
         private string _fieldColumnText = "#FFD4D4D4";
+        private string _fieldColumnBackground = "#00000000";
         private string _valueColumnText = "#FFD4D4D4";
         private string _valueColumnBackground = "#00000000";
         private string _headerText = "#FFD4D4D4";
@@ -178,6 +177,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _pane2ComboBackground = "#FF1E1E1E";
         private string _pane2DropdownText = "#FFD4D4D4";
         private string _pane2DropdownBackground = "#FF1E1E1E";
+        private string _pane2ItemHoverBackground = "#FF252525";
+        private string _pane2ItemSelectedBackground = "#FF2F2F2F";
 
 
         public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) OnEdited(); } }
@@ -203,16 +204,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string TreeItemSelectedBackground { get => _treeItemSelectedBackground; set { if (SetProperty(ref _treeItemSelectedBackground, value)) OnEdited(); } }
 
         public string GridText { get => _gridText; set { if (SetProperty(ref _gridText, value)) OnEdited(); } }
-        public string GridBackground { get => _gridBackground; set { if (SetProperty(ref _gridBackground, value)) OnEdited(); } }
         public string GridBorder { get => _gridBorder; set { if (SetProperty(ref _gridBorder, value)) OnEdited(); } }
         public string GridLines { get => _gridLines; set { if (SetProperty(ref _gridLines, value)) OnEdited(); } }
         public string GridRowHoverBackground { get => _gridRowHoverBackground; set { if (SetProperty(ref _gridRowHoverBackground, value)) OnEdited(); } }
         public string GridHeaderText { get => _gridHeaderText; set { if (SetProperty(ref _gridHeaderText, value)) OnEdited(); } }
         public string GridRowSelectedBackground { get => _gridRowSelectedBackground; set { if (SetProperty(ref _gridRowSelectedBackground, value)) OnEdited(); } }
         public string GridCellSelectedBackground { get => _gridCellSelectedBackground; set { if (SetProperty(ref _gridCellSelectedBackground, value)) OnEdited(); } }
-        public string GridCellSelectedText { get => _gridCellSelectedText; set { if (SetProperty(ref _gridCellSelectedText, value)) OnEdited(); } }
 
         public string FieldColumnText { get => _fieldColumnText; set { if (SetProperty(ref _fieldColumnText, value)) OnEdited(); } }
+        public string FieldColumnBackground { get => _fieldColumnBackground; set { if (SetProperty(ref _fieldColumnBackground, value)) OnEdited(); } }
         public string ValueColumnText { get => _valueColumnText; set { if (SetProperty(ref _valueColumnText, value)) OnEdited(); } }
         public string ValueColumnBackground { get => _valueColumnBackground; set { if (SetProperty(ref _valueColumnBackground, value)) OnEdited(); } }
         public string HeaderText { get => _headerText; set { if (SetProperty(ref _headerText, value)) OnEdited(); } }
@@ -222,6 +222,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string Pane2ComboBackground { get => _pane2ComboBackground; set { if (SetProperty(ref _pane2ComboBackground, value)) OnEdited(); } }
         public string Pane2DropdownText { get => _pane2DropdownText; set { if (SetProperty(ref _pane2DropdownText, value)) OnEdited(); } }
         public string Pane2DropdownBackground { get => _pane2DropdownBackground; set { if (SetProperty(ref _pane2DropdownBackground, value)) OnEdited(); } }
+        public string Pane2ItemHoverBackground { get => _pane2ItemHoverBackground; set { if (SetProperty(ref _pane2ItemHoverBackground, value)) OnEdited(); } }
+        public string Pane2ItemSelectedBackground { get => _pane2ItemSelectedBackground; set { if (SetProperty(ref _pane2ItemSelectedBackground, value)) OnEdited(); } }
+
         public WpfBrush PreviewTextBrush => TryParseBrush(Text);
         public WpfBrush PreviewBackgroundBrush => TryParseBrush(Background);
 
@@ -239,16 +242,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewTreeSelectedBrush => TryParseBrush(TreeItemSelectedBackground);
 
         public WpfBrush PreviewGridTextBrush => TryParseBrush(GridText);
-        public WpfBrush PreviewGridBackgroundBrush => TryParseBrush(GridBackground);
         public WpfBrush PreviewGridBorderBrush => TryParseBrush(GridBorder);
         public WpfBrush PreviewGridLinesBrush => TryParseBrush(GridLines);
         public WpfBrush PreviewGridRowHoverBrush => TryParseBrush(GridRowHoverBackground);
         public WpfBrush PreviewGridHeaderTextBrush => TryParseBrush(GridHeaderText);
         public WpfBrush PreviewGridRowSelectedBackgroundBrush => TryParseBrush(GridRowSelectedBackground);
         public WpfBrush PreviewGridCellSelectedBackgroundBrush => TryParseBrush(GridCellSelectedBackground);
-        public WpfBrush PreviewGridCellSelectedTextBrush => TryParseBrush(GridCellSelectedText);
 
         public WpfBrush PreviewFieldColumnTextBrush => TryParseBrush(FieldColumnText);
+        public WpfBrush PreviewFieldColumnBackgroundBrush => TryParseBrush(FieldColumnBackground);
         public WpfBrush PreviewValueColumnTextBrush => TryParseBrush(ValueColumnText);
         public WpfBrush PreviewValueColumnBackgroundBrush => TryParseBrush(ValueColumnBackground);
         public WpfBrush PreviewHeaderTextBrush => TryParseBrush(HeaderText);
@@ -258,6 +260,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewPane2ComboBackgroundBrush => TryParseBrush(Pane2ComboBackground);
         public WpfBrush PreviewPane2DropdownTextBrush => TryParseBrush(Pane2DropdownText);
         public WpfBrush PreviewPane2DropdownBackgroundBrush => TryParseBrush(Pane2DropdownBackground);
+        public WpfBrush PreviewPane2ItemHoverBackgroundBrush => TryParseBrush(Pane2ItemHoverBackground);
+        public WpfBrush PreviewPane2ItemSelectedBackgroundBrush => TryParseBrush(Pane2ItemSelectedBackground);
 
         public void OnViewReady()
         {
@@ -417,16 +421,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 }
 
                 _gridText = p.GridText;
-                _gridBackground = p.GridBackground;
                 _gridBorder = p.GridBorder;
                 _gridLines = p.GridLines;
                 _gridRowHoverBackground = p.GridRowHoverBackground;
                 _gridHeaderText = p.GridHeaderText;
                 _gridRowSelectedBackground = p.GridRowSelectedBackground;
                 _gridCellSelectedBackground = p.GridCellSelectedBackground;
-                _gridCellSelectedText = p.GridCellSelectedText;
 
                 _fieldColumnText = p.FieldColumnText;
+                _fieldColumnBackground = p.FieldColumnBackground;
                 _valueColumnText = p.ValueColumnText;
                 _valueColumnBackground = p.ValueColumnBackground;
                 _headerText = p.HeaderText;
@@ -436,6 +439,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _pane2ComboBackground = p.Pane2ComboBackground;
                 _pane2DropdownText = p.Pane2DropdownText;
                 _pane2DropdownBackground = p.Pane2DropdownBackground;
+                _pane2ItemHoverBackground = p.Pane2ItemHoverBackground;
+                _pane2ItemSelectedBackground = p.Pane2ItemSelectedBackground;
 
                 OnPropertyChanged(nameof(UiFontFamily));
                 OnPropertyChanged(nameof(UiFontSize));
@@ -460,16 +465,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(TreeItemSelectedBackground));
 
                 OnPropertyChanged(nameof(GridText));
-                OnPropertyChanged(nameof(GridBackground));
                 OnPropertyChanged(nameof(GridBorder));
                 OnPropertyChanged(nameof(GridLines));
                 OnPropertyChanged(nameof(GridRowHoverBackground));
                 OnPropertyChanged(nameof(GridHeaderText));
                 OnPropertyChanged(nameof(GridRowSelectedBackground));
                 OnPropertyChanged(nameof(GridCellSelectedBackground));
-                OnPropertyChanged(nameof(GridCellSelectedText));
 
                 OnPropertyChanged(nameof(FieldColumnText));
+                OnPropertyChanged(nameof(FieldColumnBackground));
                 OnPropertyChanged(nameof(ValueColumnText));
                 OnPropertyChanged(nameof(ValueColumnBackground));
                 OnPropertyChanged(nameof(HeaderText));
@@ -479,6 +483,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(Pane2ComboBackground));
                 OnPropertyChanged(nameof(Pane2DropdownText));
                 OnPropertyChanged(nameof(Pane2DropdownBackground));
+                OnPropertyChanged(nameof(Pane2ItemHoverBackground));
+                OnPropertyChanged(nameof(Pane2ItemSelectedBackground));
 
                 RaisePreview();
             }
@@ -511,6 +517,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.Pane2ComboBackground = NormalizeColor(Pane2ComboBackground, p.Pane2ComboBackground);
             p.Pane2DropdownText = NormalizeColor(Pane2DropdownText, p.Pane2DropdownText);
             p.Pane2DropdownBackground = NormalizeColor(Pane2DropdownBackground, p.Pane2DropdownBackground);
+            p.Pane2ItemHoverBackground = NormalizeColor(Pane2ItemHoverBackground, p.Pane2ItemHoverBackground);
+            p.Pane2ItemSelectedBackground = NormalizeColor(Pane2ItemSelectedBackground, p.Pane2ItemSelectedBackground);
 
 
             if (_isEditingFriendlyView)
@@ -529,16 +537,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             }
 
             p.GridText = NormalizeColor(GridText, p.GridText);
-            p.GridBackground = NormalizeColor(GridBackground, p.GridBackground);
             p.GridBorder = NormalizeColor(GridBorder, p.GridBorder);
             p.GridLines = NormalizeColor(GridLines, p.GridLines);
             p.GridRowHoverBackground = NormalizeColor(GridRowHoverBackground, p.GridRowHoverBackground);
             p.GridHeaderText = NormalizeColor(GridHeaderText, p.GridHeaderText);
             p.GridRowSelectedBackground = NormalizeColor(GridRowSelectedBackground, p.GridRowSelectedBackground);
             p.GridCellSelectedBackground = NormalizeColor(GridCellSelectedBackground, p.GridCellSelectedBackground);
-            p.GridCellSelectedText = NormalizeColor(GridCellSelectedText, p.GridCellSelectedText);
 
             p.FieldColumnText = NormalizeColor(FieldColumnText, p.FieldColumnText);
+            p.FieldColumnBackground = NormalizeColor(FieldColumnBackground, p.FieldColumnBackground);
             p.ValueColumnText = NormalizeColor(ValueColumnText, p.ValueColumnText);
             p.ValueColumnBackground = NormalizeColor(ValueColumnBackground, p.ValueColumnBackground);
             p.HeaderText = NormalizeColor(HeaderText, p.HeaderText);
@@ -551,6 +558,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewPane2ComboBackgroundBrush));
             OnPropertyChanged(nameof(PreviewPane2DropdownTextBrush));
             OnPropertyChanged(nameof(PreviewPane2DropdownBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewPane2ItemHoverBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewPane2ItemSelectedBackgroundBrush));
 
             OnPropertyChanged(nameof(PreviewTextBrush));
             OnPropertyChanged(nameof(PreviewBackgroundBrush));
@@ -569,16 +578,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewTreeSelectedBrush));
 
             OnPropertyChanged(nameof(PreviewGridTextBrush));
-            OnPropertyChanged(nameof(PreviewGridBackgroundBrush));
             OnPropertyChanged(nameof(PreviewGridBorderBrush));
             OnPropertyChanged(nameof(PreviewGridLinesBrush));
             OnPropertyChanged(nameof(PreviewGridRowHoverBrush));
             OnPropertyChanged(nameof(PreviewGridHeaderTextBrush));
             OnPropertyChanged(nameof(PreviewGridRowSelectedBackgroundBrush));
             OnPropertyChanged(nameof(PreviewGridCellSelectedBackgroundBrush));
-            OnPropertyChanged(nameof(PreviewGridCellSelectedTextBrush));
 
             OnPropertyChanged(nameof(PreviewFieldColumnTextBrush));
+            OnPropertyChanged(nameof(PreviewFieldColumnBackgroundBrush));
             OnPropertyChanged(nameof(PreviewValueColumnTextBrush));
             OnPropertyChanged(nameof(PreviewValueColumnBackgroundBrush));
             OnPropertyChanged(nameof(PreviewHeaderTextBrush));
@@ -605,7 +613,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(TreeItemHoverBackground) => TreeItemHoverBackground,
                 nameof(TreeItemSelectedBackground) => TreeItemSelectedBackground,
 
-                nameof(GridBackground) => GridBackground,
                 nameof(GridText) => GridText,
                 nameof(GridBorder) => GridBorder,
                 nameof(GridLines) => GridLines,
@@ -613,17 +620,19 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(GridHeaderText) => GridHeaderText,
                 nameof(GridRowSelectedBackground) => GridRowSelectedBackground,
                 nameof(GridCellSelectedBackground) => GridCellSelectedBackground,
-                nameof(GridCellSelectedText) => GridCellSelectedText,
 
                 nameof(FieldColumnText) => FieldColumnText,
+                nameof(FieldColumnBackground) => FieldColumnBackground,
                 nameof(ValueColumnText) => ValueColumnText,
                 nameof(ValueColumnBackground) => ValueColumnBackground,
                 nameof(HeaderText) => HeaderText,
                 nameof(SelectorBackground) => SelectorBackground,
                 nameof(Pane2ComboText) => Pane2ComboText,
-nameof(Pane2ComboBackground) => Pane2ComboBackground,
-nameof(Pane2DropdownText) => Pane2DropdownText,
-nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
+                nameof(Pane2ComboBackground) => Pane2ComboBackground,
+                nameof(Pane2DropdownText) => Pane2DropdownText,
+                nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
+                nameof(Pane2ItemHoverBackground) => Pane2ItemHoverBackground,
+                nameof(Pane2ItemSelectedBackground) => Pane2ItemSelectedBackground,
 
                 _ => "#FFFFFFFF"
             };
@@ -653,8 +662,9 @@ nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
                 case nameof(Pane2ComboBackground): Pane2ComboBackground = hex; break;
                 case nameof(Pane2DropdownText): Pane2DropdownText = hex; break;
                 case nameof(Pane2DropdownBackground): Pane2DropdownBackground = hex; break;
+                case nameof(Pane2ItemHoverBackground): Pane2ItemHoverBackground = hex; break;
+                case nameof(Pane2ItemSelectedBackground): Pane2ItemSelectedBackground = hex; break;
 
-                case nameof(GridBackground): GridBackground = hex; break;
                 case nameof(GridText): GridText = hex; break;
                 case nameof(GridBorder): GridBorder = hex; break;
                 case nameof(GridLines): GridLines = hex; break;
@@ -662,9 +672,9 @@ nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
                 case nameof(GridHeaderText): GridHeaderText = hex; break;
                 case nameof(GridRowSelectedBackground): GridRowSelectedBackground = hex; break;
                 case nameof(GridCellSelectedBackground): GridCellSelectedBackground = hex; break;
-                case nameof(GridCellSelectedText): GridCellSelectedText = hex; break;
 
                 case nameof(FieldColumnText): FieldColumnText = hex; break;
+                case nameof(FieldColumnBackground): FieldColumnBackground = hex; break;
                 case nameof(ValueColumnText): ValueColumnText = hex; break;
                 case nameof(ValueColumnBackground): ValueColumnBackground = hex; break;
                 case nameof(HeaderText): HeaderText = hex; break;
@@ -798,17 +808,16 @@ nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
                 FriendlyTreeItemSelectedBackground = p.FriendlyTreeItemSelectedBackground,
 
                 GridText = p.GridText,
-                GridBackground = p.GridBackground,
                 GridBorder = p.GridBorder,
                 GridLines = p.GridLines,
                 GridHeaderBackground = p.GridHeaderBackground,
                 GridHeaderText = p.GridHeaderText,
                 GridRowHoverBackground = p.GridRowHoverBackground,
                 GridRowSelectedBackground = p.GridRowSelectedBackground,
-                GridCellSelectedBackground = p.GridCellSelectedBackground,
-                GridCellSelectedText = p.GridCellSelectedText,
+                GridCellSelectedBackground = p.GridCellSelectedBackground, 
 
                 FieldColumnText = p.FieldColumnText,
+                FieldColumnBackground = p.FieldColumnBackground,
                 ValueColumnText = p.ValueColumnText,
                 ValueColumnBackground = p.ValueColumnBackground,
                 HeaderText = p.HeaderText,
@@ -817,7 +826,9 @@ nameof(Pane2DropdownBackground) => Pane2DropdownBackground,
                 Pane2ComboText = p.Pane2ComboText,
                 Pane2ComboBackground = p.Pane2ComboBackground,
                 Pane2DropdownText = p.Pane2DropdownText,
-                Pane2DropdownBackground = p.Pane2DropdownBackground
+                Pane2DropdownBackground = p.Pane2DropdownBackground,
+                Pane2ItemHoverBackground = p.Pane2ItemHoverBackground,
+                Pane2ItemSelectedBackground = p.Pane2ItemSelectedBackground
             };
         }
     }

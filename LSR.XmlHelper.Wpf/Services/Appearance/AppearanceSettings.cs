@@ -103,6 +103,7 @@ namespace LSR.XmlHelper.Wpf.Services
         public string GridCellSelectedBackground { get; set; } = "#FF2F2F2F";
         public string GridCellSelectedText { get; set; } = "#FFFFFFFF";
         public string FieldColumnText { get; set; } = "#FFD4D4D4";
+        public string FieldColumnBackground { get; set; } = "#00000000";
         public string ValueColumnText { get; set; } = "#FFD4D4D4";
         public string ValueColumnBackground { get; set; } = "#00000000";
         public string HeaderText { get; set; } = "#FFD4D4D4";
@@ -111,6 +112,9 @@ namespace LSR.XmlHelper.Wpf.Services
         public string Pane2ComboBackground { get; set; } = "#FF1E1E1E";
         public string Pane2DropdownText { get; set; } = "#FFD4D4D4";
         public string Pane2DropdownBackground { get; set; } = "#FF1E1E1E";
+        public string Pane2ItemHoverBackground { get; set; } = "#FF252525";
+        public string Pane2ItemSelectedBackground { get; set; } = "#FF2F2F2F";
+
 
         public static AppearanceProfileSettings CreateDarkDefaults()
         {
@@ -150,8 +154,11 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 GridCellSelectedBackground = "#FF2F2F2F",
                 GridCellSelectedText = "#FFFFFFFF",
+                Pane2ItemHoverBackground = "#FF252525",
+                Pane2ItemSelectedBackground = "#FF2F2F2F",
 
                 FieldColumnText = "#FFD4D4D4",
+                FieldColumnBackground = "#00000000",
                 ValueColumnText = "#FFD4D4D4",
                 ValueColumnBackground = "#00000000",
                 HeaderText = "#FFD4D4D4",
@@ -196,8 +203,11 @@ namespace LSR.XmlHelper.Wpf.Services
 
                 GridCellSelectedBackground = "#FFCCE4FF",
                 GridCellSelectedText = "#FF000000",
+                Pane2ItemHoverBackground = "#FFEAEAEA",
+                Pane2ItemSelectedBackground = "#FFCCE4FF",
 
                 FieldColumnText = "#FF000000",
+                FieldColumnBackground = "#00000000",
                 ValueColumnText = "#FF000000",
                 ValueColumnBackground = "#00000000",
                 HeaderText = "#FF000000",

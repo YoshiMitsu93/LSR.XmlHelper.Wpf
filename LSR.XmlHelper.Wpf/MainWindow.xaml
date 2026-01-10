@@ -138,7 +138,6 @@
         </Style>
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
-            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -181,7 +180,6 @@
                         <Condition Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource Self}}" Value="True" />
                     </MultiDataTrigger.Conditions>
                     <Setter Property="Background" Value="{Binding DataContext.Appearance.GridCellSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridCellSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </MultiDataTrigger>
             </Style.Triggers>
         </Style>
@@ -324,10 +322,10 @@
             <Setter Property="Padding" Value="4,2" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane2ItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane2ItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -442,12 +440,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2ItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                                 <Setter Property="Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                                 <Setter Property="TextElement.Foreground" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2DropdownTextBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                             </Trigger>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.Pane2ItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -525,6 +523,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="Foreground" Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.FieldColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -669,6 +668,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="{x:Type TextBlock}">
                                         <Setter Property="Foreground" Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Background" Value="{Binding DataContext.Appearance.FieldColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

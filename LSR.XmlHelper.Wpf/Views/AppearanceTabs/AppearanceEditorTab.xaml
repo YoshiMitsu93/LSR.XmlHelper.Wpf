@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceEditorTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock x:Name="AnchorEditor" Text="Editor" Style="{DynamicResource SectionHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Editor Text" VerticalAlignment="Center" ToolTip="Text color inside the raw XML editor." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EditorText}" ToolTip="Text color inside the raw XML editor." />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewEditorTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="EditorText"
+                    Height="22"
+                    ToolTip="Text color inside the raw XML editor." />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Editor Background" VerticalAlignment="Center" ToolTip="Background color inside the raw XML editor." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding EditorBackground}" ToolTip="Background color inside the raw XML editor." />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewEditorBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="EditorBackground"
+                    Height="22"
+                    ToolTip="Background color inside the raw XML editor." />
+        </Grid>
+    </StackPanel>
+</UserControl>

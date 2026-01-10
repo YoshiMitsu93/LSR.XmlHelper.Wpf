@@ -70,7 +70,6 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush TreeItemHoverBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeItemHoverBackground : Active.RawTreeItemHoverBackground);
         public WpfBrush TreeItemSelectedBackgroundBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeItemSelectedBackground : Active.RawTreeItemSelectedBackground);
         public WpfBrush GridTextBrush => CreateFrozenBrush(Active.GridText);
-        public WpfBrush GridBackgroundBrush => CreateFrozenBrush(Active.GridBackground);
         public WpfBrush GridBorderBrush => CreateFrozenBrush(Active.GridBorder);
         public WpfBrush GridLinesBrush => CreateFrozenBrush(Active.GridLines);
         public WpfBrush GridHeaderBackgroundBrush => CreateFrozenBrush(Active.GridHeaderBackground);
@@ -78,8 +77,8 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush GridRowHoverBackgroundBrush => CreateFrozenBrush(Active.GridRowHoverBackground);
         public WpfBrush GridRowSelectedBackgroundBrush => CreateFrozenBrush(Active.GridRowSelectedBackground);
         public WpfBrush GridCellSelectedBackgroundBrush => CreateFrozenBrush(Active.GridCellSelectedBackground);
-        public WpfBrush GridCellSelectedTextBrush => CreateFrozenBrush(Active.GridCellSelectedText);
         public WpfBrush FieldColumnTextBrush => CreateFrozenBrush(Active.FieldColumnText);
+        public WpfBrush FieldColumnBackgroundBrush => CreateFrozenBrush(Active.FieldColumnBackground);
         public WpfBrush ValueColumnTextBrush => CreateFrozenBrush(Active.ValueColumnText);
         public WpfBrush ValueColumnBackgroundBrush => CreateFrozenBrush(Active.ValueColumnBackground);
         public WpfBrush HeaderTextBrush => CreateFrozenBrush(Active.HeaderText);
@@ -88,6 +87,8 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush Pane2ComboBackgroundBrush => CreateFrozenBrush(Active.Pane2ComboBackground);
         public WpfBrush Pane2DropdownTextBrush => CreateFrozenBrush(Active.Pane2DropdownText);
         public WpfBrush Pane2DropdownBackgroundBrush => CreateFrozenBrush(Active.Pane2DropdownBackground);
+        public WpfBrush Pane2ItemHoverBackgroundBrush => CreateFrozenBrush(Active.Pane2ItemHoverBackground);
+        public WpfBrush Pane2ItemSelectedBackgroundBrush => CreateFrozenBrush(Active.Pane2ItemSelectedBackground);
         public WpfBrush TopButtonTextBrush => CreateFrozenBrush(Active.TopButtonText);
         public WpfBrush TopButtonBackgroundBrush => CreateFrozenBrush(Active.TopButtonBackground);
 
@@ -120,8 +121,11 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(EditorTextBrush));
             OnPropertyChanged(nameof(EditorBackgroundBrush));
 
-            OnPropertyChanged(nameof(MenuBackgroundBrush));
             OnPropertyChanged(nameof(MenuTextBrush));
+            OnPropertyChanged(nameof(MenuBackgroundBrush));
+
+            OnPropertyChanged(nameof(TopButtonTextBrush));
+            OnPropertyChanged(nameof(TopButtonBackgroundBrush));
 
             OnPropertyChanged(nameof(TreeTextBrush));
             OnPropertyChanged(nameof(TreeBackgroundBrush));
@@ -129,28 +133,28 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(TreeItemSelectedBackgroundBrush));
 
             OnPropertyChanged(nameof(GridTextBrush));
-            OnPropertyChanged(nameof(GridBackgroundBrush));
             OnPropertyChanged(nameof(GridBorderBrush));
             OnPropertyChanged(nameof(GridLinesBrush));
+            OnPropertyChanged(nameof(GridRowHoverBackgroundBrush));
             OnPropertyChanged(nameof(GridHeaderBackgroundBrush));
             OnPropertyChanged(nameof(GridHeaderTextBrush));
-
-            OnPropertyChanged(nameof(GridRowHoverBackgroundBrush));
             OnPropertyChanged(nameof(GridRowSelectedBackgroundBrush));
             OnPropertyChanged(nameof(GridCellSelectedBackgroundBrush));
-            OnPropertyChanged(nameof(GridCellSelectedTextBrush));
 
             OnPropertyChanged(nameof(FieldColumnTextBrush));
+            OnPropertyChanged(nameof(FieldColumnBackgroundBrush));
             OnPropertyChanged(nameof(ValueColumnTextBrush));
             OnPropertyChanged(nameof(ValueColumnBackgroundBrush));
+
             OnPropertyChanged(nameof(HeaderTextBrush));
             OnPropertyChanged(nameof(SelectorBackgroundBrush));
+
             OnPropertyChanged(nameof(Pane2ComboTextBrush));
             OnPropertyChanged(nameof(Pane2ComboBackgroundBrush));
             OnPropertyChanged(nameof(Pane2DropdownTextBrush));
             OnPropertyChanged(nameof(Pane2DropdownBackgroundBrush));
-            OnPropertyChanged(nameof(TopButtonTextBrush));
-            OnPropertyChanged(nameof(TopButtonBackgroundBrush));
+            OnPropertyChanged(nameof(Pane2ItemHoverBackgroundBrush));
+            OnPropertyChanged(nameof(Pane2ItemSelectedBackgroundBrush));
         }
 
         private static WpfBrush CreateFrozenBrush(string hex)

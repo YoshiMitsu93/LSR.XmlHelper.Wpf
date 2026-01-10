@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceTopBarControlsFriendlyTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock x:Name="AnchorTopBarFriendly" Text="Top Bar Controls" Style="{DynamicResource SectionHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Top Bar Text" VerticalAlignment="Center" ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding GridText}" ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewGridTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GridText"
+                    Height="22"
+                    ToolTip="Text colour for: View, Folders, Flat, Include subfolders, Friendly view, Dark mode." />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Top Buttons Text" VerticalAlignment="Center" ToolTip="Text colour for: Open Folder, Format, Validate, Save, Save As, Clear." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TopButtonText}" ToolTip="Text colour for: Open Folder, Format, Validate, Save, Save As, Clear." />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewTopButtonTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="TopButtonText"
+                    Height="22"
+                    ToolTip="Text colour for: Open Folder, Format, Validate, Save, Save As, Clear." />
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Top Buttons Background" VerticalAlignment="Center" ToolTip="Background colour for: Open Folder, Format, Validate, Save, Save As, Clear." />
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TopButtonBackground}" ToolTip="Background colour for: Open Folder, Format, Validate, Save, Save As, Clear." />
+            <Button Grid.Row="4" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewTopButtonBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="TopButtonBackground"
+                    Height="22"
+                    ToolTip="Background colour for: Open Folder, Format, Validate, Save, Save As, Clear." />
+        </Grid>
+    </StackPanel>
+</UserControl>

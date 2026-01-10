@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceTopMenuBarRawTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock x:Name="AnchorTopMenuRaw" Text="Top Menu Bar" Style="{DynamicResource SectionHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Menu Text" VerticalAlignment="Center" ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MenuText}" ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewMenuTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="MenuText"
+                    Height="22"
+                    ToolTip="Text color for the top menu bar (File/Edit/View/Help)." />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Menu Background" VerticalAlignment="Center" ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MenuBackground}" ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewMenuBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="MenuBackground"
+                    Height="22"
+                    ToolTip="Background color for the top menu bar (File/Edit/View/Help)." />
+        </Grid>
+    </StackPanel>
+</UserControl>
