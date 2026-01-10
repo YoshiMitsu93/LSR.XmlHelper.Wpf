@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace LSR.XmlHelper.Wpf.Views
 {
@@ -20,12 +22,17 @@ namespace LSR.XmlHelper.Wpf.Views
 
             vm.CloseRequested += VmOnCloseRequested;
             vm.OnViewReady();
+            vm.PropertyChanged += VmOnPropertyChanged;
+            ApplyTabVisibility();
         }
 
         protected override void OnClosed(EventArgs e)
         {
             if (DataContext is ViewModels.AppearanceWindowViewModel vm)
+            {
                 vm.CloseRequested -= VmOnCloseRequested;
+                vm.PropertyChanged -= VmOnPropertyChanged;
+            }
 
             base.OnClosed(e);
         }
@@ -67,6 +74,48 @@ namespace LSR.XmlHelper.Wpf.Views
 
             base.OnClosing(e);
         }
+
+        private void AppearanceTabs_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+
+            ApplyTabVisibility();
+        }
+
+        private void VmOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModels.AppearanceWindowViewModel.IsEditingFriendlyView))
+                ApplyTabVisibility();
+        }
+
+        private void ApplyTabVisibility()
+        {
+            if (DataContext is not ViewModels.AppearanceWindowViewModel vm)
+                return;
+
+            var header = (AppearanceTabs.SelectedItem as TabItem)?.Header as string;
+            var isFriendly = vm.IsEditingFriendlyView;
+
+            SectionFontsPanel.Visibility = header == "Fonts" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionEditorPanel.Visibility = header == "Editor" && !isFriendly ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionTopMenuRawPanel.Visibility = header == "Top Menu Bar" && !isFriendly ? Visibility.Visible : Visibility.Collapsed;
+            SectionTopMenuFriendlyPanel.Visibility = header == "Top Menu Bar" && isFriendly ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionTopBarRawPanel.Visibility = header == "Top Bar Controls" && !isFriendly ? Visibility.Visible : Visibility.Collapsed;
+            SectionTopBarFriendlyPanel.Visibility = header == "Top Bar Controls" && isFriendly ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionPane1RawPanel.Visibility = header == "Pane 1" && !isFriendly ? Visibility.Visible : Visibility.Collapsed;
+            SectionPane1FriendlyPanel.Visibility = header == "Pane 1" && isFriendly ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionPane2Panel.Visibility = header == "Pane 2" && isFriendly ? Visibility.Visible : Visibility.Collapsed;
+            SectionPane3Panel.Visibility = header == "Pane 3" && isFriendly ? Visibility.Visible : Visibility.Collapsed;
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => AppearanceScrollViewer.ScrollToTop()));
+        }
+
 
         private void VmOnCloseRequested(object? sender, bool dialogResult)
         {

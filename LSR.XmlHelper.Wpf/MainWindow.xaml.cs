@@ -23,6 +23,7 @@ namespace LSR.XmlHelper.Wpf
         private SearchPanel? _searchPanel;
         private Views.FriendlySearchWindow? _friendlySearchWindow;
         private Views.ReplaceWindow? _replaceWindow;
+        private bool _checkedUpdatesOnStartup;
 
         public MainWindow()
         {
@@ -48,10 +49,10 @@ namespace LSR.XmlHelper.Wpf
             if (DataContext is not MainWindowViewModel vm)
                 return;
 
-            if (!vm.IsFirstRun)
-                return;
+            if (vm.IsFirstRun)
+                About_Click(this, new RoutedEventArgs());
 
-            About_Click(this, new RoutedEventArgs());
+            _ = AutoCheckForUpdatesOnStartupAsync();
         }
 
         private void MainWindowRoot_PreviewDragOver(object sender, System.Windows.DragEventArgs e)
@@ -290,6 +291,52 @@ namespace LSR.XmlHelper.Wpf
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show($"Could not check for updates.\n\n{ex.Message}", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private async Task AutoCheckForUpdatesOnStartupAsync()
+        {
+            if (_checkedUpdatesOnStartup)
+                return;
+
+            _checkedUpdatesOnStartup = true;
+
+            var assembly = Assembly.GetExecutingAssembly();
+            var currentVersion = assembly.GetName().Version;
+            if (currentVersion is null)
+                return;
+
+            try
+            {
+                var service = new GitHubReleaseService(new HttpClient());
+                var latest = await service.GetLatestReleaseAsync("YoshiMitsu93", "LSR.XmlHelper.Wpf");
+
+                if (latest is null)
+                    return;
+
+                if (latest.Version is null)
+                    return;
+
+                if (latest.Version <= currentVersion)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(latest.HtmlUrl))
+                    return;
+
+                var result = System.Windows.MessageBox.Show(
+                    $"A new update is available.\n\nCurrent: {currentVersion}\nLatest: {latest.Version}\n\nDo you want to open the download page now?",
+                    "Update available",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Information);
+
+                if (result != System.Windows.MessageBoxResult.Yes)
+                    return;
+
+                Process.Start(new ProcessStartInfo(latest.HtmlUrl) { UseShellExecute = true });
+            }
+            catch
+            {
+                return;
             }
         }
 
