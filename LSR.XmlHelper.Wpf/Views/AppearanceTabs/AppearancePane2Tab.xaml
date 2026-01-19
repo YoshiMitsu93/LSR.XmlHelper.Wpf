@@ -1,14 +1,18 @@
-﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearancePane2Tab"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<UserControl
+    x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearancePane2Tab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <StackPanel>
-        <TextBlock x:Name="AnchorPane2" Text="Pane 2 - Selector List"
-                   Style="{DynamicResource SectionHeader}"
-                   ToolTip="Colors for the middle selector list and dropdown (Pane 2 in the main window)." />
+        <TextBlock
+            x:Name="AnchorPane2"
+            Style="{DynamicResource SectionHeader}"
+            Text="Pane 2 - Selector List"
+            ToolTip="Colors for the middle selector list and dropdown (Pane 2 in the main window)." />
 
-        <TextBlock Text="Selector"
-                   Style="{DynamicResource SubHeader}"
-                   ToolTip="Text and background for the selector dropdown and selector items list (Pane 2)." />
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Selector"
+            ToolTip="Text and background for the selector dropdown and selector items list (Pane 2)." />
 
         <Grid Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
@@ -26,63 +30,100 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Selector Text" VerticalAlignment="Center"
-                       ToolTip="Text color for the selector dropdown and selector list items (Pane 2)." />
-            
-            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding HeaderText}"
-                     ToolTip="Text color for the selector dropdown and selector list items (Pane 2)." />
-            
-            <Button Grid.Row="0" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewHeaderTextBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="HeaderText"
-                    Height="22"
-                    ToolTip="Text color for the selector dropdown and selector list items (Pane 2)." />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Selector Text"
+                ToolTip="Text color for the selector dropdown and selector list items (Pane 2)." />
 
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="Selector Background" VerticalAlignment="Center"
-                       ToolTip="Background color for the sele...selector list items (Pane 2). Use #00000000 for transparent." />
-            
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectorBackground}"
-                     ToolTip="Background color for the select...selector list items (Pane 2). Use #00000000 for transparent." />
-            
-            <Button Grid.Row="2" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewSelectorBackgroundBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="SelectorBackground"
-                    Height="22"
-                    ToolTip="Background color for the selecto...selector list items (Pane 2). Use #00000000 for transparent." />
-            
-            <TextBlock Grid.Row="4" Grid.Column="0" Text="Selector Hover Background" VerticalAlignment="Center"
-                       ToolTip="Hover background for selector list items (Pane 2). Match Pane 1 hover color." />
-            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Pane2ItemHoverBackground}"
-                     ToolTip="Hover background for selector list items (Pane 2). Match Pane 1 hover color." />
-            <Button Grid.Row="4" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewPane2ItemHoverBackgroundBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="Pane2ItemHoverBackground"
-                    Height="22"
-                    ToolTip="Hover background for selector list items (Pane 2). Match Pane 1 hover color." />
-            
-            <TextBlock Grid.Row="6" Grid.Column="0" Text="Selector Selected Background" VerticalAlignment="Center"
-                       ToolTip="Selected background for selector list items (Pane 2). Match Pane 1 selected color." />
-            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Pane2ItemSelectedBackground}"
-                     ToolTip="Selected background for selector list items (Pane 2). Match Pane 1 selected color." />
-            <Button Grid.Row="6" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewPane2ItemSelectedBackgroundBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="Pane2ItemSelectedBackground"
-                    Height="22"
-                    ToolTip="Selected background for selector list items (Pane 2). Match Pane 1 selected color." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding HeaderText}"
+                ToolTip="Text color for the selector dropdown and selector list items (Pane 2)." />
+
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewHeaderTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="HeaderText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for the selector dropdown and selector list items (Pane 2)." />
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Selector Background"
+                ToolTip="Background color for the sele...selector list items (Pane 2). Use #00000000 for transparent." />
+
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding SelectorBackground}"
+                ToolTip="Background color for the select...selector list items (Pane 2). Use #00000000 for transparent." />
+
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewSelectorBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="SelectorBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for the selecto...selector list items (Pane 2). Use #00000000 for transparent." />
+
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Selector Hover Background"
+                ToolTip="Hover background for selector list items (Pane 2). Match Pane 1 hover color." />
+            <TextBox
+                Grid.Row="4"
+                Grid.Column="1"
+                Text="{Binding Pane2ItemHoverBackground}"
+                ToolTip="Hover background for selector list items (Pane 2). Match Pane 1 hover color." />
+            <Button
+                Grid.Row="4"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewPane2ItemHoverBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="Pane2ItemHoverBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Hover background for selector list items (Pane 2). Match Pane 1 hover color." />
+
+            <TextBlock
+                Grid.Row="6"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Selector Selected Background"
+                ToolTip="Selected background for selector list items (Pane 2). Match Pane 1 selected color." />
+            <TextBox
+                Grid.Row="6"
+                Grid.Column="1"
+                Text="{Binding Pane2ItemSelectedBackground}"
+                ToolTip="Selected background for selector list items (Pane 2). Match Pane 1 selected color." />
+            <Button
+                Grid.Row="6"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewPane2ItemSelectedBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="Pane2ItemSelectedBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Selected background for selector list items (Pane 2). Match Pane 1 selected color." />
 
         </Grid>
 
-        <TextBlock Text="Combo"
-                   Style="{DynamicResource SubHeader}"
-                   ToolTip="Text and background for the selector dropdown (ComboBox itself, not the dropdown list)." />
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Combo"
+            ToolTip="Text and background for the selector dropdown (ComboBox itself, not the dropdown list)." />
 
         <Grid Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
@@ -96,34 +137,53 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Combo Text" VerticalAlignment="Center"
-                       ToolTip="Text color for the selector ComboBox (Pane 2)." />
-            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Pane2ComboText}"
-                     ToolTip="Text color for the selector ComboBox (Pane 2)." />
-            <Button Grid.Row="0" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewPane2ComboTextBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="Pane2ComboText"
-                    Height="22"
-                    ToolTip="Text color for the selector ComboBox (Pane 2)." />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Combo Text"
+                ToolTip="Text color for the selector ComboBox (Pane 2)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding Pane2ComboText}"
+                ToolTip="Text color for the selector ComboBox (Pane 2)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewPane2ComboTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="Pane2ComboText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for the selector ComboBox (Pane 2)." />
 
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="Combo Background" VerticalAlignment="Center"
-                       ToolTip="Background color for the selector ComboBox (Pane 2). Use #00000000 for transparent." />
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Pane2ComboBackground}"
-                     ToolTip="Background color for the selector ComboBox (Pane 2). Use #00000000 for transparent." />
-            <Button Grid.Row="2" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewPane2ComboBackgroundBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="Pane2ComboBackground"
-                    Height="22"
-                    ToolTip="Background color for the selector ComboBox (Pane 2). Use #00000000 for transparent." />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Combo Background"
+                ToolTip="Background color for the selector ComboBox (Pane 2). Use #00000000 for transparent." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding Pane2ComboBackground}"
+                ToolTip="Background color for the selector ComboBox (Pane 2). Use #00000000 for transparent." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewPane2ComboBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="Pane2ComboBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for the selector ComboBox (Pane 2). Use #00000000 for transparent." />
         </Grid>
 
-        <TextBlock Text="Dropdown"
-                   Style="{DynamicResource SubHeader}"
-                   ToolTip="Text and background for the ComboBox dropdown list." />
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Dropdown"
+            ToolTip="Text and background for the ComboBox dropdown list." />
 
         <Grid Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
@@ -137,29 +197,47 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Dropdown Text" VerticalAlignment="Center"
-                       ToolTip="Text color for the selector ComboBox dropdown list (Pane 2)." />
-            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Pane2DropdownText}"
-                     ToolTip="Text color for the selector ComboBox dropdown list (Pane 2)." />
-            <Button Grid.Row="0" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewPane2DropdownTextBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="Pane2DropdownText"
-                    Height="22"
-                    ToolTip="Text color for the selector ComboBox dropdown list (Pane 2)." />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Dropdown Text"
+                ToolTip="Text color for the selector ComboBox dropdown list (Pane 2)." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding Pane2DropdownText}"
+                ToolTip="Text color for the selector ComboBox dropdown list (Pane 2)." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewPane2DropdownTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="Pane2DropdownText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for the selector ComboBox dropdown list (Pane 2)." />
 
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="Dropdown Background" VerticalAlignment="Center"
-                       ToolTip="Background color for the selector ComboBox dropdown list. Use #00000000 for transparent." />
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Pane2DropdownBackground}"
-                     ToolTip="Background color for the selector ComboBox dropdown list. Use #00000000 for transparent." />
-            <Button Grid.Row="2" Grid.Column="2"
-                    Style="{DynamicResource SwatchButtonStyle}"
-                    Background="{Binding PreviewPane2DropdownBackgroundBrush}"
-                    Command="{Binding PickColorCommand}"
-                    CommandParameter="Pane2DropdownBackground"
-                    Height="22"
-                    ToolTip="Background color for the selector ComboBox dropdown list. Use #00000000 for transparent." />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Dropdown Background"
+                ToolTip="Background color for the selector ComboBox dropdown list. Use #00000000 for transparent." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding Pane2DropdownBackground}"
+                ToolTip="Background color for the selector ComboBox dropdown list. Use #00000000 for transparent." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewPane2DropdownBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="Pane2DropdownBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for the selector ComboBox dropdown list. Use #00000000 for transparent." />
         </Grid>
     </StackPanel>
 </UserControl>

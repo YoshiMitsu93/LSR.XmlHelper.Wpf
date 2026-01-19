@@ -1,47 +1,63 @@
-﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceFontsTab"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<UserControl
+    x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceFontsTab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <StackPanel>
-        <TextBlock x:Name="AnchorFonts" Text="Fonts" Style="{DynamicResource SectionHeader}" />
+        <TextBlock
+            x:Name="AnchorFonts"
+            Style="{DynamicResource SectionHeader}"
+            Text="Fonts" />
         <StackPanel Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource BoolToVis}}">
-            <TextBlock Text="Friendly view UI" Style="{DynamicResource SubHeader}" />
+            <TextBlock Style="{DynamicResource SubHeader}" Text="Friendly view UI" />
             <Grid Margin="0,0,0,6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="80" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="UI Font" VerticalAlignment="Center" ToolTip="Font used by the general application UI." />
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding FontFamilies}"
-                          SelectedItem="{Binding UiFontFamily}"
-                          IsEditable="True"
-                          ToolTip="Font used by the general application UI." />
-                <TextBox Grid.Column="2"
-                         Text="{Binding UiFontSize}"
-                         VerticalContentAlignment="Center"
-                         ToolTip="Font size used by the general application UI." />
+                <TextBlock
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="UI Font"
+                    ToolTip="Font used by the general application UI." />
+                <ComboBox
+                    Grid.Column="1"
+                    IsEditable="True"
+                    ItemsSource="{Binding FontFamilies}"
+                    SelectedItem="{Binding UiFontFamily}"
+                    ToolTip="Font used by the general application UI." />
+                <TextBox
+                    Grid.Column="2"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding UiFontSize}"
+                    ToolTip="Font size used by the general application UI." />
             </Grid>
         </StackPanel>
 
         <StackPanel Visibility="{Binding IsEditingRawXml, Converter={StaticResource BoolToVis}}">
-            <TextBlock Text="Raw XML editor" Style="{DynamicResource SubHeader}" />
+            <TextBlock Style="{DynamicResource SubHeader}" Text="Raw XML editor" />
             <Grid Margin="0,0,0,6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="200" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="80" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Editor Font" VerticalAlignment="Center" ToolTip="Font used by the raw XML editor." />
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding FontFamilies}"
-                          SelectedItem="{Binding EditorFontFamily}"
-                          IsEditable="True"
-                          ToolTip="Font used by the raw XML editor." />
-                <TextBox Grid.Column="2"
-                         Text="{Binding EditorFontSize}"
-                         VerticalContentAlignment="Center"
-                         ToolTip="Font size used by the raw XML editor." />
+                <TextBlock
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Editor Font"
+                    ToolTip="Font used by the raw XML editor." />
+                <ComboBox
+                    Grid.Column="1"
+                    IsEditable="True"
+                    ItemsSource="{Binding FontFamilies}"
+                    SelectedItem="{Binding EditorFontFamily}"
+                    ToolTip="Font used by the raw XML editor." />
+                <TextBox
+                    Grid.Column="2"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding EditorFontSize}"
+                    ToolTip="Font size used by the raw XML editor." />
             </Grid>
         </StackPanel>
     </StackPanel>

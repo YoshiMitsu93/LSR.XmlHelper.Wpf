@@ -5,16 +5,16 @@
     Title="Backup Browser"
     Width="980"
     Height="560"
-    Background="White"
+    Background="{Binding Appearance.BackupBrowserWindowBackgroundBrush}"
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
-    Foreground="Black"
+    Foreground="{Binding Appearance.BackupBrowserWindowTextBrush}"
     WindowStartupLocation="CenterOwner">
 
     <Window.Resources>
         <CollectionViewSource x:Key="BackupsView" Source="{Binding Backups}">
             <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="SourceXmlDisplay" />
+            <PropertyGroupDescription PropertyName="SourceXmlDisplay" />
             </CollectionViewSource.GroupDescriptions>
         </CollectionViewSource>
     </Window.Resources>
@@ -34,7 +34,7 @@
             <TextBlock
                 FontSize="16"
                 FontWeight="Bold"
-                Foreground="{Binding Appearance.HeaderTextBrush}"
+                Foreground="{Binding Appearance.BackupBrowserWindowHeaderTextBrush}"
                 Text="Backups folder:" />
             <TextBlock
                 Opacity="0.85"
@@ -56,35 +56,59 @@
 
             <Border
                 Grid.Column="0"
-                Background="White"
-                BorderBrush="{Binding Appearance.GridLinesBrush}"
+                Background="{Binding Appearance.BackupBrowserWindowControlBackgroundBrush}"
+                BorderBrush="{Binding Appearance.BackupBrowserWindowControlBorderBrush}"
                 BorderThickness="1">
                 <DockPanel LastChildFill="True">
                     <TextBlock
                         Padding="8,6"
-                        Background="White"
+                        Background="{Binding Appearance.BackupBrowserWindowHeaderBackgroundBrush}"
                         DockPanel.Dock="Top"
                         FontWeight="Bold"
-                        Foreground="Black"
+                        Foreground="{Binding Appearance.BackupBrowserWindowHeaderTextBrush}"
                         Text="XML filter" />
                     <ListBox
-                        Background="White"
+                        Background="{Binding Appearance.BackupBrowserWindowControlBackgroundBrush}"
                         BorderThickness="0"
                         DisplayMemberPath="DisplayText"
-                        Foreground="Black"
+                        Foreground="{Binding Appearance.BackupBrowserWindowTextBrush}"
                         ItemsSource="{Binding XmlFilters}"
                         SelectedItem="{Binding SelectedXmlFilter}">
                         <ListBox.Resources>
                             <Style TargetType="{x:Type ListBoxItem}">
                                 <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="Foreground" Value="Black" />
+                                <Setter Property="Foreground" Value="{Binding DataContext.Appearance.BackupBrowserWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 <Setter Property="Padding" Value="8,6" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                            <Border
+	                                                x:Name="Root"
+	                                                Background="{TemplateBinding Background}"
+	                                                SnapsToDevicePixels="True">
+                                                <ContentPresenter
+	                                                    Margin="{TemplateBinding Padding}"
+	                                                    VerticalAlignment="Center"
+	                                                    HorizontalAlignment="Left"
+	                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowXmlFilterHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowXmlFilterSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#FFECECEC" />
+                                        <Setter Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowXmlFilterHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#FFD6E9FF" />
+                                        <Setter Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowXmlFilterSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -98,41 +122,41 @@
                 Width="8"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                Background="White" />
+                Background="{Binding Appearance.BackupBrowserWindowBackgroundBrush}" />
 
             <Border
                 Grid.Column="2"
                 AllowDrop="True"
-                Background="White"
-                BorderBrush="{Binding Appearance.GridLinesBrush}"
+                Background="{Binding Appearance.BackupBrowserWindowControlBackgroundBrush}"
+                BorderBrush="{Binding Appearance.BackupBrowserWindowControlBorderBrush}"
                 BorderThickness="1"
                 Drop="BackupBrowserWindow_OnDrop"
                 PreviewDragOver="BackupBrowserWindow_OnPreviewDragOver">
                 <ListView
-                    Background="White"
+                    Background="{Binding Appearance.BackupBrowserWindowControlBackgroundBrush}"
                     BorderThickness="0"
-                    Foreground="Black"
+                    Foreground="{Binding Appearance.BackupBrowserWindowTextBrush}"
                     ItemsSource="{Binding Source={StaticResource BackupsView}}"
                     SelectedItem="{Binding SelectedBackup}">
                     <ListView.Resources>
                         <Style TargetType="{x:Type GridViewColumnHeader}">
-                            <Setter Property="Background" Value="White" />
-                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.BackupBrowserWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             <Setter Property="FontWeight" Value="Bold" />
                             <Setter Property="Padding" Value="8,4" />
                         </Style>
 
                         <Style TargetType="{x:Type ListViewItem}">
                             <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Foreground" Value="Black" />
+                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.BackupBrowserWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             <Setter Property="Padding" Value="6,3" />
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#FFECECEC" />
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowListHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#FFD6E9FF" />
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowListSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -144,12 +168,12 @@
                                 <DataTemplate>
                                     <Border
                                         Padding="8,6"
-                                        Background="White"
-                                        BorderBrush="#FFCCCCCC"
+                                        Background="{Binding DataContext.Appearance.BackupBrowserWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        BorderBrush="{Binding DataContext.Appearance.BackupBrowserWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
                                         BorderThickness="0,0,0,1">
                                         <TextBlock
                                             FontWeight="Bold"
-                                            Foreground="Black"
+                                            Foreground="{Binding DataContext.Appearance.BackupBrowserWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}"
                                             Text="{Binding Name}" />
                                     </Border>
                                 </DataTemplate>
@@ -179,7 +203,7 @@
 
         <TextBlock
             Grid.Row="4"
-            Foreground="Black"
+            Foreground="{Binding Appearance.BackupBrowserWindowTextBrush}"
             Text="{Binding Status}" />
 
         <StackPanel
@@ -187,12 +211,41 @@
             HorizontalAlignment="Right"
             Orientation="Horizontal">
             <StackPanel.Resources>
+                
                 <Style TargetType="{x:Type Button}">
-                    <Setter Property="Foreground" Value="Black" />
-                    <Setter Property="Background" Value="White" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.BackupBrowserWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowButtonBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.BackupBrowserWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="Padding" Value="10,6" />
                     <Setter Property="MinWidth" Value="120" />
                     <Setter Property="Margin" Value="0,0,8,0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border
+                                    x:Name="Root"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    SnapsToDevicePixels="True">
+                                    <ContentPresenter
+                                        Margin="{TemplateBinding Padding}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        RecognizesAccessKey="True" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.BackupBrowserWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.6" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </StackPanel.Resources>
 

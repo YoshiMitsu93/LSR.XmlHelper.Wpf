@@ -1,170 +1,526 @@
-﻿<Window x:Class="LSR.XmlHelper.Wpf.Views.SharedConfigPacksWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Shared Config Packs"
-        Height="720"
-        Width="1120"
-        WindowStartupLocation="CenterOwner">
-	<DockPanel Margin="10">
-		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-			<Button Content="Open Configs Folder" Width="170" Command="{Binding OpenConfigsFolderCommand}" />
-			<Button Content="Refresh Packs" Width="140" Margin="10,0,0,0" Command="{Binding RefreshPacksCommand}" />
-		</StackPanel>
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.SharedConfigPacksWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Shared Config Packs"
+    Width="1120"
+    Height="720"
+    Background="{Binding Appearance.SharedConfigPacksWindowBackgroundBrush}"
+    FontFamily="{Binding Appearance.UiFontFamily}"
+    FontSize="{Binding Appearance.UiFontSize}"
+    WindowStartupLocation="CenterOwner">
 
-		<TabControl>
-			<TabItem Header="Export">
-				<Grid Margin="10">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="*"/>
-					</Grid.RowDefinitions>
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{Binding Appearance.SharedConfigPacksWindowTextBrush}" />
+        </Style>
 
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
+        <Style x:Key="SharedConfigPacksHeaderTextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{Binding Appearance.SharedConfigPacksWindowHeaderTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.SharedConfigPacksWindowHeaderBackgroundBrush}" />
+        </Style>
 
-					<StackPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10">
-						<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-							<TextBlock Text="Pack Name:" Width="90" VerticalAlignment="Center" FontWeight="Bold"/>
-							<TextBox Width="400" Text="{Binding PackName, UpdateSourceTrigger=PropertyChanged}" />
-                            <CheckBox Content="Include Appearance" Margin="18,0,0,0" IsChecked="{Binding IncludeAppearance}" ToolTip="Includes Appearance settings in the pack. Leave off unless you want to share UI/visual settings too." />
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SharedConfigPacksWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border
+                                x:Name="Box"
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Background="{Binding DataContext.Appearance.SharedConfigPacksWindowCheckBoxBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{Binding DataContext.Appearance.SharedConfigPacksWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderThickness="1" />
+
+                            <Path
+                                x:Name="CheckMark"
+                                Grid.Column="0"
+                                Width="12"
+                                Height="10"
+                                Margin="2,0,0,0"
+                                VerticalAlignment="Center"
+                                Data="M 1 5 L 4 8 L 11 1"
+                                Stroke="{Binding DataContext.Appearance.SharedConfigPacksWindowCheckBoxTickBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                StrokeThickness="2"
+                                Visibility="Collapsed" />
+
+                            <ContentPresenter
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                RecognizesAccessKey="True"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Foreground" Value="{Binding Appearance.SharedConfigPacksWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.SharedConfigPacksWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SharedConfigPacksWindowControlBorderBrush}" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{Binding Appearance.SharedConfigPacksWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.SharedConfigPacksWindowButtonBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SharedConfigPacksWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SharedConfigPacksWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TabItem}">
+            <Setter Property="Foreground" Value="{Binding Appearance.SharedConfigPacksWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.SharedConfigPacksWindowTabBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SharedConfigPacksWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border
+                            x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentSource="Header" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SharedConfigPacksWindowTabHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SharedConfigPacksWindowTabSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type GroupBox}">
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SharedConfigPacksWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GroupBox}">
+                        <Grid SnapsToDevicePixels="True">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border
+                                Grid.Row="0"
+                                Padding="8,2"
+                                Background="{Binding DataContext.Appearance.SharedConfigPacksWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1,1,1,0">
+                                <ContentPresenter
+                                    ContentSource="Header"
+                                    RecognizesAccessKey="True"
+                                    TextElement.Foreground="{Binding DataContext.Appearance.SharedConfigPacksWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Border>
+
+                            <Border
+                                Grid.Row="1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{Binding DataContext.Appearance.SharedConfigPacksWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1,0,1,1">
+                                <ContentPresenter />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="{Binding Appearance.SharedConfigPacksWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SharedConfigPacksWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="{x:Type ListBox}">
+            <Setter Property="Foreground" Value="{Binding Appearance.SharedConfigPacksWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.SharedConfigPacksWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SharedConfigPacksWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="2,1" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="Root" Background="{TemplateBinding Background}">
+                            <ContentPresenter Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SharedConfigPacksWindowEditsHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SharedConfigPacksWindowEditsHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <DockPanel Margin="10">
+        <StackPanel
+            Margin="0,0,0,10"
+            DockPanel.Dock="Top"
+            Orientation="Horizontal">
+            <Button
+                Width="170"
+                Command="{Binding OpenConfigsFolderCommand}"
+                Content="Open Configs Folder" />
+            <Button
+                Width="140"
+                Margin="10,0,0,0"
+                Command="{Binding RefreshPacksCommand}"
+                Content="Refresh Packs" />
+        </StackPanel>
+
+        <TabControl>
+            <TabItem Header="Export">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.ColumnSpan="2"
+                        Margin="0,0,0,10">
+                        <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                            <TextBlock
+                                Width="110" Margin="0,0,10,0"
+                                Padding="6,2"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Style="{DynamicResource SharedConfigPacksHeaderTextBlockStyle}"
+                                Text="Pack Name:" />
+                            <TextBox Width="400" Text="{Binding PackName, UpdateSourceTrigger=PropertyChanged}" />
+                            <CheckBox
+                                Margin="26,0,0,0" VerticalAlignment="Center"
+                                Content="Include Appearance"
+                                IsChecked="{Binding IncludeAppearance}"
+                                ToolTip="Includes Appearance settings in the pack. Leave off unless you want to share UI/visual settings too." />
                         </StackPanel>
 
-						<TextBlock Text="Description (optional):" FontWeight="Bold" Margin="0,0,0,6"/>
-						<TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-					</StackPanel>
+                        <TextBlock
+                            Margin="0,0,0,6"
+                            Padding="6,2"
+                            FontWeight="Bold"
+                            Style="{DynamicResource SharedConfigPacksHeaderTextBlockStyle}"
+                            Text="Description (optional):" />
+                        <TextBox
+                            Height="60"
+                            AcceptsReturn="True"
+                            Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
 
-					<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10">
-						<Button Content="Select All Pending" Width="160" Command="{Binding ExportSelectAllPendingCommand}" />
-						<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ExportSelectNonePendingCommand}" />
-					</StackPanel>
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="0,0,0,10"
+                        Orientation="Horizontal">
+                        <Button
+                            Width="160"
+                            Command="{Binding ExportSelectAllPendingCommand}"
+                            Content="Select All Pending" />
+                        <Button
+                            Width="120"
+                            Margin="10,0,0,0"
+                            Command="{Binding ExportSelectNonePendingCommand}"
+                            Content="Select None" />
+                    </StackPanel>
 
-					<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,10">
-						<Button Content="Select All Committed" Width="170" Command="{Binding ExportSelectAllCommittedCommand}" />
-						<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ExportSelectNoneCommittedCommand}" />
-					</StackPanel>
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="0,0,0,10"
+                        Orientation="Horizontal">
+                        <Button
+                            Width="170"
+                            Command="{Binding ExportSelectAllCommittedCommand}"
+                            Content="Select All Committed" />
+                        <Button
+                            Width="120"
+                            Margin="10,0,0,0"
+                            Command="{Binding ExportSelectNoneCommittedCommand}"
+                            Content="Select None" />
+                    </StackPanel>
 
-					<GroupBox Grid.Row="2" Grid.Column="0" Header="Pending edits to include">
-						<ListBox ItemsSource="{Binding ExportPending}">
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-					</GroupBox>
+                    <GroupBox
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Header="Pending edits to include">
+                        <ListBox ItemsSource="{Binding ExportPending}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Display}" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
 
-					<GroupBox Grid.Row="2" Grid.Column="1" Header="Committed edits to include">
-						<ListBox ItemsSource="{Binding ExportCommitted}">
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-					</GroupBox>
+                    <GroupBox
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Header="Committed edits to include">
+                        <ListBox ItemsSource="{Binding ExportCommitted}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Display}" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
 
-					<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,10,0,0">
-                        <Button Content="Export Pack" Width="140" Command="{Binding ExportCommand}" />
-                        <Button Content="Export Summary..." Width="160" Margin="10,0,0,0" ToolTip="Export a readable edit summary (.txt) for the selected Pending/Committed edits." Command="{Binding ExportSummaryCommand}" />
-                        <TextBlock Text="Exports to: LSR-XML-Helper\Shared-Configs" Margin="14,6,0,0" Opacity="0.75"/>
+                    <StackPanel
+                        Grid.Row="3"
+                        Grid.ColumnSpan="2"
+                        Margin="0,10,0,0"
+                        Orientation="Horizontal">
+                        <Button
+                            Width="140"
+                            Command="{Binding ExportCommand}"
+                            Content="Export Pack" />
+                        <Button
+                            Width="160"
+                            Margin="10,0,0,0"
+                            Command="{Binding ExportSummaryCommand}"
+                            Content="Export Summary..."
+                            ToolTip="Export a readable edit summary (.txt) for the selected Pending/Committed edits." />
+                        <TextBlock
+                            Margin="14,6,0,0"
+                            Opacity="0.75"
+                            Text="Exports to: LSR-XML-Helper\Shared-Configs" />
 
-                   </StackPanel>
-				</Grid>
-			</TabItem>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
 
-			<TabItem Header="Import">
-				<Grid Margin="10">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="340"/>
-						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
+            <TabItem Header="Import">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="340" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="Auto"/>
-					</Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-					<GroupBox Header="Available Packs" Grid.Column="0" Grid.RowSpan="2" Margin="0,0,10,0">
-						<DockPanel Margin="10">
-							<ListBox ItemsSource="{Binding PackFiles}" SelectedItem="{Binding SelectedPackPath}" />
-						</DockPanel>
-					</GroupBox>
+                    <GroupBox
+                        Grid.RowSpan="2"
+                        Grid.Column="0"
+                        Margin="0,0,10,0"
+                        Header="Available Packs">
+                        <DockPanel Margin="10">
+                            <ListBox ItemsSource="{Binding PackFiles}" SelectedItem="{Binding SelectedPackPath}" />
+                        </DockPanel>
+                    </GroupBox>
 
-					<Grid Grid.Column="1" Grid.Row="0">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto"/>
-							<RowDefinition Height="Auto"/>
-							<RowDefinition Height="*"/>
-							<RowDefinition Height="*"/>
-						</Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-						<StackPanel Grid.Row="0" Margin="0,0,0,10">
-							<StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-								<CheckBox Content="Import Appearance" IsChecked="{Binding ImportAppearance}" />
-								<CheckBox Content="Import Edits" Margin="18,0,0,0" IsChecked="{Binding ImportEdits}" />
-							</StackPanel>
+                        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                            <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                <CheckBox Content="Import Appearance" IsChecked="{Binding ImportAppearance}" />
+                                <CheckBox
+                                    Margin="18,0,0,0"
+                                    Content="Import Edits"
+                                    IsChecked="{Binding ImportEdits}" />
+                            </StackPanel>
 
                             <StackPanel Orientation="Horizontal">
-                                <RadioButton Content="Import edits as Pending" GroupName="ImportAs" IsChecked="{Binding ImportEditsAsPending}" />
-                                <RadioButton Content="Import edits as Committed" GroupName="ImportAs" Margin="18,0,0,0" IsChecked="{Binding ImportEditsAsCommitted}" />
-                                <CheckBox Content="Apply Now" Margin="18,0,0,0" IsChecked="{Binding ApplyNow}"
-								ToolTip="If enabled, selected edits are applied directly to XML files on disk (backups will be created)." />
+                                <RadioButton
+                                    Content="Import edits as Pending"
+                                    GroupName="ImportAs"
+                                    IsChecked="{Binding ImportEditsAsPending}" />
+                                <RadioButton
+                                    Margin="18,0,0,0"
+                                    Content="Import edits as Committed"
+                                    GroupName="ImportAs"
+                                    IsChecked="{Binding ImportEditsAsCommitted}" />
+                                <CheckBox
+                                    Margin="18,0,0,0"
+                                    Content="Apply Now"
+                                    IsChecked="{Binding ApplyNow}"
+                                    ToolTip="If enabled, selected edits are applied directly to XML files on disk (backups will be created)." />
                             </StackPanel>
                         </StackPanel>
 
-						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-							<Button Content="Select All Pending" Width="160" Command="{Binding ImportSelectAllPendingCommand}" />
-							<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ImportSelectNonePendingCommand}" />
-							<Button Content="Select All Committed" Width="170" Margin="30,0,0,0" Command="{Binding ImportSelectAllCommittedCommand}" />
-							<Button Content="Select None" Width="120" Margin="10,0,0,0" Command="{Binding ImportSelectNoneCommittedCommand}" />
-						</StackPanel>
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="0,0,0,10"
+                            Orientation="Horizontal">
+                            <Button
+                                Width="160"
+                                Command="{Binding ImportSelectAllPendingCommand}"
+                                Content="Select All Pending" />
+                            <Button
+                                Width="120"
+                                Margin="10,0,0,0"
+                                Command="{Binding ImportSelectNonePendingCommand}"
+                                Content="Select None" />
+                            <Button
+                                Width="170"
+                                Margin="30,0,0,0"
+                                Command="{Binding ImportSelectAllCommittedCommand}"
+                                Content="Select All Committed" />
+                            <Button
+                                Width="120"
+                                Margin="10,0,0,0"
+                                Command="{Binding ImportSelectNoneCommittedCommand}"
+                                Content="Select None" />
+                        </StackPanel>
 
-						<Grid Grid.Row="2">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-							<GroupBox Header="Pending edits in pack" Grid.Column="0" Margin="0,0,10,0">
-								<ListBox ItemsSource="{Binding ImportPending}">
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</GroupBox>
+                            <GroupBox
+                                Grid.Column="0"
+                                Margin="0,0,10,0"
+                                Header="Pending edits in pack">
+                                <ListBox ItemsSource="{Binding ImportPending}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding Display}" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </GroupBox>
 
-							<GroupBox Header="Committed edits in pack" Grid.Column="1">
-								<ListBox ItemsSource="{Binding ImportCommitted}">
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding Display}" />
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</GroupBox>
-						</Grid>
+                            <GroupBox Grid.Column="1" Header="Committed edits in pack">
+                                <ListBox ItemsSource="{Binding ImportCommitted}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Content="{Binding Display}" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </GroupBox>
+                        </Grid>
 
-						<GroupBox Header="Preview (what will change)" Grid.Row="3">
-							<DockPanel Margin="10">
-								<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-									<Button Content="Rebuild Preview" Width="140" ToolTip="Rebuild the preview text so it matches the currently selected pack and import options." Command="{Binding RebuildPreviewCommand}" />
-									<Button Content="Import Selected" Width="140" Margin="10,0,0,0" ToolTip="Import only the currently selected items from this pack into your local data." Command="{Binding ImportCommand}" />
-								</StackPanel>
-                                <TextBox Text="{Binding PreviewText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                        <GroupBox Grid.Row="3" Header="Preview (what will change)">
+                            <DockPanel Margin="10">
+                                <StackPanel
+                                    Margin="0,0,0,10"
+                                    DockPanel.Dock="Top"
+                                    Orientation="Horizontal">
+                                    <Button
+                                        Width="140"
+                                        Command="{Binding RebuildPreviewCommand}"
+                                        Content="Rebuild Preview"
+                                        ToolTip="Rebuild the preview text so it matches the currently selected pack and import options." />
+                                    <Button
+                                        Width="140"
+                                        Margin="10,0,0,0"
+                                        Command="{Binding ImportCommand}"
+                                        Content="Import Selected"
+                                        ToolTip="Import only the currently selected items from this pack into your local data." />
+                                </StackPanel>
+                                <TextBox
+                                    IsReadOnly="True"
+                                    Text="{Binding PreviewText, Mode=OneWay}"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
                             </DockPanel>
-						</GroupBox>
-					</Grid>
+                        </GroupBox>
+                    </Grid>
 
-					<TextBlock Grid.Column="1" Grid.Row="1" Margin="0,10,0,0" Opacity="0.75"
-                               Text="Tip: Import can add items as Pending (recommended) or Committed. Apply Now writes directly to disk with backups."/>
-				</Grid>
-			</TabItem>
-		</TabControl>
-	</DockPanel>
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="0,10,0,0"
+                        Opacity="0.75"
+                        Text="Tip: Import can add items as Pending (recommended) or Committed. Apply Now writes directly to disk with backups." />
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </Window>

@@ -13,9 +13,9 @@
     <RootNamespace>LSR.XmlHelper.Wpf</RootNamespace>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
 
-    <Version>1.0.2</Version>
-    <FileVersion>1.0.2</FileVersion>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <Version>1.0.3</Version>
+    <FileVersion>1.0.3</FileVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +28,24 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LSR.XmlHelper.Core\LSR.XmlHelper.Core.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="Guides\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Guides\CommunityGuides\" />
+    <Folder Include="Guides\Guides\Packs\" />
   </ItemGroup>
 
 </Project>

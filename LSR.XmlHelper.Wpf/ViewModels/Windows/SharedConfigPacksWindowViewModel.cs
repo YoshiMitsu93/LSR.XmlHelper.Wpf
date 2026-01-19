@@ -19,6 +19,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly Func<string?> _getRootFolder;
         private readonly AppSettings _settings;
         private readonly SharedConfigPackService _packs;
+        private readonly AppearanceService _appearance;
         private readonly EditHistoryService _editHistory;
         private readonly XmlBackupRequestService _backup;
 
@@ -39,12 +40,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public SharedConfigPacksWindowViewModel(
             Func<string?> getRootFolder,
             AppSettings settings,
+            AppearanceService appearance,
             SharedConfigPackService packs,
             EditHistoryService editHistory,
             XmlBackupRequestService backup)
         {
             _getRootFolder = getRootFolder;
             _settings = settings;
+            _appearance = appearance;
             _packs = packs;
             _editHistory = editHistory;
             _backup = backup;
@@ -100,6 +103,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     RebuildPreview();
             }
         }
+
+        public AppearanceService Appearance => _appearance;
 
         public string? SelectedPackPath
         {

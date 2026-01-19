@@ -12,6 +12,7 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
         private readonly AppSettingsService _settingsService;
         private readonly XmlFriendlyViewService _friendly;
         private readonly XmlDocumentService _xml;
+        public event EventHandler? HistoryChanged;
 
         public EditHistoryService(AppSettings settings, AppSettingsService settingsService, XmlFriendlyViewService friendly, XmlDocumentService xml)
         {
@@ -595,6 +596,9 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
             catch
             {
             }
+
+            HistoryChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }
+

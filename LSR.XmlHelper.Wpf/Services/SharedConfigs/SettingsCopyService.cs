@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Reflection;
 
 namespace LSR.XmlHelper.Wpf.Services.SharedConfigs
@@ -22,19 +23,30 @@ namespace LSR.XmlHelper.Wpf.Services.SharedConfigs
                 if (dp is null || !dp.CanWrite)
                     continue;
 
+                if (dp.PropertyType != sp.PropertyType)
+                    continue;
+
                 var sv = sp.GetValue(source);
                 if (sv is null)
                     continue;
 
-                if (dp.PropertyType.IsValueType || dp.PropertyType == typeof(string))
+                if (sv is string)
                 {
-                    if (dp.PropertyType == sp.PropertyType)
-                        dp.SetValue(target, sv);
+                    dp.SetValue(target, sv);
                     continue;
                 }
 
-                if (dp.PropertyType != sp.PropertyType)
+                if (sv is IList)
+                {
+                    dp.SetValue(target, sv);
                     continue;
+                }
+
+                if (dp.PropertyType.IsArray)
+                {
+                    dp.SetValue(target, sv);
+                    continue;
+                }
 
                 var dv = dp.GetValue(target);
                 if (dv is null)
@@ -46,5 +58,7 @@ namespace LSR.XmlHelper.Wpf.Services.SharedConfigs
                 CopyPublicSettableProperties(sv, dv);
             }
         }
+
     }
 }
+  

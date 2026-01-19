@@ -138,6 +138,7 @@
         </Style>
         <Style TargetType="{x:Type DataGrid}">
             <Setter Property="infra:ScrollViewerMouseWheelBehavior.Enable" Value="True" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -161,6 +162,7 @@
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -169,10 +171,12 @@
             <Setter Property="BorderThickness" Value="0,0,1,1" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
                     <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </DataTrigger>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
@@ -210,6 +214,7 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <Border
+                                x:Name="ItemBackground"
                                 Grid.Row="0"
                                 Grid.ColumnSpan="2"
                                 Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}}"
@@ -258,6 +263,12 @@
                                 Visibility="Collapsed" />
                         </Grid>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
                             <Trigger Property="IsExpanded" Value="True">
                                 <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
                                 <Setter TargetName="Arrow" Property="RenderTransform">
@@ -278,10 +289,10 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -296,10 +307,10 @@
             <Setter Property="Padding" Value="4,2" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -320,20 +331,52 @@
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.HeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="4,2" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane2ItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{Binding DataContext.Appearance.Pane2ItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border
+                            x:Name="ItemBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{Binding DataContext.Appearance.Pane2ItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{Binding DataContext.Appearance.Pane2ItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <Style
-            x:Key="Pane1FlatListBoxItemStyle"
-            BasedOn="{StaticResource {x:Type ListBoxItem}}"
-            TargetType="{x:Type ListBoxItem}">
+        <Style x:Key="Pane1FlatListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
             <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeTextBrush, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="2,1" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border
+                            x:Name="ItemBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{Binding DataContext.Appearance.Pane1TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Background" Value="{Binding PlacementTarget.DataContext.Appearance.TreeBackgroundBrush, RelativeSource={RelativeSource AncestorType=Popup}}" />
@@ -479,13 +522,16 @@
                     infra:DataGridPreserveMultiSelectionOnEditBehavior.Enable="True"
                     infra:DataGridSelectedItemsBehavior.Enable="True"
                     infra:DataGridSelectedItemsBehavior.SelectedItems="{Binding DataContext.SelectedFriendlyFields, RelativeSource={RelativeSource AncestorType=Window}}"
+                    infra:DataGridUpdateSourceOnCommitBehavior.Enable="True"
                     infra:ScrollViewerMouseWheelBehavior.Enable="True"
                     AutoGenerateColumns="False"
+                    Background="{Binding Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
                     EnableColumnVirtualization="True"
                     EnableRowVirtualization="True"
                     ItemsSource="{Binding Fields}"
+                    RowBackground="{Binding Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
                     ScrollViewer.CanContentScroll="True"
                     ScrollViewer.IsDeferredScrollingEnabled="False"
                     SelectedItem="{Binding SelectedField, Mode=OneWayToSource}"
@@ -502,16 +548,18 @@
                     </DataGrid.ContextMenu>
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
+                            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" />
-                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" />
-                                </DataTrigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{Binding Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Setter Property="Foreground" Value="{Binding Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </Trigger>
+                                <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.SearchMatchBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SearchMatchTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                </DataTrigger>
                             </Style.Triggers>
+
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
@@ -524,6 +572,16 @@
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="Foreground" Value="{Binding DataContext.Appearance.FieldColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Setter Property="Background" Value="{Binding DataContext.Appearance.FieldColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
+                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.SearchMatchBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SearchMatchTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -533,10 +591,13 @@
                             Header="Value">
                             <DataGridTextColumn.CellStyle>
                                 <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="{x:Type DataGridCell}">
-                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.ValueColumnBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.GridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.TreeItemSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
+                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.SearchMatchBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -544,6 +605,14 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="Foreground" Value="{Binding DataContext.Appearance.ValueColumnTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.TreeItemSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
+                                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SearchMatchTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                             <DataGridTextColumn.EditingElementStyle>
@@ -586,6 +655,7 @@
                         MaxHeight="600"
                         infra:DataGridScrollIntoViewOnSelectionBehavior.Enable="True"
                         infra:DataGridScrollIntoViewOnSelectionBehavior.ScrollRequestId="{Binding DataContext.FriendlyLookupScrollRequestId, RelativeSource={RelativeSource AncestorType=Window}}"
+                        infra:DataGridUpdateSourceOnCommitBehavior.Enable="True"
                         infra:ScrollViewerMouseWheelBehavior.Enable="False"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
@@ -615,11 +685,15 @@
                                                 <ControlTemplate TargetType="{x:Type GroupItem}">
                                                     <Expander
                                                         Margin="0,0,0,6"
+                                                        HorizontalContentAlignment="Stretch"
                                                         infra:LookupGridGroupExpansionBehavior.IsEnabled="True"
                                                         Header="{Binding Name}"
                                                         Tag="{Binding RelativeSource={RelativeSource AncestorType=DataGrid}, Path=Tag}">
-                                                        <ItemsPresenter />
+                                                        <Border Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=DataGrid}}" Background="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                            <ItemsPresenter />
+                                                        </Border>
                                                     </Expander>
+
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
@@ -638,10 +712,11 @@
                         </DataGrid.ContextMenu>
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
+                                <Setter Property="Background" Value="{Binding DataContext.Appearance.GridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsSearchMatch}" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" />
-                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" />
+                                        <Setter Property="Background" Value="{Binding DataContext.Appearance.SearchMatchBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SearchMatchTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -834,6 +909,10 @@
                     Click="About_Click"
                     Header="_Documentation..."
                     ToolTip="Open documentation for features, shortcuts, and how-to guides." />
+                <MenuItem
+                    Click="XmlGuides_Click"
+                    Header="LSR XML _Guides..."
+                    ToolTip="Create, edit, import, and export community guides for editing LSR XML files." />
             </MenuItem>
         </Menu>
         <StackPanel

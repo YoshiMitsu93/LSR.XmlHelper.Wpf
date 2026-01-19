@@ -12,15 +12,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         private readonly MainWindowViewModel _main;
         private readonly AppSettingsService _settingsService;
 
-        public SettingsInfoWindowViewModel(MainWindowViewModel main, AppSettingsService settingsService)
+        public SettingsInfoWindowViewModel(MainWindowViewModel main, AppSettingsService settingsService, AppearanceService appearance)
         {
             _main = main;
             _settingsService = settingsService;
-
+            Appearance = appearance;
             OpenRepoCommand = new RelayCommand(OpenRepo);
             OpenReleasesCommand = new RelayCommand(OpenReleases);
             OpenSettingsFolderCommand = new RelayCommand(OpenSettingsFolder);
         }
+        public AppearanceService Appearance { get; }
 
         public string AppVersion
         {

@@ -21,7 +21,10 @@
                 <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="6" />
                 <RowDefinition Height="Auto" />
@@ -70,20 +73,40 @@
                 CommandParameter="GridLines"
                 Style="{StaticResource SwatchButtonStyle}"
                 ToolTip="Grid line color inside the details grid (Pane 3)." />
-
             <TextBlock
                 Grid.Row="4"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Grid Background"
+                ToolTip="Background color for empty space in the details grid (Pane 3)." />
+            <TextBox
+                Grid.Row="4"
+                Grid.Column="1"
+                Text="{Binding GridBackground}"
+                ToolTip="Background color for empty space in the details grid (Pane 3)." />
+            <Button
+                Grid.Row="4"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewGridBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="GridBackground"
+                Style="{StaticResource SwatchButtonStyle}"
+                ToolTip="Background color for empty space in the details grid (Pane 3)." />
+
+            <TextBlock
+                Grid.Row="6"
                 Grid.Column="0"
                 VerticalAlignment="Center"
                 Text="Grid Row Hover Background"
                 ToolTip="Row hover highlight background in the details grid (Pane 3)." />
             <TextBox
-                Grid.Row="4"
+                Grid.Row="6"
                 Grid.Column="1"
                 Text="{Binding GridRowHoverBackground}"
                 ToolTip="Row hover highlight background in the details grid (Pane 3)." />
             <Button
-                Grid.Row="4"
+                Grid.Row="6"
                 Grid.Column="2"
                 Height="22"
                 Background="{Binding PreviewGridRowHoverBrush}"
@@ -92,7 +115,6 @@
                 Style="{DynamicResource SwatchButtonStyle}"
                 ToolTip="Row hover highlight background in the details grid (Pane 3)." />
         </Grid>
-
         <TextBlock
             Style="{DynamicResource SubHeader}"
             Text="Headers"
@@ -135,7 +157,7 @@
         <Grid Margin="0,0,0,10">
             <Grid.Resources>
                 <Style TargetType="{x:Type TextBlock}">
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static sys:SystemColors.ControlTextBrushKey}}" />
+                    <Setter Property="Foreground" Value="{Binding PreviewAppearanceWindowTextBrush}" />
                 </Style>
             </Grid.Resources>
             <Grid.ColumnDefinitions>
@@ -308,6 +330,65 @@
                 CommandParameter="ValueColumnBackground"
                 Style="{DynamicResource SwatchButtonStyle}"
                 ToolTip="Base background for the Value column (right column). Use #00000000 for transparent." />
+        </Grid>
+        <TextBlock
+            Style="{DynamicResource SubHeader}"
+            Text="Search match highlight"
+            ToolTip="Colors used to highlight fields/values that match search results in Friendly view." />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Match Background"
+                ToolTip="Background color for matched rows/cells in Friendly view search." />
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Text="{Binding SearchMatchBackground}"
+                ToolTip="Background color for matched rows/cells in Friendly view search." />
+            <Button
+                Grid.Row="0"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewSearchMatchBackgroundBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="SearchMatchBackground"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Background color for matched rows/cells in Friendly view search." />
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Match Text"
+                ToolTip="Text color for matched rows/cells in Friendly view search." />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Text="{Binding SearchMatchText}"
+                ToolTip="Text color for matched rows/cells in Friendly view search." />
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewSearchMatchTextBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="SearchMatchText"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Text color for matched rows/cells in Friendly view search." />
         </Grid>
     </StackPanel>
 </UserControl>

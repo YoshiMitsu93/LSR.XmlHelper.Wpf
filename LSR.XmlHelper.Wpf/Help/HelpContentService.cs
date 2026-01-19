@@ -36,7 +36,7 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                     "Open Folder scans the folder you choose and finds XML files.\n\n" +
                     "Steps:\n" +
                     "1) File > Open Folder… (Ctrl+O)\n" +
-                    "2) Choose the folder containing your LSR XML files\n" +
+                    "2) Choose the folder containing your LSR XML files (Grand Theft Auto V\\Plugins\\LosSantosRED)\n" +
                     "3) Click an XML in the left list to load it\n\n" +
                     "Include subfolders:\n" +
                     "- OFF: only scans the folder you selected\n" +

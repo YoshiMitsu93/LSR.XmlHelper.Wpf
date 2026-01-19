@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
@@ -26,6 +27,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private readonly Func<string?> _getRootFolderPath;
         private readonly Func<IEnumerable<EditHistoryItem>, bool> _tryApplyToCurrent;
         private readonly XmlBackupRequestService _backupRequest;
+        private readonly AppearanceService _appearance;
         private string? _selectedFilePath;
         private string _filterText = "";
         private DateTime? _dateFrom;
@@ -40,7 +42,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private IReadOnlyList<EditHistoryItem> _committedSnapshot = Array.Empty<EditHistoryItem>();
         private Dictionary<Guid, (string Status, string? CurrentValue)> _committedStatusMap = new Dictionary<Guid, (string Status, string? CurrentValue)>();
 
-        public SavedEditsWindowViewModel(EditHistoryService history, Func<string?> getCurrentFilePath, Func<IEnumerable<EditHistoryItem>, bool> tryApplyToCurrent, XmlBackupRequestService backupRequest, Func<string?> getRootFolderPath)
+        public SavedEditsWindowViewModel(EditHistoryService history, Func<string?> getCurrentFilePath, Func<IEnumerable<EditHistoryItem>, bool> tryApplyToCurrent, XmlBackupRequestService backupRequest, Func<string?> getRootFolderPath, AppearanceService appearance)
         {
             _history = history;
             _getCurrentFilePath = getCurrentFilePath;
@@ -48,6 +50,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _backupRequest = backupRequest;
             _getRootFolderPath = getRootFolderPath;
             _uiContext = SynchronizationContext.Current;
+            _appearance = appearance;
 
             ApplySelectedPendingCommand = new RelayCommand(ApplySelectedPending, CanApplySelectedPending);
             ApplyAllPendingCommand = new RelayCommand(ApplyAllPending, CanApplyAllPending);
@@ -62,9 +65,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             CommittedRowsView = CollectionViewSource.GetDefaultView(CommittedRows);
             PendingRowsView.Filter = PendingRowFilter;
             CommittedRowsView.Filter = CommittedRowFilter;
-
+            WeakEventManager<EditHistoryService, EventArgs>.AddHandler(_history, nameof(EditHistoryService.HistoryChanged), History_HistoryChanged);
             Refresh();
         }
+
+        public AppearanceService Appearance => _appearance;
 
         public ObservableCollection<string> FilePaths { get; } = new ObservableCollection<string>();
 
@@ -160,8 +165,20 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand DeleteAllCommittedCommand { get; }
         public RelayCommand ExportEditSummaryCommand { get; }
 
+        private void History_HistoryChanged(object? sender, EventArgs e)
+        {
+            PostToUi(() => Refresh(true));
+        }
+
         public void Refresh()
         {
+            Refresh(false);
+        }
+
+        public void Refresh(bool preserveSelection)
+        {
+            var previousSelection = SelectedFilePath;
+
             var files = _history.Pending
                 .Concat(_history.Committed)
                 .Select(e => e.FilePath)
@@ -179,12 +196,22 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             foreach (var f in files)
                 FilePaths.Add(f!);
 
-            var current = _getCurrentFilePath();
             _suppressBuildRows = true;
-            if (!string.IsNullOrWhiteSpace(current) && files.Any(f => string.Equals(f, current, StringComparison.OrdinalIgnoreCase)))
-                SelectedFilePath = current;
+            if (preserveSelection)
+            {
+                if (!string.IsNullOrWhiteSpace(previousSelection) && FilePaths.Any(p => string.Equals(p, previousSelection, StringComparison.OrdinalIgnoreCase)))
+                    SelectedFilePath = previousSelection;
+                else
+                    SelectedFilePath = "(All files)";
+            }
             else
-                SelectedFilePath = "(All files)";
+            {
+                var current = _getCurrentFilePath();
+                if (!string.IsNullOrWhiteSpace(current) && files.Any(f => f is not null && string.Equals(f, current, StringComparison.OrdinalIgnoreCase)))
+                    SelectedFilePath = current;
+                else
+                    SelectedFilePath = "(All files)";
+            }
             _suppressBuildRows = false;
 
             BuildRows();

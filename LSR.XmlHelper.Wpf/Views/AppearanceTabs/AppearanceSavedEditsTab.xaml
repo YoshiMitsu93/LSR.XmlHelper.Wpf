@@ -1,0 +1,241 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceSavedEditsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock Text="Saved Edits"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,4"
+                   Style="{DynamicResource SectionHeader}" />
+
+        <TextBlock Text="Colors"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,3"
+                   Margin="0,10,0,0"
+                   Style="{DynamicResource SubHeader}" />
+
+        <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Window Background" ToolTip="Background color of the Saved Edits window." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SavedEditsWindowBackground}" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowBackground" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Window Text" ToolTip="Main text color used in the Saved Edits window." />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SavedEditsWindowText}" />
+            <Button Grid.Row="1" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowText" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Control Background" ToolTip="Background color for controls like inputs and panels." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SavedEditsWindowControlBackground}" />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowControlBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowControlBackground" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Control Border" ToolTip="Border color for inputs and panels in the Saved Edits window." />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SavedEditsWindowControlBorder}" />
+            <Button Grid.Row="3" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowControlBorderBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowControlBorder" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Tab Background" ToolTip="Background color of tab headers in the Saved Edits window." />
+            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding SavedEditsWindowTabBackground}" />
+            <Button Grid.Row="6" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowTabBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowTabBackground" />
+
+            <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Tab Hover Background" ToolTip="Background color when hovering a tab header." />
+            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding SavedEditsWindowTabHoverBackground}" />
+            <Button Grid.Row="7" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowTabHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowTabHoverBackground" />
+
+            <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Tab Selected Background" ToolTip="Background color of the selected tab header." />
+            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding SavedEditsWindowTabSelectedBackground}" />
+            <Button Grid.Row="8" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowTabSelectedBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowTabSelectedBackground" />
+
+            <TextBlock Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" Text="Button Background" ToolTip="Default background color of buttons in the Saved Edits window." />
+            <TextBox Grid.Row="9" Grid.Column="1" Text="{Binding SavedEditsWindowButtonBackground}" />
+            <Button Grid.Row="9" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowButtonBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowButtonBackground" />
+
+            <TextBlock Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" Text="Button Hover Background" ToolTip="Background color when hovering buttons." />
+            <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding SavedEditsWindowButtonHoverBackground}" />
+            <Button Grid.Row="10" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowButtonHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowButtonHoverBackground" />
+
+            <TextBlock Grid.Row="11" Grid.Column="0" VerticalAlignment="Center" Text="CheckBox Background" ToolTip="Background color of the checkbox box." />
+            <TextBox Grid.Row="11" Grid.Column="1" Text="{Binding SavedEditsWindowCheckBoxBackground}" />
+            <Button Grid.Row="11" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowCheckBoxBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowCheckBoxBackground" />
+
+            <TextBlock Grid.Row="12" Grid.Column="0" VerticalAlignment="Center" Text="CheckBox Tick" ToolTip="Tick/checkmark color inside checkboxes." />
+            <TextBox Grid.Row="12" Grid.Column="1" Text="{Binding SavedEditsWindowCheckBoxTick}" />
+            <Button Grid.Row="12" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowCheckBoxTickBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowCheckBoxTick" />
+
+            <TextBlock Grid.Row="13" Grid.Column="0" VerticalAlignment="Center" Text="Grid Text" ToolTip="Text color used in the Saved Edits grid." />
+            <TextBox Grid.Row="13" Grid.Column="1" Text="{Binding SavedEditsWindowGridText}" />
+            <Button Grid.Row="13" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridText" />
+
+            <TextBlock Grid.Row="14" Grid.Column="0" VerticalAlignment="Center" Text="Grid Background" ToolTip="Background color of the Saved Edits grid." />
+            <TextBox Grid.Row="14" Grid.Column="1" Text="{Binding SavedEditsWindowGridBackground}" />
+            <Button Grid.Row="14" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridBackground" />
+
+            <TextBlock Grid.Row="15" Grid.Column="0" VerticalAlignment="Center" Text="Grid Border" ToolTip="Border color of the Saved Edits grid." />
+            <TextBox Grid.Row="15" Grid.Column="1" Text="{Binding SavedEditsWindowGridBorder}" />
+            <Button Grid.Row="15" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridBorderBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridBorder" />
+
+            <TextBlock Grid.Row="16" Grid.Column="0" VerticalAlignment="Center" Text="Grid Lines" ToolTip="Line color used between grid rows and columns." />
+            <TextBox Grid.Row="16" Grid.Column="1" Text="{Binding SavedEditsWindowGridLines}" />
+            <Button Grid.Row="16" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridLinesBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridLines" />
+
+            <TextBlock Grid.Row="17" Grid.Column="0" VerticalAlignment="Center" Text="Grid Header Background" ToolTip="Background color of the grid header row." />
+            <TextBox Grid.Row="17" Grid.Column="1" Text="{Binding SavedEditsWindowGridHeaderBackground}" />
+            <Button Grid.Row="17" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridHeaderBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridHeaderBackground" />
+
+            <TextBlock Grid.Row="18" Grid.Column="0" VerticalAlignment="Center" Text="Grid Header Text" ToolTip="Text color used in the grid header row." />
+            <TextBox Grid.Row="18" Grid.Column="1" Text="{Binding SavedEditsWindowGridHeaderText}" />
+            <Button Grid.Row="18" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridHeaderTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridHeaderText" />
+
+            <TextBlock Grid.Row="19" Grid.Column="0" VerticalAlignment="Center" Text="Grid Row Hover Background" ToolTip="Background color when hovering a grid row." />
+            <TextBox Grid.Row="19" Grid.Column="1" Text="{Binding SavedEditsWindowGridRowHoverBackground}" />
+            <Button Grid.Row="19" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridRowHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridRowHoverBackground" />
+
+            <TextBlock Grid.Row="20" Grid.Column="0" VerticalAlignment="Center" Text="Grid Row Selected Background" ToolTip="Background color of the selected grid row." />
+            <TextBox Grid.Row="20" Grid.Column="1" Text="{Binding SavedEditsWindowGridRowSelectedBackground}" />
+            <Button Grid.Row="20" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridRowSelectedBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridRowSelectedBackground" />
+
+            <TextBlock Grid.Row="21" Grid.Column="0" VerticalAlignment="Center" Text="Grid Cell Selected Background" ToolTip="Background color of the selected grid cell." />
+            <TextBox Grid.Row="21" Grid.Column="1" Text="{Binding SavedEditsWindowGridCellSelectedBackground}" />
+            <Button Grid.Row="21" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridCellSelectedBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridCellSelectedBackground" />
+
+            <TextBlock Grid.Row="22" Grid.Column="0" VerticalAlignment="Center" Text="Grid Cell Selected Text" ToolTip="Text color inside the selected grid cell." />
+            <TextBox Grid.Row="22" Grid.Column="1" Text="{Binding SavedEditsWindowGridCellSelectedText}" />
+            <Button Grid.Row="22" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSavedEditsWindowGridCellSelectedTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SavedEditsWindowGridCellSelectedText" />
+        </Grid>
+    </StackPanel>
+</UserControl>

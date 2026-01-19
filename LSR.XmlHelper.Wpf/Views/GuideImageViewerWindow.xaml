@@ -1,0 +1,28 @@
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.GuideImageViewerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Image"
+    Width="1000"
+    Height="800"
+    WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+            <TextBlock VerticalAlignment="Center" Text="Zoom" Margin="0,0,8,0" />
+            <Slider x:Name="ZoomSlider" Width="260" Minimum="25" Maximum="400" Value="100" />
+            <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="{Binding ElementName=ZoomSlider, Path=Value, StringFormat={}{0:0}%}" />
+        </StackPanel>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Border Padding="10">
+                <Image x:Name="MainImage" RenderTransformOrigin="0.5,0.5" Stretch="None">
+                    <Image.LayoutTransform>
+                        <ScaleTransform
+                            ScaleX="{Binding ElementName=ZoomSlider, Path=Value, ConverterCulture=en-US}"
+                            ScaleY="{Binding ElementName=ZoomSlider, Path=Value, ConverterCulture=en-US}" />
+                    </Image.LayoutTransform>
+                </Image>
+            </Border>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

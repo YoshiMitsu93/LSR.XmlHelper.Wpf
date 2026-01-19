@@ -1,4 +1,6 @@
 ﻿using LSR.XmlHelper.Wpf.Infrastructure;
+using LSR.XmlHelper.Wpf.Services;
+using LSR.XmlHelper.Wpf.Services.Appearance;
 using LSR.XmlHelper.Wpf.Services.Compare;
 using LSR.XmlHelper.Wpf.Services.EditHistory;
 using LSR.XmlHelper.Wpf.ViewModels;
@@ -19,6 +21,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         private readonly string? _currentOpenPathSnapshot;
         private readonly string _currentOpenXmlTextSnapshot;
         private readonly ObservableCollection<SelectableEditHistoryItemViewModel> _rows;
+        private readonly AppearanceService _appearance;
 
         private XmlFileListItem? _selectedTarget;
         private string? _externalFilePath;
@@ -32,11 +35,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             string currentOpenXmlTextSnapshot,
             XmlCompareService comparer,
             CompareEditsImportService importer,
-            CompareEditsApplyService applier)
+            CompareEditsApplyService applier,
+            AppearanceService appearance)
         {
             _comparer = comparer;
             _importer = importer;
             _applier = applier;
+            _appearance = appearance;
             _currentOpenPathSnapshot = currentOpenPathSnapshot;
             _currentOpenXmlTextSnapshot = currentOpenXmlTextSnapshot ?? "";
 
@@ -60,6 +65,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         }
 
         public ObservableCollection<XmlFileListItem> TargetFiles { get; }
+        public AppearanceService Appearance => _appearance;
 
         public XmlFileListItem? SelectedTarget
         {

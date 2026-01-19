@@ -98,6 +98,21 @@ namespace LSR.XmlHelper.Wpf.Views
             var isFriendly = vm.IsEditingFriendlyView;
 
             SectionFontsPanel.Visibility = header == "Fonts" ? Visibility.Visible : Visibility.Collapsed;
+            SectionAppearanceWindowPanel.Visibility = header == "Appearance Window" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionSharedConfigPacksPanel.Visibility = header == "Shared Config Packs" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionCompareXmlPanel.Visibility = header == "Compare XML" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionBackupBrowserPanel.Visibility = header == "Backup Browser" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionSettingsInfoPanel.Visibility = header == "Settings & Info" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionDocumentationPanel.Visibility = header == "Documentation" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionXmlGuidesPanel.Visibility = header == "LSR XML Guides" ? Visibility.Visible : Visibility.Collapsed;
+
+            SectionSavedEditsPanel.Visibility = header == "Saved Edits" ? Visibility.Visible : Visibility.Collapsed;
 
             SectionEditorPanel.Visibility = header == "Editor" && !isFriendly ? Visibility.Visible : Visibility.Collapsed;
 
@@ -118,7 +133,9 @@ namespace LSR.XmlHelper.Wpf.Views
 
         private void VmOnCloseRequested(object? sender, bool dialogResult)
         {
-            DialogResult = dialogResult;
+            if (System.Windows.Interop.ComponentDispatcher.IsThreadModal)
+                DialogResult = dialogResult;
+
             Close();
         }
     }

@@ -65,6 +65,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private int? _pendingGlobalFriendlyNavigateEntryOccurrence;
         private string? _pendingGlobalFriendlyNavigateFieldName;    
         private GlobalSearchWindow? _globalSearchWindow;
+        private AppearanceWindow? _appearanceWindow;
+        private SharedConfigPacksWindow? _sharedConfigPacksWindow;
+        private CompareXmlWindow? _compareXmlWindow;
+        private SavedEditsWindow? _savedEditsWindow;
+        private BackupBrowserWindow? _backupBrowserWindow;
         private GlobalSearchScope _globalSearchScope = GlobalSearchScope.Both;
         private bool _globalSearchUseParallelProcessing = true;
         public event EventHandler<RawNavigationRequest>? RawNavigationRequested;
@@ -481,20 +486,32 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenAppearance()
         {
-            var vm = new AppearanceWindowViewModel(
-                _settingsService,
-                _settings,
-                _appearance,
-                _appearance.IsDarkMode,
-                _appearance.IsFriendlyView);
-
-            var win = new AppearanceWindow
+            if (_appearanceWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var vm = new AppearanceWindowViewModel(
+                    _settingsService,
+                    _settings,
+                    _appearance,
+                    _appearance.IsDarkMode,
+                    _appearance.IsFriendlyView);
 
-            win.ShowDialog();
+                _appearanceWindow = new AppearanceWindow
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
+
+                _appearanceWindow.Closed += (_, _) => _appearanceWindow = null;
+            }
+
+            if (!_appearanceWindow.IsVisible)
+                _appearanceWindow.Show();
+
+            if (_appearanceWindow.WindowState == WindowState.Minimized)
+                _appearanceWindow.WindowState = WindowState.Normal;
+
+            _appearanceWindow.Activate();
         }
 
         private void OpenGlobalSearch()
@@ -687,20 +704,33 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenSavedEdits()
         {
-            var vm = new SavedEditsWindowViewModel(
-                _editHistory,
-                GetSelectedFilePath,
-                TryApplySavedEditsToCurrent,
-                _backupRequest,
-                () => RootFolderPath);
-
-            var win = new SavedEditsWindow
+            if (_savedEditsWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var vm = new SavedEditsWindowViewModel(
+                    _editHistory,
+                    GetSelectedFilePath,
+                    TryApplySavedEditsToCurrent,
+                    _backupRequest,
+                    () => RootFolderPath,
+                    _appearance);
 
-            win.ShowDialog();
+                _savedEditsWindow = new SavedEditsWindow
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
+
+                _savedEditsWindow.Closed += (_, _) => _savedEditsWindow = null;
+            }
+
+            if (!_savedEditsWindow.IsVisible)
+                _savedEditsWindow.Show();
+
+            if (_savedEditsWindow.WindowState == WindowState.Minimized)
+                _savedEditsWindow.WindowState = WindowState.Normal;
+
+            _savedEditsWindow.Activate();
         }
 
         private bool TryApplySavedEditsToCurrent(IEnumerable<EditHistoryItem> edits)
@@ -728,16 +758,28 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
-            var packs = new Services.SharedConfigs.SharedConfigPackService(_settingsService, new Services.SharedConfigs.SettingsCopyService());
-            var vm = new SharedConfigPacksWindowViewModel(() => _rootFolder, _settings, packs, _editHistory, _backupRequest);
-
-            var win = new SharedConfigPacksWindow
+            if (_sharedConfigPacksWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var packs = new Services.SharedConfigs.SharedConfigPackService(_settingsService, new Services.SharedConfigs.SettingsCopyService());
+                var vm = new SharedConfigPacksWindowViewModel(() => _rootFolder, _settings, _appearance, packs, _editHistory, _backupRequest);
 
-            win.ShowDialog();
+                _sharedConfigPacksWindow = new SharedConfigPacksWindow
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
+
+                _sharedConfigPacksWindow.Closed += (_, _) => _sharedConfigPacksWindow = null;
+            }
+
+            if (!_sharedConfigPacksWindow.IsVisible)
+                _sharedConfigPacksWindow.Show();
+
+            if (_sharedConfigPacksWindow.WindowState == WindowState.Minimized)
+                _sharedConfigPacksWindow.WindowState = WindowState.Normal;
+
+            _sharedConfigPacksWindow.Activate();
         }
 
         public void StartCompareXml(string externalXmlPath)
@@ -764,31 +806,45 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private void OpenCompareXmlWindow(string? externalXmlPath)
         {
-            var importer = new Services.Compare.CompareEditsImportService(_settingsService, _settings);
-            var comparer = new Services.Compare.XmlCompareService(_friendly);
-            var applier = new Services.Compare.CompareEditsApplyService(_editHistory, _saver, _backupRequest);
-
-            var preferredTarget = GetSelectedFilePath();
-            var currentOpenPath = GetSelectedFilePath();
-            var currentOpenXmlText = XmlText;
-
-            var vm = new ViewModels.Windows.CompareXmlWindowViewModel(
-                XmlFiles.ToList(),
-                preferredTarget,
-                externalXmlPath,
-                currentOpenPath,
-                currentOpenXmlText,
-                comparer,
-                importer,
-                applier);
-
-            var win = new Views.CompareXmlWindow
+            if (_compareXmlWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var importer = new Services.Compare.CompareEditsImportService(_settingsService, _settings);
+                var comparer = new Services.Compare.XmlCompareService(_friendly);
+                var applier = new Services.Compare.CompareEditsApplyService(_editHistory, _saver, _backupRequest);
 
-            win.ShowDialog();
+                var preferredTarget = GetSelectedFilePath();
+                var currentOpenPath = GetSelectedFilePath();
+                var currentOpenXmlText = XmlText;
+
+                var vm = new ViewModels.Windows.CompareXmlWindowViewModel(
+                    XmlFiles.ToList(),
+                    preferredTarget,
+                    externalXmlPath,
+                    currentOpenPath,
+                    currentOpenXmlText,
+                    comparer,
+                    importer,
+                    applier,
+                    _appearance);
+
+
+                _compareXmlWindow = new Views.CompareXmlWindow
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
+
+                _compareXmlWindow.Closed += (_, _) => _compareXmlWindow = null;
+            }
+
+            if (!_compareXmlWindow.IsVisible)
+                _compareXmlWindow.Show();
+
+            if (_compareXmlWindow.WindowState == WindowState.Minimized)
+                _compareXmlWindow.WindowState = WindowState.Normal;
+
+            _compareXmlWindow.Activate();
         }
 
         private void OpenBackupBrowser()
@@ -802,37 +858,58 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 var first = XmlFiles.FirstOrDefault();
                 if (first is null || string.IsNullOrWhiteSpace(first.FullPath) || !File.Exists(first.FullPath))
                 {
-                    MessageBox.Show("No XML files were found in the opened folder.", "Restore from Backup", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No XML files were found in this folder.", "Restore from Backup", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
                 path = first.FullPath;
             }
 
-            var vm = new BackupBrowserWindowViewModel(path, _appearance);
-            var win = new BackupBrowserWindow
+            if (_backupBrowserWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var vm = new BackupBrowserWindowViewModel(path, _appearance);
 
-            var result = win.ShowDialog();
-            if (result == true)
-            {
-                var restored = vm.RestoredXmlPath;
-                if (!string.IsNullOrWhiteSpace(restored) && File.Exists(restored))
+                vm.CloseRequested += (_, ok) =>
                 {
-                    _ = LoadFileAsync(restored);
-                    Status = $"Restored backup: {Path.GetFileName(restored)}";
-                }
-                else
+                    if (_backupBrowserWindow is not null)
+                        _backupBrowserWindow.Close();
+
+                    _backupBrowserWindow = null;
+
+                    if (ok)
+                    {
+                        var restored = vm.RestoredXmlPath;
+                        if (!string.IsNullOrWhiteSpace(restored) && File.Exists(restored))
+                        {
+                            _ = LoadFileAsync(restored);
+                            Status = $"Restored backup: {Path.GetFileName(restored)}";
+                        }
+                        else
+                        {
+                            _ = LoadFileAsync(path);
+                            Status = $"Restored backup: {Path.GetFileName(path)}";
+                        }
+                    }
+                };
+
+                _backupBrowserWindow = new BackupBrowserWindow
                 {
-                    _ = LoadFileAsync(path);
-                    Status = $"Restored backup: {Path.GetFileName(path)}";
-                }
+                    Owner = System.Windows.Application.Current?.MainWindow,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
+
+                _backupBrowserWindow.Closed += (_, _) => _backupBrowserWindow = null;
             }
-        }
 
+            if (!_backupBrowserWindow.IsVisible)
+                _backupBrowserWindow.Show();
+
+            if (_backupBrowserWindow.WindowState == WindowState.Minimized)
+                _backupBrowserWindow.WindowState = WindowState.Normal;
+
+            _backupBrowserWindow.Activate();
+        }
 
         private void AppearanceOnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -1191,6 +1268,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private static FriendlyFieldsState BuildFriendlyFieldsState(XmlFriendlyEntry entry, CancellationToken token)
         {
+            static FriendlyFieldsState Empty()
+            {
+                return new FriendlyFieldsState(
+                    new ObservableCollection<XmlFriendlyFieldViewModel>(),
+                    new ObservableCollection<XmlFriendlyFieldGroupViewModel>(),
+                    new ObservableCollection<object>());
+            }
+
             static int CompareSegment(string a, string b)
             {
                 static (string Name, int? Index) Parse(string s)
@@ -1212,9 +1297,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 var pa = Parse(a);
                 var pb = Parse(b);
 
-                var nameCompare = StringComparer.OrdinalIgnoreCase.Compare(pa.Name, pb.Name);
-                if (nameCompare != 0)
-                    return nameCompare;
+                var nameCmp = StringComparer.OrdinalIgnoreCase.Compare(pa.Name, pb.Name);
+                if (nameCmp != 0)
+                    return nameCmp;
 
                 if (pa.Index.HasValue && pb.Index.HasValue)
                     return pa.Index.Value.CompareTo(pb.Index.Value);
@@ -1225,26 +1310,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 if (pb.Index.HasValue)
                     return -1;
 
-                return StringComparer.OrdinalIgnoreCase.Compare(a, b);
+                return 0;
             }
 
-            static int CompareFieldPath(string? a, string? b)
+            static int CompareFieldPath(string a, string b)
             {
                 if (ReferenceEquals(a, b))
                     return 0;
 
-                if (a is null)
+                if (string.IsNullOrWhiteSpace(a))
                     return -1;
 
-                if (b is null)
+                if (string.IsNullOrWhiteSpace(b))
                     return 1;
 
-                var aParts = a.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                var bParts = b.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                var aParts = a.Split(new[] { '/', '.' }, StringSplitOptions.RemoveEmptyEntries);
+                var bParts = b.Split(new[] { '/', '.' }, StringSplitOptions.RemoveEmptyEntries);
 
-                var len = Math.Min(aParts.Length, bParts.Length);
-
-                for (var i = 0; i < len; i++)
+                var min = Math.Min(aParts.Length, bParts.Length);
+                for (var i = 0; i < min; i++)
                 {
                     var cmp = CompareSegment(aParts[i], bParts[i]);
                     if (cmp != 0)
@@ -1254,7 +1338,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return aParts.Length.CompareTo(bParts.Length);
             }
 
-            token.ThrowIfCancellationRequested();
+            if (token.IsCancellationRequested)
+                return Empty();
 
             var source = entry.Fields;
 
@@ -1267,7 +1352,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
             foreach (var kv in ordered)
             {
-                token.ThrowIfCancellationRequested();
+                if (token.IsCancellationRequested)
+                    return Empty();
+
                 fields.Add(new XmlFriendlyFieldViewModel(kv.Key, kv.Value.Value ?? ""));
             }
 

@@ -1,0 +1,193 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceWindowTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock x:Name="AnchorAppearanceWindow"
+                   Text="Appearance Window"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,4"
+                   Style="{DynamicResource SectionHeader}" />
+
+        <TextBlock Text="Colors"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,3"
+                   Style="{DynamicResource SubHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Window Background" VerticalAlignment="Center" ToolTip="Background color of the Appearance window." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AppearanceWindowBackground}" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowBackground"
+                    Height="22" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Window Text" VerticalAlignment="Center" ToolTip="Text color used throughout the Appearance window." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AppearanceWindowText}" />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowText"
+                    Height="22" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Control Background" VerticalAlignment="Center" ToolTip="Background color of inputs (TextBoxes) in the Appearance window." />
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding AppearanceWindowControlBackground}" />
+            <Button Grid.Row="4" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowControlBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowControlBackground"
+                    Height="22" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="Control Border" VerticalAlignment="Center" ToolTip="Border color of inputs and panels in the Appearance window." />
+            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding AppearanceWindowControlBorder}" />
+            <Button Grid.Row="6" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowControlBorderBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowControlBorder"
+                    Height="22" />
+        </Grid>
+
+        <TextBlock Text="Headers"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,3"
+                   Style="{DynamicResource SubHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Header Text" VerticalAlignment="Center" ToolTip="Text color of section headers in the Appearance window." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AppearanceWindowHeaderText}" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowHeaderText"
+                    Height="22" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Header Background" VerticalAlignment="Center" ToolTip="Background color of section headers in the Appearance window." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AppearanceWindowHeaderBackground}" />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowHeaderBackground"
+                    Height="22" />
+        </Grid>
+
+        <TextBlock Text="Tabs"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,3"
+                   Style="{DynamicResource SubHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Tab Background" VerticalAlignment="Center" ToolTip="Background color of tab headers in the Appearance window." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AppearanceWindowTabBackground}" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowTabBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowTabBackground"
+                    Height="22" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Tab Hover Background" VerticalAlignment="Center" ToolTip="Background color when hovering a tab header." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AppearanceWindowTabHoverBackground}" />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowTabHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowTabHoverBackground"
+                    Height="22" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Tab Selected Background" VerticalAlignment="Center" ToolTip="Background color of the currently selected tab header." />
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding AppearanceWindowTabSelectedBackground}" />
+            <Button Grid.Row="4" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowTabSelectedBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowTabSelectedBackground"
+                    Height="22" />
+        </Grid>
+
+        <TextBlock Text="Buttons"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,3"
+                   Style="{DynamicResource SubHeader}" />
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Button Background" VerticalAlignment="Center" ToolTip="Default background color of buttons in the Appearance window." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AppearanceWindowButtonBackground}" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowButtonBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowButtonBackground"
+                    Height="22" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Button Hover Background" VerticalAlignment="Center" ToolTip="Background color when hovering buttons in the Appearance window." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AppearanceWindowButtonHoverBackground}" />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewAppearanceWindowButtonHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="AppearanceWindowButtonHoverBackground"
+                    Height="22" />
+        </Grid>
+    </StackPanel>
+</UserControl>

@@ -22,5 +22,9 @@ namespace LSR.XmlHelper.Wpf.Views
             if (DataContext is SettingsInfoWindowViewModel vm)
                 vm.ViewMode = XmlListViewMode.Flat;
         }
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

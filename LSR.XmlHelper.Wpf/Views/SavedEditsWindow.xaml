@@ -1,66 +1,329 @@
-﻿<Window x:Class="LSR.XmlHelper.Wpf.Views.SavedEditsWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Saved Edits"
-        Height="700"
-        Width="1100"
-        WindowStartupLocation="CenterOwner">
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.SavedEditsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Saved Edits"
+    Width="1100"
+    Height="700"
+    Background="{Binding Appearance.SavedEditsWindowBackgroundBrush}"
+    FontFamily="{Binding Appearance.UiFontFamily}"
+    FontSize="{Binding Appearance.UiFontSize}"
+    Foreground="{Binding Appearance.SavedEditsWindowTextBrush}"
+    WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="{x:Type DatePicker}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowButtonBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TabItem}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowTabBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border
+                            x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowTabHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowTabSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="{Binding Appearance.SavedEditsWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.SavedEditsWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGrid}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowGridBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowGridTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowGridBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="GridLinesVisibility" Value="All" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowGridLinesBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="VerticalGridLinesBrush" Value="{Binding DataContext.Appearance.SavedEditsWindowGridLinesBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowGridHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowGridHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Padding" Value="8,4" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="Transparent" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowGridRowHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowGridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type DataGridCell}">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowGridCellSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowGridCellSelectedTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SavedEditsWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border
+                                x:Name="Box"
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Background="{Binding DataContext.Appearance.SavedEditsWindowCheckBoxBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{Binding DataContext.Appearance.SavedEditsWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderThickness="1" />
+
+                            <Path
+                                x:Name="CheckMark"
+                                Grid.Column="0"
+                                Width="12"
+                                Height="10"
+                                Margin="2,0,0,0"
+                                VerticalAlignment="Center"
+                                Data="M 1 5 L 4 8 L 11 1"
+                                Stroke="{Binding DataContext.Appearance.SavedEditsWindowCheckBoxTickBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                StrokeThickness="2"
+                                Visibility="Collapsed" />
+
+                            <ContentPresenter
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                RecognizesAccessKey="True"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
     <DockPanel Margin="10">
-        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="File:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Bold"/>
-                <ComboBox Width="980"
-                          ItemsSource="{Binding FilePaths}"
-                          SelectedItem="{Binding SelectedFilePath}"
-                          IsEditable="False"/>
+        <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
+            <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="File:" />
+                <ComboBox
+                    Width="980"
+                    IsEditable="False"
+                    ItemsSource="{Binding FilePaths}"
+                    SelectedItem="{Binding SelectedFilePath}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Filter:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Bold"/>
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="Filter:" />
                 <TextBox Width="520" Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
 
-                <TextBlock Text="From:" VerticalAlignment="Center" Margin="14,0,8,0" FontWeight="Bold"/>
+                <TextBlock
+                    Margin="14,0,8,0"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="From:" />
                 <DatePicker Width="140" SelectedDate="{Binding DateFrom}" />
 
-                <TextBlock Text="To:" VerticalAlignment="Center" Margin="14,0,8,0" FontWeight="Bold"/>
+                <TextBlock
+                    Margin="14,0,8,0"
+                    VerticalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="To:" />
                 <DatePicker Width="140" SelectedDate="{Binding DateTo}" />
-                <Button Content="Export Edit Summary..." Margin="14,0,0,0" Width="170"
-                ToolTip="Export a readable summary of saved edits to a .txt file."
-                Command="{Binding ExportEditSummaryCommand}" />
+                <Button
+                    Width="170"
+                    Margin="14,0,0,0"
+                    Command="{Binding ExportEditSummaryCommand}"
+                    Content="Export Edit Summary..."
+                    ToolTip="Export a readable summary of saved edits to a .txt file." />
             </StackPanel>
         </StackPanel>
 
         <TabControl>
             <TabItem Header="Pending">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="Apply Selected" Width="140" ToolTip="Apply only the checked pending edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplySelectedPendingCommand}" />
-                        <Button Content="Apply All" Width="140" Margin="10,0,0,0" ToolTip="Apply all visible (filtered) pending edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplyAllPendingCommand}" />
+                    <StackPanel
+                        Margin="0,0,0,10"
+                        DockPanel.Dock="Top"
+                        Orientation="Horizontal">
+                        <Button
+                            Width="140"
+                            Command="{Binding ApplySelectedPendingCommand}"
+                            Content="Apply Selected"
+                            ToolTip="Apply only the checked pending edits to the currently open XML (the selected file must be open in the main window)." />
+                        <Button
+                            Width="140"
+                            Margin="10,0,0,0"
+                            Command="{Binding ApplyAllPendingCommand}"
+                            Content="Apply All"
+                            ToolTip="Apply all visible (filtered) pending edits to the currently open XML (the selected file must be open in the main window)." />
 
-                        <Button Content="Delete Selected" Width="140" Margin="30,0,0,0" ToolTip="Delete the checked pending edits from history. This does not change any XML file." Command="{Binding DeleteSelectedPendingCommand}" />
-                        <Button Content="Delete All" Width="140" Margin="10,0,0,0" ToolTip="Delete all visible (filtered) pending edits from history. This does not change any XML file." Command="{Binding DeleteAllPendingCommand}" />
+                        <Button
+                            Width="140"
+                            Margin="30,0,0,0"
+                            Command="{Binding DeleteSelectedPendingCommand}"
+                            Content="Delete Selected"
+                            ToolTip="Delete the checked pending edits from history. This does not change any XML file." />
+                        <Button
+                            Width="140"
+                            Margin="10,0,0,0"
+                            Command="{Binding DeleteAllPendingCommand}"
+                            Content="Delete All"
+                            ToolTip="Delete all visible (filtered) pending edits from history. This does not change any XML file." />
                     </StackPanel>
 
-                    <DataGrid ItemsSource="{Binding PendingRowsView}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              IsReadOnly="False"
-                              SelectionMode="Extended">
+                    <DataGrid
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        IsReadOnly="False"
+                        ItemsSource="{Binding PendingRowsView}"
+                        SelectionMode="Extended">
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="" Width="40">
+                            <DataGridTemplateColumn Width="40" Header="">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <CheckBox
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="When (UTC)" Width="160" Binding="{Binding Item.TimestampUtc}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Collection" Width="140" Binding="{Binding Item.CollectionTitle}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Entry" Width="160" Binding="{Binding Item.EntryKey}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Field" Width="180" Binding="{Binding Item.FieldPath}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Old" Width="120" Binding="{Binding Item.OldValue}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="New" Width="120" Binding="{Binding Item.NewValue}" IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding Item.TimestampUtc}"
+                                Header="When (UTC)"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="140"
+                                Binding="{Binding Item.CollectionTitle}"
+                                Header="Collection"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding Item.EntryKey}"
+                                Header="Entry"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="180"
+                                Binding="{Binding Item.FieldPath}"
+                                Header="Field"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="120"
+                                Binding="{Binding Item.OldValue}"
+                                Header="Old"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="120"
+                                Binding="{Binding Item.NewValue}"
+                                Header="New"
+                                IsReadOnly="True" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -68,45 +331,115 @@
 
             <TabItem Header="Committed">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Button Content="Apply Selected" Width="140" ToolTip="Apply only the checked committed edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplySelectedCommittedCommand}" />
-                            <Button Content="Apply All" Width="140" Margin="10,0,0,0" ToolTip="Apply all visible (filtered) committed edits to the currently open XML (the selected file must be open in the main window)." Command="{Binding ApplyAllCommittedCommand}" />
+                    <StackPanel Margin="0,0,0,10" DockPanel.Dock="Top">
+                        <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                            <Button
+                                Width="140"
+                                Command="{Binding ApplySelectedCommittedCommand}"
+                                Content="Apply Selected"
+                                ToolTip="Apply only the checked committed edits to the currently open XML (the selected file must be open in the main window)." />
+                            <Button
+                                Width="140"
+                                Margin="10,0,0,0"
+                                Command="{Binding ApplyAllCommittedCommand}"
+                                Content="Apply All"
+                                ToolTip="Apply all visible (filtered) committed edits to the currently open XML (the selected file must be open in the main window)." />
 
-                            <Button Content="Delete Selected" Width="140" Margin="30,0,0,0" ToolTip="Delete the checked committed edits from history. You will be prompted to create a backup first." Command="{Binding DeleteSelectedCommittedCommand}" />
-                            <Button Content="Delete All" Width="140" Margin="10,0,0,0" ToolTip="Delete all visible (filtered) committed edits from history. You will be prompted to create a backup first." Command="{Binding DeleteAllCommittedCommand}" />
+                            <Button
+                                Width="140"
+                                Margin="30,0,0,0"
+                                Command="{Binding DeleteSelectedCommittedCommand}"
+                                Content="Delete Selected"
+                                ToolTip="Delete the checked committed edits from history. You will be prompted to create a backup first." />
+                            <Button
+                                Width="140"
+                                Margin="10,0,0,0"
+                                Command="{Binding DeleteAllCommittedCommand}"
+                                Content="Delete All"
+                                ToolTip="Delete all visible (filtered) committed edits from history. You will be prompted to create a backup first." />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Show:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
-                            <CheckBox Content="Active" IsChecked="{Binding ShowActive}" Margin="0,0,14,0" ToolTip="Show committed edits where the current XML value matches the edit's New value."/>
-                            <CheckBox Content="Outdated" IsChecked="{Binding ShowOutdated}" Margin="0,0,14,0" ToolTip="Show committed edits where the current XML value no longer matches the edit's New value."/>
-                            <CheckBox Content="Missing" IsChecked="{Binding ShowMissing}" ToolTip="Show committed edits where the entry/field (or file) could not be found/loaded."/>
+                            <TextBlock
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="Show:" />
+                            <CheckBox
+                                Margin="0,0,14,0"
+                                Content="Active"
+                                IsChecked="{Binding ShowActive}"
+                                ToolTip="Show committed edits where the current XML value matches the edit's New value." />
+                            <CheckBox
+                                Margin="0,0,14,0"
+                                Content="Outdated"
+                                IsChecked="{Binding ShowOutdated}"
+                                ToolTip="Show committed edits where the current XML value no longer matches the edit's New value." />
+                            <CheckBox
+                                Content="Missing"
+                                IsChecked="{Binding ShowMissing}"
+                                ToolTip="Show committed edits where the entry/field (or file) could not be found/loaded." />
                         </StackPanel>
                     </StackPanel>
 
-                    <DataGrid ItemsSource="{Binding CommittedRowsView}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              IsReadOnly="False"
-                              SelectionMode="Extended">
+                    <DataGrid
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        IsReadOnly="False"
+                        ItemsSource="{Binding CommittedRowsView}"
+                        SelectionMode="Extended">
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="" Width="40">
+                            <DataGridTemplateColumn Width="40" Header="">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <CheckBox
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="State" Width="90" Binding="{Binding Status}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Current" Width="130" Binding="{Binding CurrentValue}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="When (UTC)" Width="160" Binding="{Binding Item.TimestampUtc}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Collection" Width="140" Binding="{Binding Item.CollectionTitle}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Entry" Width="160" Binding="{Binding Item.EntryKey}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Field" Width="180" Binding="{Binding Item.FieldPath}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="Old" Width="120" Binding="{Binding Item.OldValue}" IsReadOnly="True" />
-                            <DataGridTextColumn Header="New" Width="120" Binding="{Binding Item.NewValue}" IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="90"
+                                Binding="{Binding Status}"
+                                Header="State"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="130"
+                                Binding="{Binding CurrentValue}"
+                                Header="Current"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding Item.TimestampUtc}"
+                                Header="When (UTC)"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="140"
+                                Binding="{Binding Item.CollectionTitle}"
+                                Header="Collection"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="160"
+                                Binding="{Binding Item.EntryKey}"
+                                Header="Entry"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="180"
+                                Binding="{Binding Item.FieldPath}"
+                                Header="Field"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="120"
+                                Binding="{Binding Item.OldValue}"
+                                Header="Old"
+                                IsReadOnly="True" />
+                            <DataGridTextColumn
+                                Width="120"
+                                Binding="{Binding Item.NewValue}"
+                                Header="New"
+                                IsReadOnly="True" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

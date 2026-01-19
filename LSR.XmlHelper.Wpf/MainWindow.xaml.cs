@@ -4,6 +4,7 @@ using ICSharpCode.AvalonEdit.Search;
 using LSR.XmlHelper.Core.Services;
 using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.ViewModels;
+using LSR.XmlHelper.Wpf.Services.Appearance;
 using System.Windows.Controls;
 using System.Diagnostics;
 using System.IO;
@@ -19,6 +20,9 @@ namespace LSR.XmlHelper.Wpf
 {
     public partial class MainWindow : Window
     {
+        private Views.SettingsInfoWindow? _settingsInfoWindow;
+        private Views.HelpDocumentationWindow? _helpDocumentationWindow;
+        private Views.XmlGuidesWindow? _xmlGuidesWindow;
         private readonly XmlHelperRootService _helperRoot = new XmlHelperRootService();
         private SearchPanel? _searchPanel;
         private Views.FriendlySearchWindow? _friendlySearchWindow;
@@ -41,6 +45,16 @@ namespace LSR.XmlHelper.Wpf
             {
                 vm.RawNavigationRequested += VmOnRawNavigationRequested;
                 vm.PropertyChanged += Vm_PropertyChanged;
+                if (editor is not null)
+                {
+                    XmlSyntaxHighlightingService.Apply(editor, vm.Appearance.EditorXmlSyntaxForeground);
+
+                    vm.Appearance.PropertyChanged += (_, args) =>
+                    {
+                        if (args.PropertyName == nameof(Services.AppearanceService.EditorXmlSyntaxForeground))
+                            XmlSyntaxHighlightingService.Apply(editor, vm.Appearance.EditorXmlSyntaxForeground);
+                    };
+                }
             }
             Loaded += MainWindow_Loaded;
         }
@@ -150,6 +164,7 @@ namespace LSR.XmlHelper.Wpf
                 }
 
                 _searchPanel?.Open();
+                FocusRawSearch();
                 e.Handled = true;
                 return;
             }
@@ -198,6 +213,43 @@ namespace LSR.XmlHelper.Wpf
                 _friendlySearchWindow.WindowState = WindowState.Normal;
 
             _friendlySearchWindow.Activate();
+            _friendlySearchWindow.FocusQuery();
+        }
+
+        private void FocusRawSearch()
+        {
+            if (_searchPanel is null)
+                return;
+
+            _searchPanel.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.Input,
+                new Action(() =>
+                {
+                    _searchPanel.Focus();
+
+                    System.Windows.Controls.TextBox? firstTextBox = null;
+
+                    foreach (var tb in FindVisualChildren<System.Windows.Controls.TextBox>(_searchPanel))
+                    {
+                        if (!tb.IsVisible)
+                            continue;
+
+                        if (!tb.IsEnabled)
+                            continue;
+
+                        if (!tb.Focusable)
+                            continue;
+
+                        firstTextBox = tb;
+                        break;
+                    }
+
+                    if (firstTextBox is null)
+                        return;
+
+                    firstTextBox.Focus();
+                    firstTextBox.SelectAll();
+                }));
         }
 
         private void FriendlyGroupsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -345,16 +397,28 @@ namespace LSR.XmlHelper.Wpf
             if (DataContext is not LSR.XmlHelper.Wpf.ViewModels.MainWindowViewModel mainVm)
                 return;
 
-            var settingsService = new LSR.XmlHelper.Wpf.Services.AppSettingsService();
-            var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.SettingsInfoWindowViewModel(mainVm, settingsService);
-
-            var win = new LSR.XmlHelper.Wpf.Views.SettingsInfoWindow
+            if (_settingsInfoWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var settingsService = new LSR.XmlHelper.Wpf.Services.AppSettingsService();
+                var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.SettingsInfoWindowViewModel(mainVm, settingsService, mainVm.Appearance);
 
-            win.ShowDialog();
+                _settingsInfoWindow = new LSR.XmlHelper.Wpf.Views.SettingsInfoWindow
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
+
+                _settingsInfoWindow.Closed += (_, _) => _settingsInfoWindow = null;
+            }
+
+            if (!_settingsInfoWindow.IsVisible)
+                _settingsInfoWindow.Show();
+
+            if (_settingsInfoWindow.WindowState == WindowState.Minimized)
+                _settingsInfoWindow.WindowState = WindowState.Normal;
+
+            _settingsInfoWindow.Activate();
         }
 
         private void About_Click(object sender, RoutedEventArgs e)
@@ -362,15 +426,68 @@ namespace LSR.XmlHelper.Wpf
             if (DataContext is not MainWindowViewModel mainVm)
                 return;
 
-            var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.HelpDocumentationWindowViewModel(mainVm.Appearance);
-
-            var win = new LSR.XmlHelper.Wpf.Views.HelpDocumentationWindow
+            if (_helpDocumentationWindow is null)
             {
-                Owner = System.Windows.Application.Current?.MainWindow,
-                DataContext = vm
-            };
+                var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.HelpDocumentationWindowViewModel(mainVm.Appearance);
+                _helpDocumentationWindow = new LSR.XmlHelper.Wpf.Views.HelpDocumentationWindow
+                {
+                    Owner = this,
+                    ShowInTaskbar = true,
+                    DataContext = vm
+                };
 
-            win.ShowDialog();
+
+                _helpDocumentationWindow.Closed += (_, _) => _helpDocumentationWindow = null;
+            }
+
+            if (!_helpDocumentationWindow.IsVisible)
+                _helpDocumentationWindow.Show();
+
+            if (_helpDocumentationWindow.WindowState == WindowState.Minimized)
+                _helpDocumentationWindow.WindowState = WindowState.Normal;
+
+            _helpDocumentationWindow.Activate();
+        }
+        private void XmlGuides_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel mainVm)
+                return;
+
+            var xmlPath = GetCurrentXmlPath();
+            if (string.IsNullOrWhiteSpace(xmlPath) || !File.Exists(xmlPath))
+            {
+                if (DataContext is MainWindowViewModel vm && !string.IsNullOrWhiteSpace(vm.RootFolderPath) && Directory.Exists(vm.RootFolderPath))
+                    xmlPath = Path.Combine(vm.RootFolderPath, "__folder__.xml");
+                else
+                {
+                    System.Windows.MessageBox.Show("No folder is currently open.", "Open guides", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+            }
+
+            var root = _helperRoot.GetHelperRootForXmlPath(xmlPath);
+            if (!Directory.Exists(root))
+                Directory.CreateDirectory(root);
+
+            if (_xmlGuidesWindow is null)
+            {
+                var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.XmlGuidesWindowViewModel(mainVm.Appearance, root);
+                _xmlGuidesWindow = new LSR.XmlHelper.Wpf.Views.XmlGuidesWindow
+                {
+                    Owner = this,
+                    DataContext = vm
+                };
+
+                _xmlGuidesWindow.Closed += (_, _) => _xmlGuidesWindow = null;
+            }
+
+            if (!_xmlGuidesWindow.IsVisible)
+                _xmlGuidesWindow.Show();
+
+            if (_xmlGuidesWindow.WindowState == WindowState.Minimized)
+                _xmlGuidesWindow.WindowState = WindowState.Normal;
+
+            _xmlGuidesWindow.Activate();
         }
 
         private void OpenCurrentXmlFolder_Click(object sender, RoutedEventArgs e)

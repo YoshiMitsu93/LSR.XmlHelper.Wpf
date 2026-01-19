@@ -1,6 +1,7 @@
 ﻿using LSR.XmlHelper.Wpf.Services.EditHistory;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -167,11 +168,40 @@ namespace LSR.XmlHelper.Wpf.Services.SharedConfigs
                     continue;
                 }
 
+                if (curVal is IEnumerable curEnum && newVal is IEnumerable newEnum)
+                {
+                    var curSummary = SummarizeEnumerable(curEnum);
+                    var newSummary = SummarizeEnumerable(newEnum);
+
+                    if (!string.Equals(curSummary, newSummary, StringComparison.Ordinal))
+                        changes.Add($"{propPath}: {curSummary} -> {newSummary}");
+
+                    continue;
+                }
+
                 if (curVal is null || newVal is null)
                     continue;
 
                 BuildAppearanceDiff(changes, propPath, curVal, newVal);
             }
         }
+
+        private static string SummarizeEnumerable(IEnumerable items)
+        {
+            if (items is IList list)
+                return $"{list.Count} items";
+
+            var count = 0;
+            foreach (var _ in items)
+            {
+                count++;
+                if (count > 1000)
+                    break;
+            }
+
+            return $"{count} items";
+        }
+
     }
 }
+

@@ -30,7 +30,14 @@ namespace LSR.XmlHelper.Wpf.Views
 
         private void VmOnCloseRequested(object? sender, bool dialogResult)
         {
-            DialogResult = dialogResult;
+            try
+            {
+                DialogResult = dialogResult;
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             Close();
         }
         private void BackupBrowserWindow_OnPreviewDragOver(object sender, System.Windows.DragEventArgs e)

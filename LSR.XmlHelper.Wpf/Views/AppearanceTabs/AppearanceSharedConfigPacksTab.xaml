@@ -1,0 +1,168 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceSharedConfigPacksTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <TextBlock Text="Shared Config Packs"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,4"
+                   Style="{DynamicResource SectionHeader}" />
+
+        <TextBlock Text="Colors"
+                   Foreground="{Binding PreviewAppearanceWindowHeaderTextBrush}"
+                   Background="{Binding PreviewAppearanceWindowHeaderBackgroundBrush}"
+                   Padding="6,3"
+                   Margin="0,10,0,0"
+                   Style="{DynamicResource SubHeader}" />
+
+        <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Window Background" ToolTip="Background color of the Shared Config Packs window." />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SharedConfigPacksWindowBackground}" />
+            <Button Grid.Row="0" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowBackground" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Window Text" ToolTip="Main text color used in the Shared Config Packs window." />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SharedConfigPacksWindowText}" />
+            <Button Grid.Row="1" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowText" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Control Background" ToolTip="Background color for controls like text boxes and list areas." />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SharedConfigPacksWindowControlBackground}" />
+            <Button Grid.Row="2" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowControlBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowControlBackground" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Control Border" ToolTip="Border color for inputs and panels in the Shared Config Packs window." />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SharedConfigPacksWindowControlBorder}" />
+            <Button Grid.Row="3" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowControlBorderBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowControlBorder" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Header Text" ToolTip="Text color used for section headers." />
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SharedConfigPacksWindowHeaderText}" />
+            <Button Grid.Row="4" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowHeaderTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowHeaderText" />
+
+            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Header Background" ToolTip="Background color used for section headers." />
+            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding SharedConfigPacksWindowHeaderBackground}" />
+            <Button Grid.Row="5" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowHeaderBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowHeaderBackground" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Tab Background" ToolTip="Background color of tab headers in the Shared Config Packs window." />
+            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding SharedConfigPacksWindowTabBackground}" />
+            <Button Grid.Row="6" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowTabBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowTabBackground" />
+
+            <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Tab Hover Background" ToolTip="Background color when hovering a tab header." />
+            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding SharedConfigPacksWindowTabHoverBackground}" />
+            <Button Grid.Row="7" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowTabHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowTabHoverBackground" />
+
+            <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Tab Selected Background" ToolTip="Background color of the selected tab header." />
+            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding SharedConfigPacksWindowTabSelectedBackground}" />
+            <Button Grid.Row="8" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowTabSelectedBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowTabSelectedBackground" />
+
+            <TextBlock Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" Text="Button Background" ToolTip="Default background color of buttons in the Shared Config Packs window." />
+            <TextBox Grid.Row="9" Grid.Column="1" Text="{Binding SharedConfigPacksWindowButtonBackground}" />
+            <Button Grid.Row="9" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowButtonBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowButtonBackground" />
+
+            <TextBlock Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" Text="Button Hover Background" ToolTip="Background color when hovering buttons." />
+            <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding SharedConfigPacksWindowButtonHoverBackground}" />
+            <Button Grid.Row="10" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowButtonHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowButtonHoverBackground" />
+
+            <TextBlock Grid.Row="11" Grid.Column="0" VerticalAlignment="Center" Text="Edits Hover Background" ToolTip="Background color when hovering items/rows in the edits list." />
+            <TextBox Grid.Row="11" Grid.Column="1" Text="{Binding SharedConfigPacksWindowEditsHoverBackground}" />
+            <Button Grid.Row="11" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowEditsHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowEditsHoverBackground" />
+
+            <TextBlock Grid.Row="12" Grid.Column="0" VerticalAlignment="Center" Text="Checkbox Background" ToolTip="Background color of checkboxes." />
+            <TextBox Grid.Row="12" Grid.Column="1" Text="{Binding SharedConfigPacksWindowCheckBoxBackground}" />
+            <Button Grid.Row="12" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowCheckBoxBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowCheckBoxBackground" />
+
+            <TextBlock Grid.Row="13" Grid.Column="0" VerticalAlignment="Center" Text="Checkbox Tick" ToolTip="Tick/checkmark color inside checkboxes." />
+            <TextBox Grid.Row="13" Grid.Column="1" Text="{Binding SharedConfigPacksWindowCheckBoxTick}" />
+            <Button Grid.Row="13" Grid.Column="2"
+                    Margin="10,0,0,0"
+                    Style="{DynamicResource SwatchButtonStyle}"
+                    Background="{Binding PreviewSharedConfigPacksWindowCheckBoxTickBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="SharedConfigPacksWindowCheckBoxTick" />
+        </Grid>
+    </StackPanel>
+</UserControl>

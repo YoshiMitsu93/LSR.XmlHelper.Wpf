@@ -1,87 +1,269 @@
-﻿<Window x:Class="LSR.XmlHelper.Wpf.Views.CompareXmlWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Compare XML"
-        Width="980"
-        Height="600"
-        WindowStartupLocation="CenterOwner"
-        AllowDrop="True"
-        PreviewDragOver="CompareWindow_PreviewDragOver"
-        Drop="CompareWindow_Drop">
-	<Grid Margin="12">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
-			<RowDefinition Height="Auto" />
-		</Grid.RowDefinitions>
+﻿ 
+<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.CompareXmlWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Compare XML"
+    Width="980"
+    Height="600"
+    AllowDrop="True"
+    Background="{Binding Appearance.CompareXmlWindowBackgroundBrush}"
+    Drop="CompareWindow_Drop"
+    FontFamily="{Binding Appearance.UiFontFamily}"
+    FontSize="{Binding Appearance.UiFontSize}"
+    PreviewDragOver="CompareWindow_PreviewDragOver"
+    WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{Binding Appearance.CompareXmlWindowTextBrush}" />
+        </Style>
 
-		<StackPanel Grid.Row="0" Margin="0,0,0,10">
-			<TextBlock Text="Target XML in opened folder:" FontWeight="SemiBold" />
-			<ComboBox ItemsSource="{Binding TargetFiles}"
-                      SelectedItem="{Binding SelectedTarget}"
-                      DisplayMemberPath="DisplayPath"
-                      Margin="0,6,0,10" />
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Foreground" Value="{Binding Appearance.CompareXmlWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.CompareXmlWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.CompareXmlWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
 
-			<TextBlock Text="External XML:" FontWeight="SemiBold" />
-			<DockPanel Margin="0,6,0,0" LastChildFill="True">
-				<Button Content="Browse..."
-                        Command="{Binding BrowseExternalCommand}"
-                        MinWidth="90"
-                        Margin="0,0,8,0"
-                        DockPanel.Dock="Right" />
-				<Button Content="Clear"
-                        Command="{Binding ClearExternalCommand}"
-                        MinWidth="70"
-                        Margin="0,0,8,0"
-                        DockPanel.Dock="Right" />
-				<TextBox Text="{Binding ExternalFilePath}"
-                         IsReadOnly="True"
-                         VerticalContentAlignment="Center" />
-			</DockPanel>
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Foreground" Value="{Binding Appearance.CompareXmlWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.CompareXmlWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.CompareXmlWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
 
-			<TextBlock Text="Tip: drag and drop an XML file into this window."
-                       Margin="0,8,0,0"
-                       Opacity="0.8" />
-		</StackPanel>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{Binding Appearance.CompareXmlWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.CompareXmlWindowButtonBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.CompareXmlWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{Binding DataContext.Appearance.CompareXmlWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-        <DataGrid Grid.Row="1"
-                  ItemsSource="{Binding Rows}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  IsReadOnly="False"
-                  SelectionMode="Extended">
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.CompareXmlWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border
+                                x:Name="Box"
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Background="{Binding DataContext.Appearance.CompareXmlWindowCheckBoxBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{Binding DataContext.Appearance.CompareXmlWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderThickness="1" />
+
+                            <Path
+                                x:Name="CheckMark"
+                                Grid.Column="0"
+                                Width="12"
+                                Height="10"
+                                Margin="2,0,0,0"
+                                VerticalAlignment="Center"
+                                Data="M 1 5 L 4 8 L 11 1"
+                                Stroke="{Binding DataContext.Appearance.CompareXmlWindowCheckBoxTickBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                StrokeThickness="2"
+                                Visibility="Collapsed" />
+
+                            <ContentPresenter
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                RecognizesAccessKey="True"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="CompareXmlImportCheckBoxStyle"
+            BasedOn="{StaticResource {x:Type CheckBox}}"
+            TargetType="{x:Type CheckBox}">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGrid}">
+            <Setter Property="Foreground" Value="{Binding Appearance.CompareXmlWindowTextBrush}" />
+            <Setter Property="Background" Value="{Binding Appearance.CompareXmlWindowControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{Binding Appearance.CompareXmlWindowControlBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="RowBackground" Value="{Binding Appearance.CompareXmlWindowControlBackgroundBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{Binding Appearance.CompareXmlWindowControlBackgroundBrush}" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.CompareXmlWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.CompareXmlWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.CompareXmlWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.CompareXmlWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.CompareXmlWindowEditsHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.CompareXmlWindowEditsHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type DataGridCell}">
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.CompareXmlWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,1,0" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock FontWeight="SemiBold" Text="Target XML in opened folder:" />
+            <ComboBox
+                Margin="0,6,0,10"
+                DisplayMemberPath="DisplayPath"
+                ItemsSource="{Binding TargetFiles}"
+                SelectedItem="{Binding SelectedTarget}" />
+
+            <TextBlock FontWeight="SemiBold" Text="External XML:" />
+            <DockPanel Margin="0,6,0,0" LastChildFill="True">
+                <Button
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding BrowseExternalCommand}"
+                    Content="Browse..."
+                    DockPanel.Dock="Right" />
+                <Button
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    Command="{Binding ClearExternalCommand}"
+                    Content="Clear"
+                    DockPanel.Dock="Right" />
+                <TextBox
+                    VerticalContentAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding ExternalFilePath}" />
+            </DockPanel>
+
+            <TextBlock
+                Margin="0,8,0,0"
+                Opacity="0.8"
+                Text="Tip: drag and drop an XML file into this window." />
+        </StackPanel>
+
+        <DataGrid
+            Grid.Row="1"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            IsReadOnly="False"
+            ItemsSource="{Binding Rows}"
+            SelectionMode="Extended">
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="Import" Width="70" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <DataGridTextColumn Header="Change" Width="*" Binding="{Binding Display}" IsReadOnly="True" />
+                <DataGridCheckBoxColumn
+                    Width="70"
+                    Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    EditingElementStyle="{StaticResource CompareXmlImportCheckBoxStyle}"
+                    ElementStyle="{StaticResource CompareXmlImportCheckBoxStyle}"
+                    Header="Import" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding Display}"
+                    Header="Change"
+                    IsReadOnly="True" />
             </DataGrid.Columns>
         </DataGrid>
-        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,10,0,0">
-            <TextBlock Text="{Binding Status}" Margin="0,0,0,6" TextWrapping="Wrap" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Select All"
-					        Command="{Binding SelectAllCommand}"
-					        MinWidth="90"
-					        Margin="0,0,8,0"
-					        ToolTip="Select every change in the list for importing or applying." />
-                <Button Content="Select None"
-					        Command="{Binding SelectNoneCommand}"
-					        MinWidth="90"
-					        Margin="0,0,8,0"
-					        ToolTip="Unselect every change in the list." />
-                <Button Content="Import to history (Pending)"
-					        Command="{Binding ImportAsPendingCommand}"
-					        MinWidth="170"
-					        Margin="0,0,8,0"
-					        ToolTip="Add the selected changes into Saved Edits as Pending. This does not modify the XML file." />
-                <Button Content="Apply now"
-					        Command="{Binding ImportAndApplyCommand}"
-					        MinWidth="110"
-					        Margin="0,0,8,0"
-					        ToolTip="Apply the selected changes to the target XML and save it. If save succeeds, the changes are recorded as Committed in Saved Edits." />
-                <Button Content="Import to history (Committed)"
-					        Command="{Binding ImportAsCommittedCommand}"
-					        MinWidth="190"
-					        ToolTip="Add the selected changes into Saved Edits as Committed. This does not modify the XML file." />
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,10,0,0"
+            Orientation="Vertical">
+            <TextBlock
+                Margin="0,0,0,6"
+                Text="{Binding Status}"
+                TextWrapping="Wrap" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding SelectAllCommand}"
+                    Content="Select All"
+                    ToolTip="Select every change in the list for importing or applying." />
+                <Button
+                    MinWidth="90"
+                    Margin="0,0,8,0"
+                    Command="{Binding SelectNoneCommand}"
+                    Content="Select None"
+                    ToolTip="Unselect every change in the list." />
+                <Button
+                    MinWidth="170"
+                    Margin="0,0,8,0"
+                    Command="{Binding ImportAsPendingCommand}"
+                    Content="Import to history (Pending)"
+                    ToolTip="Add the selected changes into Saved Edits as Pending. This does not modify the XML file." />
+                <Button
+                    MinWidth="110"
+                    Margin="0,0,8,0"
+                    Command="{Binding ImportAndApplyCommand}"
+                    Content="Apply now"
+                    ToolTip="Apply the selected changes to the target XML and save it. If save succeeds, the changes are recorded as Committed in Saved Edits." />
+                <Button
+                    MinWidth="190"
+                    Command="{Binding ImportAsCommittedCommand}"
+                    Content="Import to history (Committed)"
+                    ToolTip="Add the selected changes into Saved Edits as Committed. This does not modify the XML file." />
             </StackPanel>
         </StackPanel>
     </Grid>
