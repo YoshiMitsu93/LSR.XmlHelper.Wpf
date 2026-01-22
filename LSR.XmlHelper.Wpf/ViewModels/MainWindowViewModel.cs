@@ -43,6 +43,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private CancellationTokenSource? _friendlyBuildCts;
         private CancellationTokenSource? _friendlyUiBuildCts;
         private CancellationTokenSource? _friendlyFieldsBuildCts;
+        private CancellationTokenSource? _rawDiagnosticsCts;
+        private int _rawDiagnosticsVersion;
+        private readonly ObservableCollection<RawXmlProblemViewModel> _rawXmlProblems = new();
+        private readonly ObservableCollection<BreadcrumbSegmentViewModel> _rawBreadcrumbSegments = new();
+        private readonly ObservableCollection<RawXmlOutlineNodeViewModel> _rawOutlineNodes = new();
+        private RawXmlProblemViewModel? _selectedRawXmlProblem;
+        private bool _isRawXmlProblemsOverlayVisible;
+        private bool _rawXmlProblemsOverlayDismissed;
+        private int _rawXmlProblemsCount;
         private int _xmlVersion;
         private bool _suppressFriendlyRebuild;
         private bool _suppressDirtyTracking;
@@ -73,6 +82,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private GlobalSearchScope _globalSearchScope = GlobalSearchScope.Both;
         private bool _globalSearchUseParallelProcessing = true;
         public event EventHandler<RawNavigationRequest>? RawNavigationRequested;
+        public event EventHandler? RawXmlProblemsChanged;
         public event Action<string>? LookupGridGroupExpandRequested;
         private bool _isDirty;
         private XmlFileListItem? _selectedXmlFile;
@@ -84,6 +94,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private bool _isFriendlyView;
         private XmlFriendlyDocument? _friendlyDocument;
         private bool _isDarkMode = false;
+        private bool _isScopeShadingEnabled = true;
+        private bool _isRegionHighlightEnabled = true;
+        private bool _isIndentGuidesEnabled = true;
+        private bool _isRawOutlineEnabled = true;
         private ObservableCollection<XmlFriendlyCollectionViewModel> _friendlyCollections = new();
         private XmlFriendlyCollectionViewModel? _selectedFriendlyCollection;
         private XmlFriendlyEntryViewModel? _selectedFriendlyEntry;
@@ -111,7 +125,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _saver = new XmlFileSaveService();
             _friendly = new XmlFriendlyViewService();
             _globalSearch = new XmlGlobalSearchService();
-
             _settingsService = new AppSettingsService();
             _settings = _settingsService.Load(out _isFirstRun);
             _editHistory = new EditHistoryService(_settings, _settingsService, _friendly, _xml);
@@ -122,10 +135,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _appearance = new AppearanceService(_settings.Appearance, _isDarkMode, _isFriendlyView);
             _appearance.PropertyChanged += AppearanceOnPropertyChanged;
             SyncThemeTogglesFromAppearance();
-
             XmlFiles = new ObservableCollection<XmlFileListItem>();
             XmlTree = new ObservableCollection<XmlExplorerNode>();
-
+            _rawXmlProblems.CollectionChanged += (_, _) => HandleRawXmlProblemsCollectionChanged();
             OpenCommand = new RelayCommand(OpenFolder);
             FormatCommand = new RelayCommand(Format, () => !string.IsNullOrWhiteSpace(XmlText));
             ValidateCommand = new RelayCommand(Validate, () => !string.IsNullOrWhiteSpace(XmlText));
@@ -136,14 +148,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             DuplicateFriendlyLookupItemCommand = new RelayCommand(DuplicateSelectedFriendlyLookupItem, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null && SelectedFriendlyLookupItem is not null);
             DeleteFriendlyLookupItemCommand = new RelayCommand(DeleteSelectedFriendlyLookupItem, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null && SelectedFriendlyLookupItem is not null);
             DeleteFriendlyEntryCommand = new RelayCommand(DeleteSelectedFriendlyEntry, () => IsFriendlyView && _friendlyDocument is not null && SelectedFriendlyEntry is not null);
-
+            ShowRawXmlProblemsOverlayCommand = new RelayCommand(ShowRawXmlProblemsOverlay, () => HasRawXmlProblems && !IsFriendlyView);
+            HideRawXmlProblemsOverlayCommand = new RelayCommand(HideRawXmlProblemsOverlay, () => IsRawXmlProblemsOverlayVisible);
             OpenAppearanceCommand = new RelayCommand(OpenAppearance);
             OpenGlobalSearchCommand = new RelayCommand(OpenGlobalSearch);
             OpenSavedEditsCommand = new RelayCommand(OpenSavedEdits);
             OpenSharedConfigPacksCommand = new RelayCommand(OpenSharedConfigPacks, () => !string.IsNullOrWhiteSpace(_rootFolder));
             OpenCompareXmlCommand = new RelayCommand(OpenCompareXml, () => GetSelectedFilePath() is not null && !string.IsNullOrWhiteSpace(XmlText));
             OpenCompareXmlCommand = new RelayCommand(OpenCompareXml, () => !string.IsNullOrWhiteSpace(_rootFolder) && Directory.Exists(_rootFolder) && XmlFiles.Any());
-
             OpenBackupBrowserCommand = new RelayCommand(OpenBackupBrowser, () =>
             {
                 var p = GetSelectedFilePath();
@@ -208,7 +220,34 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 if (IsFriendlyView)
                     ScheduleFriendlyRebuild();
+                else
+                    ScheduleRawDiagnosticsUpdate();
             }
+        }
+        public ObservableCollection<RawXmlProblemViewModel> RawXmlProblems => _rawXmlProblems;
+        public ObservableCollection<BreadcrumbSegmentViewModel> RawBreadcrumbSegments => _rawBreadcrumbSegments;
+        public ObservableCollection<RawXmlOutlineNodeViewModel> RawOutlineNodes => _rawOutlineNodes;
+        public bool HasRawXmlProblems => _rawXmlProblems.Count > 0;
+        public int RawXmlProblemsCount
+        {
+            get => _rawXmlProblemsCount;
+            private set => SetProperty(ref _rawXmlProblemsCount, value);
+        }
+
+        public string RawXmlProblemsIndicatorText => $"Problems ({RawXmlProblemsCount})";
+
+        public bool ShowRawXmlProblemsIndicator => HasRawXmlProblems && !IsFriendlyView;
+
+        public bool IsRawXmlProblemsOverlayVisible
+        {
+            get => _isRawXmlProblemsOverlayVisible;
+            set => SetProperty(ref _isRawXmlProblemsOverlayVisible, value);
+        }
+
+        public RawXmlProblemViewModel? SelectedRawXmlProblem
+        {
+            get => _selectedRawXmlProblem;
+            set => SetProperty(ref _selectedRawXmlProblem, value);
         }
 
         public ObservableCollection<XmlFileListItem> XmlFiles { get; }
@@ -304,6 +343,14 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _settings.IsFriendlyView = _isFriendlyView;
                 _appearance.IsFriendlyView = _isFriendlyView;
 
+                OnPropertyChanged(nameof(ShowRawXmlProblemsIndicator));
+                if (_isFriendlyView)
+                    IsRawXmlProblemsOverlayVisible = false;
+                else if (HasRawXmlProblems && !_rawXmlProblemsOverlayDismissed)
+                    IsRawXmlProblemsOverlayVisible = true;
+
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+
                 SaveSettings();
             }
         }
@@ -319,6 +366,56 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _settings.IsDarkMode = _isDarkMode;
                 _appearance.IsDarkMode = _isDarkMode;
 
+                SaveSettings();
+            }
+        }
+        public bool IsScopeShadingEnabled
+        {
+            get => _isScopeShadingEnabled;
+            set
+            {
+                if (!SetProperty(ref _isScopeShadingEnabled, value))
+                    return;
+
+                _settings.IsScopeShadingEnabled = _isScopeShadingEnabled;
+                SaveSettings();
+            }
+        }
+
+        public bool IsRegionHighlightEnabled
+        {
+            get => _isRegionHighlightEnabled;
+            set
+            {
+                if (!SetProperty(ref _isRegionHighlightEnabled, value))
+                    return;
+
+                _settings.IsRegionHighlightEnabled = _isRegionHighlightEnabled;
+                SaveSettings();
+            }
+        }
+
+        public bool IsIndentGuidesEnabled
+        {
+            get => _isIndentGuidesEnabled;
+            set
+            {
+                if (!SetProperty(ref _isIndentGuidesEnabled, value))
+                    return;
+
+                _settings.IsIndentGuidesEnabled = _isIndentGuidesEnabled;
+                SaveSettings();
+            }
+        }
+        public bool IsRawOutlineEnabled
+        {
+            get => _isRawOutlineEnabled;
+            set
+            {
+                if (!SetProperty(ref _isRawOutlineEnabled, value))
+                    return;
+
+                _settings.IsRawOutlineEnabled = _isRawOutlineEnabled;
                 SaveSettings();
             }
         }
@@ -483,6 +580,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public RelayCommand DuplicateFriendlyLookupItemCommand { get; }
         public RelayCommand DeleteFriendlyLookupItemCommand { get; }
         public RelayCommand DeleteFriendlyEntryCommand { get; }
+        public RelayCommand ShowRawXmlProblemsOverlayCommand { get; }
+        public RelayCommand HideRawXmlProblemsOverlayCommand { get; }
 
         private void OpenAppearance()
         {
@@ -1052,6 +1151,92 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _friendlyDocument = t.Result.Doc;
                 RefreshFriendlyFromXml();
             }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+        private void ScheduleRawDiagnosticsUpdate()
+        {
+            var myVersion = Interlocked.Increment(ref _rawDiagnosticsVersion);
+
+            try
+            {
+                _rawDiagnosticsCts?.Cancel();
+                _rawDiagnosticsCts?.Dispose();
+            }
+            catch
+            {
+            }
+
+            _rawDiagnosticsCts = new CancellationTokenSource();
+            var token = _rawDiagnosticsCts.Token;
+            var xml = XmlText ?? "";
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(250, token);
+                }
+                catch
+                {
+                    return (Version: myVersion, Problems: (IReadOnlyList<XmlParseProblem>)Array.Empty<XmlParseProblem>());
+                }
+
+                if (token.IsCancellationRequested)
+                    return (Version: myVersion, Problems: (IReadOnlyList<XmlParseProblem>)Array.Empty<XmlParseProblem>());
+
+                var problems = XmlParseDiagnosticsService.TryGetParseProblems(xml);
+                return (Version: myVersion, Problems: problems);
+            }, token).ContinueWith(t =>
+            {
+                if (t.IsCanceled || t.IsFaulted)
+                    return;
+
+                if (t.Result.Version != _rawDiagnosticsVersion)
+                    return;
+
+                _rawXmlProblems.Clear();
+                foreach (var p in t.Result.Problems)
+                    _rawXmlProblems.Add(new RawXmlProblemViewModel(p));
+
+                RawXmlProblemsChanged?.Invoke(this, EventArgs.Empty);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void HandleRawXmlProblemsCollectionChanged()
+        {
+            OnPropertyChanged(nameof(HasRawXmlProblems));
+            RawXmlProblemsCount = _rawXmlProblems.Count;
+            OnPropertyChanged(nameof(RawXmlProblemsIndicatorText));
+            OnPropertyChanged(nameof(ShowRawXmlProblemsIndicator));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+
+            if (RawXmlProblemsCount == 0)
+            {
+                _rawXmlProblemsOverlayDismissed = false;
+                IsRawXmlProblemsOverlayVisible = false;
+                return;
+            }
+
+            if (IsFriendlyView)
+            {
+                IsRawXmlProblemsOverlayVisible = false;
+                return;
+            }
+
+            if (!_rawXmlProblemsOverlayDismissed)
+                IsRawXmlProblemsOverlayVisible = true;
+        }
+
+        private void ShowRawXmlProblemsOverlay()
+        {
+            _rawXmlProblemsOverlayDismissed = false;
+            if (HasRawXmlProblems && !IsFriendlyView)
+                IsRawXmlProblemsOverlayVisible = true;
+        }
+
+        private void HideRawXmlProblemsOverlay()
+        {
+            _rawXmlProblemsOverlayDismissed = true;
+            IsRawXmlProblemsOverlayVisible = false;
         }
 
         private void RefreshFriendlyFromXml()
@@ -2736,6 +2921,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             _globalSearchUseParallelProcessing = _settings.GlobalSearchUseParallelProcessing;
             _isDarkMode = _settings.IsDarkMode;
             _isFriendlyView = _settings.IsFriendlyView;
+            _isScopeShadingEnabled = _settings.IsScopeShadingEnabled;
+            _isRegionHighlightEnabled = _settings.IsRegionHighlightEnabled;
+            _isIndentGuidesEnabled = _settings.IsIndentGuidesEnabled;
+            _isRawOutlineEnabled = _settings.IsRawOutlineEnabled;
 
             if (Enum.TryParse<GlobalSearchScope>(_settings.GlobalSearchScope ?? "", ignoreCase: true, out var scope))
                 _globalSearchScope = scope;

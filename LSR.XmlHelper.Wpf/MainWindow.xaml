@@ -62,6 +62,7 @@
             Key="H"
             Command="{x:Static ApplicationCommands.Replace}"
             Modifiers="Control" />
+        <KeyBinding Key="Escape" Command="{Binding HideRawXmlProblemsOverlayCommand}" />
     </Window.InputBindings>
     <Window.CommandBindings>
         <CommandBinding
@@ -559,7 +560,6 @@
                                     <Setter Property="Foreground" Value="{Binding DataContext.Appearance.SearchMatchTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 </DataTrigger>
                             </Style.Triggers>
-
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
@@ -693,7 +693,6 @@
                                                             <ItemsPresenter />
                                                         </Border>
                                                     </Expander>
-
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
@@ -1045,6 +1044,34 @@
                     IsEnabled="{Binding HasFriendlyView}"
                     ToolTip="Toggle the structured editor view for supported XML formats." />
                 <CheckBox
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Scope shading"
+                    IsChecked="{Binding IsScopeShadingEnabled}"
+                    ToolTip="Toggle nested scope shading in Raw XML."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
+                <CheckBox
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Region highlight"
+                    IsChecked="{Binding IsRegionHighlightEnabled}"
+                    ToolTip="Toggle region highlight in Raw XML."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
+                <CheckBox
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Indent guides"
+                    IsChecked="{Binding IsIndentGuidesEnabled}"
+                    ToolTip="Toggle indent guides in Raw XML."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
+                <CheckBox
+                    Margin="0,0,16,0"
+                    VerticalAlignment="Center"
+                    Content="Outline"
+                    IsChecked="{Binding IsRawOutlineEnabled}"
+                    ToolTip="Toggle the Outline panel in Raw XML."
+                    Visibility="{Binding IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
+                <CheckBox
                     VerticalAlignment="Center"
                     Content="Dark mode"
                     IsChecked="{Binding IsDarkMode}"
@@ -1052,7 +1079,16 @@
             </WrapPanel>
         </StackPanel>
         <StatusBar DockPanel.Dock="Bottom">
-            <TextBlock Text="{Binding Status}" />
+            <StatusBarItem>
+                <TextBlock Text="{Binding Status}" />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <Button
+                    Padding="8,2"
+                    Command="{Binding ShowRawXmlProblemsOverlayCommand}"
+                    Content="{Binding RawXmlProblemsIndicatorText}"
+                    Visibility="{Binding ShowRawXmlProblemsIndicator, Converter={StaticResource BoolToVis}}" />
+            </StatusBarItem>
         </StatusBar>
         <Grid Margin="8">
             <Grid.ColumnDefinitions>
@@ -1092,18 +1128,57 @@
                 ResizeBehavior="PreviousAndNext"
                 ResizeDirection="Columns" />
             <Grid Grid.Column="2">
-                <Grid Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border
+                    Grid.Row="0"
+                    Padding="6,4"
+                    Background="{Binding Appearance.EditorBackgroundBrush}"
+                    BorderBrush="{Binding Appearance.GridBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}">
+                    <ScrollViewer
+                        Focusable="False"
+                        HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding RawBreadcrumbSegments}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button
+                                            Margin="0,0,6,0"
+                                            Padding="6,2"
+                                            Click="RawBreadcrumbButton_Click"
+                                            Content="{Binding Title}"
+                                            Focusable="False"
+                                            Tag="{Binding Offset}" />
+                                        <TextBlock
+                                            Margin="0,0,6,0"
+                                            VerticalAlignment="Center"
+                                            Text="&gt;" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+                <Grid Grid.Row="1" Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource BoolToVis}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="280" />
                         <ColumnDefinition Width="6" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-
                     <DockPanel
                         Grid.Column="0"
                         Margin="0"
                         Background="{Binding Appearance.SelectorBackgroundBrush}">
-
                         <ComboBox
                             Margin="0,0,0,8"
                             DisplayMemberPath="Title"
@@ -1112,7 +1187,6 @@
                             ItemsSource="{Binding FriendlyCollections}"
                             SelectedItem="{Binding SelectedFriendlyCollection}"
                             Style="{StaticResource Pane2ComboBoxStyle}" />
-
                         <ListBox
                             infra:ListBoxScrollIntoViewOnSelectionBehavior.Enable="True"
                             DisplayMemberPath="Display"
@@ -1129,7 +1203,6 @@
                             </ListBox.ContextMenu>
                         </ListBox>
                     </DockPanel>
-
                     <GridSplitter
                         Grid.Column="1"
                         HorizontalAlignment="Stretch"
@@ -1137,7 +1210,6 @@
                         Background="{Binding Appearance.BackgroundBrush}"
                         ResizeBehavior="PreviousAndNext"
                         ResizeDirection="Columns" />
-
                     <Border
                         Grid.Column="2"
                         Background="{Binding Appearance.BackgroundBrush}"
@@ -1176,23 +1248,152 @@
                         </ListBox>
                     </Border>
                 </Grid>
+                <Grid Grid.Row="1" Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition>
+                            <ColumnDefinition.Style>
+                                <Style TargetType="ColumnDefinition">
+                                    <Setter Property="Width" Value="260" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRawOutlineEnabled}" Value="False">
+                                            <Setter Property="Width" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ColumnDefinition.Style>
+                        </ColumnDefinition>
 
-                <avalonedit:TextEditor
-                    x:Name="XmlEditor"
-                    infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}"
-                    infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
-                    infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
-                    Background="{Binding Appearance.EditorBackgroundBrush}"
-                    FontFamily="{Binding Appearance.EditorFontFamily}"
-                    FontSize="{Binding Appearance.EditorFontSize}"
-                    FontStyle="{Binding Appearance.EditorFontStyle}"
-                    FontWeight="{Binding Appearance.EditorFontWeight}"
-                    Foreground="{Binding Appearance.EditorTextBrush}"
-                    HorizontalScrollBarVisibility="Auto"
-                    ShowLineNumbers="True"
-                    VerticalScrollBarVisibility="Auto"
-                    Visibility="{Binding Appearance.IsFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
+                        <ColumnDefinition>
+                            <ColumnDefinition.Style>
+                                <Style TargetType="ColumnDefinition">
+                                    <Setter Property="Width" Value="6" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRawOutlineEnabled}" Value="False">
+                                            <Setter Property="Width" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ColumnDefinition.Style>
+                        </ColumnDefinition>
+
+                        <ColumnDefinition Width="*" />
+                        
+                    </Grid.ColumnDefinitions>
+
+                    <Border
+                        Grid.Column="0"
+                        Padding="6"
+                        Background="{Binding Appearance.TreeBackgroundBrush}"
+                        BorderBrush="{Binding Appearance.GridBorderBrush}"
+                        BorderThickness="1,0,1,0">
+                        <Border.Visibility>
+                            <Binding Path="IsRawOutlineEnabled" Converter="{StaticResource BoolToVis}" />
+                        </Border.Visibility>
+                        <TreeView
+                            x:Name="RawOutlineTreeView"
+                            HorizontalContentAlignment="Stretch"
+                            ItemsSource="{Binding RawOutlineNodes}"
+                            ScrollViewer.CanContentScroll="True"
+                            SelectedItemChanged="RawOutlineTreeView_SelectedItemChanged"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <TextBlock Text="{Binding Title}" />
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </Border>
+                    <GridSplitter
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="{Binding Appearance.GridBorderBrush}"
+                        ShowsPreview="True" />
+                    <GridSplitter
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="{Binding Appearance.GridBorderBrush}"
+                        ShowsPreview="True"
+                        Visibility="{Binding IsRawOutlineEnabled, Converter={StaticResource BoolToVis}}" />
+                    <avalonedit:TextEditor
+                        x:Name="XmlEditor"
+                        Grid.Column="2"
+                        infra:AvalonEditTextBinding.Text="{Binding XmlText, Mode=TwoWay}"
+                        infra:AvalonEditThemeBehavior.TextAreaBackground="{Binding Appearance.EditorBackgroundBrush}"
+                        infra:AvalonEditThemeBehavior.TextAreaForeground="{Binding Appearance.EditorTextBrush}"
+                        Background="{Binding Appearance.EditorBackgroundBrush}"
+                        FontFamily="{Binding Appearance.EditorFontFamily}"
+                        FontSize="{Binding Appearance.EditorFontSize}"
+                        FontStyle="{Binding Appearance.EditorFontStyle}"
+                        FontWeight="{Binding Appearance.EditorFontWeight}"
+                        Foreground="{Binding Appearance.EditorTextBrush}"
+                        HorizontalScrollBarVisibility="Auto"
+                        ShowLineNumbers="True"
+                        VerticalScrollBarVisibility="Auto" />
+                </Grid>
             </Grid>
+            <Border
+                Grid.Column="2"
+                Width="520"
+                MaxHeight="260"
+                Padding="10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Panel.ZIndex="50"
+                Background="{Binding Appearance.EditorBackgroundBrush}"
+                BorderBrush="{Binding Appearance.GridBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsRawXmlProblemsOverlayVisible}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsFriendlyView}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <DockPanel>
+                    <Grid Margin="0,0,0,6" DockPanel.Dock="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Foreground="{Binding Appearance.EditorTextBrush}"
+                            Text="Problems" />
+                        <Button
+                            Grid.Column="1"
+                            Padding="6,2"
+                            Command="{Binding HideRawXmlProblemsOverlayCommand}"
+                            Content="Close" />
+                    </Grid>
+                    <ListBox
+                        x:Name="RawXmlProblemsList"
+                        HorizontalContentAlignment="Stretch"
+                        Background="{Binding Appearance.EditorBackgroundBrush}"
+                        BorderThickness="0"
+                        Foreground="{Binding Appearance.EditorTextBrush}"
+                        ItemsSource="{Binding RawXmlProblems}"
+                        MouseDoubleClick="RawXmlProblemsList_MouseDoubleClick"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        SelectedItem="{Binding SelectedRawXmlProblem, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
         </Grid>
     </DockPanel>
 </Window>

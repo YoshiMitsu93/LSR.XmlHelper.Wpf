@@ -194,6 +194,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _editorText = "#FFD4D4D4";
         private string _editorBackground = "#FF1E1E1E";
         private string _editorXmlSyntaxForeground = "";
+        private string _editorScopeShadingColor = "";
+        private string _editorIndentGuidesColor = "";   
+        private string _editorRegionHighlightColor = "";
 
         private string _menuText = "#FFD4D4D4";
         private string _menuBackground = "#FF1E1E1E";
@@ -359,6 +362,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string EditorText { get => _editorText; set { if (SetProperty(ref _editorText, value)) OnEdited(); } }
         public string EditorBackground { get => _editorBackground; set { if (SetProperty(ref _editorBackground, value)) OnEdited(); } }
         public string EditorXmlSyntaxForeground { get => _editorXmlSyntaxForeground; set { if (SetProperty(ref _editorXmlSyntaxForeground, value)) OnEdited(); } }
+        public string EditorScopeShadingColor { get => _editorScopeShadingColor; set { if (SetProperty(ref _editorScopeShadingColor, value)) OnEdited(); } }
+        public string EditorIndentGuidesColor { get => _editorIndentGuidesColor; set { if (SetProperty(ref _editorIndentGuidesColor, value)) OnEdited(); } }
+        public string EditorRegionHighlightColor { get => _editorRegionHighlightColor; set { if (SetProperty(ref _editorRegionHighlightColor, value)) OnEdited(); } }
 
         public string MenuText { get => _menuText; set { if (SetProperty(ref _menuText, value)) OnEdited(); } }
         public string MenuBackground { get => _menuBackground; set { if (SetProperty(ref _menuBackground, value)) OnEdited(); } }
@@ -620,6 +626,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewEditorTextBrush => TryParseBrush(EditorText);
         public WpfBrush PreviewEditorBackgroundBrush => TryParseBrush(EditorBackground);
         public WpfBrush PreviewEditorXmlSyntaxForegroundBrush => TryParseBrush(EditorXmlSyntaxForeground);
+        public WpfBrush PreviewEditorScopeShadingColorBrush => TryParseBrush(EditorScopeShadingColor);
+        public WpfBrush PreviewEditorIndentGuidesColorBrush => TryParseBrush(EditorIndentGuidesColor);
+        public WpfBrush PreviewEditorRegionHighlightColorBrush => TryParseBrush(EditorRegionHighlightColor);
         public WpfBrush PreviewMenuTextBrush => TryParseBrush(MenuText);
         public WpfBrush PreviewMenuBackgroundBrush => TryParseBrush(MenuBackground);
         public WpfBrush PreviewTopButtonTextBrush => TryParseBrush(TopButtonText);
@@ -1312,6 +1321,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _editorText = p.EditorText;
                 _editorBackground = p.EditorBackground;
                 _editorXmlSyntaxForeground = p.EditorXmlSyntaxForeground;
+                _editorScopeShadingColor = p.EditorScopeShadingColor;
+                _editorIndentGuidesColor = p.EditorIndentGuidesColor;
+                _editorRegionHighlightColor = p.EditorRegionHighlightColor;
 
                 _menuText = p.MenuText;
                 _menuBackground = p.MenuBackground;
@@ -1686,6 +1698,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.EditorText = NormalizeColor(EditorText, p.EditorText);
             p.EditorBackground = NormalizeColor(EditorBackground, p.EditorBackground);
             p.EditorXmlSyntaxForeground = NormalizeColor(EditorXmlSyntaxForeground, p.EditorXmlSyntaxForeground);
+            p.EditorScopeShadingColor = NormalizeColorOrEmpty(EditorScopeShadingColor, p.EditorScopeShadingColor);
+            p.EditorIndentGuidesColor = NormalizeColorOrEmpty(EditorIndentGuidesColor, p.EditorIndentGuidesColor);
+            p.EditorRegionHighlightColor = NormalizeColorOrEmpty(EditorRegionHighlightColor, p.EditorRegionHighlightColor);
 
             p.MenuText = NormalizeColor(MenuText, p.MenuText);
             p.MenuBackground = NormalizeColor(MenuBackground, p.MenuBackground);
@@ -1870,6 +1885,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewEditorTextBrush));
             OnPropertyChanged(nameof(PreviewEditorBackgroundBrush));
             OnPropertyChanged(nameof(PreviewEditorXmlSyntaxForegroundBrush));
+            OnPropertyChanged(nameof(PreviewEditorScopeShadingColorBrush));
+            OnPropertyChanged(nameof(PreviewEditorIndentGuidesColorBrush));
+            OnPropertyChanged(nameof(PreviewEditorRegionHighlightColorBrush));
 
             OnPropertyChanged(nameof(PreviewMenuTextBrush));
             OnPropertyChanged(nameof(PreviewMenuBackgroundBrush));
@@ -1913,6 +1931,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(EditorText) => EditorText,
                 nameof(EditorBackground) => EditorBackground,
                 nameof(EditorXmlSyntaxForeground) => EditorXmlSyntaxForeground,
+                nameof(EditorScopeShadingColor) => EditorScopeShadingColor,
+                nameof(EditorIndentGuidesColor) => EditorIndentGuidesColor,
+                nameof(EditorRegionHighlightColor) => EditorRegionHighlightColor,
 
                 nameof(MenuText) => MenuText,
                 nameof(MenuBackground) => MenuBackground,
@@ -2076,6 +2097,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 case nameof(EditorText): EditorText = hex; break;
                 case nameof(EditorBackground): EditorBackground = hex; break;
                 case nameof(EditorXmlSyntaxForeground): EditorXmlSyntaxForeground = hex; break;
+                case nameof(EditorScopeShadingColor): EditorScopeShadingColor = hex; break;
+                case nameof(EditorIndentGuidesColor): EditorIndentGuidesColor = hex; break;
+                case nameof(EditorRegionHighlightColor): EditorRegionHighlightColor = hex; break;
 
                 case nameof(MenuText): MenuText = hex; break;
                 case nameof(MenuBackground): MenuBackground = hex; break;
@@ -2266,6 +2290,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
         private static string NormalizeColor(string? s, string fallback)
         {
+            if (TryParseColor(s, out _))
+                return s!;
+
+            return fallback;
+        }
+        private static string NormalizeColorOrEmpty(string? s, string fallback)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                return "";
+
             if (TryParseColor(s, out _))
                 return s!;
 
@@ -2462,6 +2496,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 EditorText = p.EditorText,
                 EditorBackground = p.EditorBackground,
                 EditorXmlSyntaxForeground = p.EditorXmlSyntaxForeground,
+                EditorScopeShadingColor = p.EditorScopeShadingColor,
+                EditorRegionHighlightColor = p.EditorRegionHighlightColor,
+                EditorIndentGuidesColor = p.EditorIndentGuidesColor,
 
                 MenuText = p.MenuText,
                 MenuBackground = p.MenuBackground,

@@ -13,7 +13,11 @@ namespace LSR.XmlHelper.Wpf.Services
         public bool IsDarkMode { get; set; } = false;
 
         public bool IsFriendlyView { get; set; } = true;
+        public bool IsScopeShadingEnabled { get; set; } = true;
 
+        public bool IsRegionHighlightEnabled { get; set; } = true;
+        public bool IsIndentGuidesEnabled { get; set; } = true;
+        public bool IsRawOutlineEnabled { get; set; } = true;
         public string GlobalSearchScope { get; set; } = ViewModels.GlobalSearchScope.Both.ToString();
         public bool GlobalSearchUseParallelProcessing { get; set; } = true;
 

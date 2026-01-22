@@ -20,6 +20,12 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="6" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock
@@ -84,6 +90,66 @@
                 CommandParameter="EditorXmlSyntaxForeground"
                 Style="{DynamicResource SwatchButtonStyle}"
                 ToolTip="Overrides the syntax highlight color used for XML tags/attributes. Leave empty to keep default XML colors." />
+            <TextBlock
+                Grid.Row="6"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Scope Shading"
+                ToolTip="Base tint used for scope shading in the raw XML editor. Leave empty to use the default alternating scope colors." />
+            <TextBox
+                Grid.Row="6"
+                Grid.Column="1"
+                Text="{Binding EditorScopeShadingColor}"
+                ToolTip="Base tint used for scope shading in the raw XML editor. Leave empty to use the default alternating scope colors." />
+            <Button
+                Grid.Row="6"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewEditorScopeShadingColorBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="EditorScopeShadingColor"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Base tint used for scope shading in the raw XML editor. Leave empty to disable" />
+            <TextBlock
+                Grid.Row="8"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Region highlight"
+                ToolTip="Highlights the current XML region in the raw XML editor. Leave empty to disable." />
+            <TextBox
+                Grid.Row="8"
+                Grid.Column="1"
+                Text="{Binding EditorRegionHighlightColor}"
+                ToolTip="Highlights the current XML region in the raw XML editor. Leave empty to disable." />
+            <Button
+                Grid.Row="8"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewEditorRegionHighlightColorBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="EditorRegionHighlightColor"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Highlights the current XML region in the raw XML editor. Leave empty to disable." />
+            <TextBlock
+                Grid.Row="10"
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Indent guides"
+                ToolTip="Indent guide line color inside the raw XML editor. Leave empty to use the default." />
+            <TextBox
+                Grid.Row="10"
+                Grid.Column="1"
+                Text="{Binding EditorIndentGuidesColor}"
+                ToolTip="Indent guide line color inside the raw XML editor. Leave empty to use the default." />
+            <Button
+                Grid.Row="10"
+                Grid.Column="2"
+                Height="22"
+                Background="{Binding PreviewEditorIndentGuidesColorBrush}"
+                Command="{Binding PickColorCommand}"
+                CommandParameter="EditorIndentGuidesColor"
+                Style="{DynamicResource SwatchButtonStyle}"
+                ToolTip="Indent guide line color inside the raw XML editor. Leave empty to use the default." />
         </Grid>
     </StackPanel>
 </UserControl>

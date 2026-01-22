@@ -37,6 +37,14 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Compile Remove="Guides\Guides\**" />
+    <Content Remove="Guides\Guides\**" />
+    <EmbeddedResource Remove="Guides\Guides\**" />
+    <None Remove="Guides\Guides\**" />
+    <Page Remove="Guides\Guides\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Content Include="README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -45,7 +53,6 @@
   
   <ItemGroup>
     <Folder Include="Guides\CommunityGuides\" />
-    <Folder Include="Guides\Guides\Packs\" />
   </ItemGroup>
 
 </Project>

@@ -72,11 +72,31 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
                     renderer.SetBrush(brush);
                 }
 
-                if (!textView.BackgroundRenderers.Contains(renderer))
+                if (textView.BackgroundRenderers is System.Collections.Generic.IList<IBackgroundRenderer> list)
                 {
-                    if (textView.BackgroundRenderers is System.Collections.Generic.IList<IBackgroundRenderer> list)
+                    var index = list.IndexOf(renderer);
+                    if (index < 0)
                         list.Insert(0, renderer);
-                    else
+                    else if (index > 0)
+                    {
+                        list.RemoveAt(index);
+                        list.Insert(0, renderer);
+                    }
+                }
+                else if (textView.BackgroundRenderers is System.Collections.IList nonGeneric)
+                {
+                    var index = nonGeneric.IndexOf(renderer);
+                    if (index < 0)
+                        nonGeneric.Insert(0, renderer);
+                    else if (index > 0)
+                    {
+                        nonGeneric.RemoveAt(index);
+                        nonGeneric.Insert(0, renderer);
+                    }
+                }
+                else
+                {
+                    if (!textView.BackgroundRenderers.Contains(renderer))
                         textView.BackgroundRenderers.Add(renderer);
                 }
 

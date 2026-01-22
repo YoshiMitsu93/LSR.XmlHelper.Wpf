@@ -27,19 +27,17 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                        <Border
+                            x:Name="Border"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border"
-                                        Property="Background"
-                                        Value="{Binding DataContext.Appearance.SettingsInfoWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Setter TargetName="Border" Property="Background" Value="{Binding DataContext.Appearance.SettingsInfoWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Border" Property="Opacity" Value="0.6" />
@@ -61,26 +59,29 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Width="14"
-                                    Height="14"
-                                    VerticalAlignment="Center"
-                                    Background="{Binding DataContext.Appearance.SettingsInfoWindowCheckBoxBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    BorderBrush="{Binding DataContext.Appearance.SettingsInfoWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    BorderThickness="1" />
+                            <Border
+                                Width="14"
+                                Height="14"
+                                VerticalAlignment="Center"
+                                Background="{Binding DataContext.Appearance.SettingsInfoWindowCheckBoxBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{Binding DataContext.Appearance.SettingsInfoWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderThickness="1" />
 
-                            <Path x:Name="Tick"
-                                  Width="10"
-                                  Height="8"
-                                  Stretch="Fill"
-                                  VerticalAlignment="Center"
-                                  HorizontalAlignment="Center"
-                                  Fill="{Binding DataContext.Appearance.SettingsInfoWindowCheckBoxTickBrush, RelativeSource={RelativeSource AncestorType=Window}}"
-                                  Data="M 0 4 L 3 7 L 9 0"
-                                  Visibility="Collapsed" />
+                            <Path
+                                x:Name="Tick"
+                                Width="10"
+                                Height="8"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="M 0 4 L 3 7 L 9 0"
+                                Fill="{Binding DataContext.Appearance.SettingsInfoWindowCheckBoxTickBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Stretch="Fill"
+                                Visibility="Collapsed" />
 
-                            <ContentPresenter Grid.Column="1"
-                                              Margin="6,0,0,0"
-                                              VerticalAlignment="Center" />
+                            <ContentPresenter
+                                Grid.Column="1"
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center" />
                         </Grid>
 
                         <ControlTemplate.Triggers>
@@ -108,19 +109,20 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Border Grid.Row="0"
-                                    Background="{Binding DataContext.Appearance.SettingsInfoWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="1"
-                                    Padding="8,4">
-                                <ContentPresenter ContentSource="Header"
-                                                  TextElement.Foreground="{Binding DataContext.Appearance.SettingsInfoWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Border
+                                Grid.Row="0"
+                                Padding="8,4"
+                                Background="{Binding DataContext.Appearance.SettingsInfoWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1">
+                                <ContentPresenter ContentSource="Header" TextElement.Foreground="{Binding DataContext.Appearance.SettingsInfoWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
                             </Border>
 
-                            <Border Grid.Row="1"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="1"
-                                    Padding="{TemplateBinding Padding}">
+                            <Border
+                                Grid.Row="1"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1">
                                 <ContentPresenter />
                             </Border>
                         </Grid>
@@ -159,15 +161,17 @@
             Margin="0,12,0,0"
             Header="Quick toggles">
             <StackPanel Margin="10">
-                <CheckBox Content="Dark mode" IsChecked="{Binding IsDarkMode}" />
+                <TextBlock FontWeight="SemiBold" Text="General" />
                 <CheckBox
                     Margin="0,6,0,0"
-                    Content="Friendly view"
-                    IsChecked="{Binding IsFriendlyView}" />
+                    Content="Dark mode"
+                    IsChecked="{Binding IsDarkMode}"
+                    ToolTip="Toggle dark mode for the application UI." />
                 <CheckBox
                     Margin="0,6,0,0"
                     Content="Include subfolders"
-                    IsChecked="{Binding IncludeSubfolders}" />
+                    IsChecked="{Binding IncludeSubfolders}"
+                    ToolTip="When enabled, includes XML files from subfolders when loading a folder." />
 
                 <StackPanel
                     Margin="0,10,0,0"
@@ -180,13 +184,48 @@
                     <Button
                         Width="90"
                         Click="Folders_Click"
-                        Content="Folders" />
+                        Content="Folders"
+                        ToolTip="Show the file list grouped by folder tree." />
                     <Button
                         Width="90"
                         Margin="10,0,0,0"
                         Click="Flat_Click"
-                        Content="Flat" />
+                        Content="Flat"
+                        ToolTip="Show a single flat list of files." />
                 </StackPanel>
+
+                <Separator Margin="0,12,0,12" />
+
+                <TextBlock FontWeight="SemiBold" Text="Friendly View" />
+                <CheckBox
+                    Margin="0,6,0,0"
+                    Content="Friendly view"
+                    IsChecked="{Binding IsFriendlyView}"
+                    ToolTip="Toggle Friendly view (structured view). When off, Raw XML editor is shown." />
+
+                <Separator Margin="0,12,0,12" />
+
+                <TextBlock FontWeight="SemiBold" Text="Raw XML" />
+                <CheckBox
+                    Margin="0,6,0,0"
+                    Content="Scope shading"
+                    IsChecked="{Binding IsScopeShadingEnabled}"
+                    ToolTip="Toggle nested scope shading in the Raw XML editor." />
+                <CheckBox
+                    Margin="0,6,0,0"
+                    Content="Region highlight"
+                    IsChecked="{Binding IsRegionHighlightEnabled}"
+                    ToolTip="Toggle highlighting of the current XML region in Raw XML (most visible when the caret is on an opening or closing tag)." />
+                <CheckBox
+                    Margin="0,6,0,0"
+                    Content="Indent guides"
+                    IsChecked="{Binding IsIndentGuidesEnabled}"
+                    ToolTip="Toggle indentation guide lines in the Raw XML editor." />
+                <CheckBox
+                    Margin="0,6,0,0"
+                    Content="Outline (Tree)"
+                    IsChecked="{Binding IsRawOutlineEnabled}"
+                    ToolTip="Toggle the Outline panel for Raw XML navigation (tree of elements you can click to jump to)." />
             </StackPanel>
         </GroupBox>
 
@@ -214,8 +253,8 @@
                     Grid.Row="0"
                     Grid.Column="1"
                     IsReadOnly="True"
-                    Text="{Binding LoadedFolderPath, Mode=OneWay}" />
-
+                    Text="{Binding LoadedFolderPath, Mode=OneWay}"
+                    ToolTip="The folder currently loaded in the app. Copy this path if you need it." />
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
@@ -237,17 +276,20 @@
                     <Button
                         Width="120"
                         Command="{Binding OpenRepoCommand}"
-                        Content="Open Repo" />
+                        Content="Open Repo"
+                        ToolTip="Open the GitHub repository in your browser." />
                     <Button
                         Width="120"
                         Margin="10,0,0,0"
                         Command="{Binding OpenReleasesCommand}"
-                        Content="Open Releases" />
+                        Content="Open Releases"
+                        ToolTip="Open the Releases page to download updates." />
                     <Button
                         Width="160"
                         Margin="10,0,0,0"
                         Command="{Binding OpenSettingsFolderCommand}"
-                        Content="Open Settings Folder" />
+                        Content="Open Settings Folder"
+                        ToolTip="Open the folder where your settings file is stored." />
                 </StackPanel>
             </Grid>
         </GroupBox>
@@ -259,8 +301,10 @@
             Orientation="Horizontal">
             <Button
                 Width="100"
+                Click="Close_Click"
                 Content="Close"
-                IsCancel="True" Click="Close_Click" />
+                IsCancel="True"
+                ToolTip="Close the Settings &amp; Info window." />
         </StackPanel>
     </Grid>
 </Window>

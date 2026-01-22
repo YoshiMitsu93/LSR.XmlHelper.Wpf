@@ -29,6 +29,9 @@ namespace LSR.XmlHelper.Wpf.Services
         public string EditorText { get; set; } = "#FFD4D4D4";
         public string EditorBackground { get; set; } = "#FF1E1E1E";
         public string EditorXmlSyntaxForeground { get; set; } = "";
+        public string EditorScopeShadingColor { get; set; } = "";
+        public string EditorIndentGuidesColor { get; set; } = "";
+        public string EditorRegionHighlightColor { get; set; } = "";
         public string AppearanceWindowBackground { get; set; } = "#FF1E1E1E";
         public string AppearanceWindowText { get; set; } = "#FFD4D4D4";
         public string AppearanceWindowControlBackground { get; set; } = "#FF1E1E1E";
@@ -388,8 +391,11 @@ namespace LSR.XmlHelper.Wpf.Services
                 XmlGuidesWindowGuidesListItemSelectedText = "#FFFFFFFF",
                 XmlGuidesWindowFontPickerText = "#FF000000",
 
-                EditorText = "#FFFF0000",
-                EditorBackground = "#FF1E1E1E",
+                EditorText = "#FFFFFF00",
+                EditorBackground = "#FF000000",
+                EditorXmlSyntaxForeground = "#FFC0C0C0",
+                EditorScopeShadingColor = "#FF0080C0",
+                EditorRegionHighlightColor = "#FFFFFFFF",
 
                 MenuBackground = "#FF1E1E1E",
                 MenuText = "#FFFFFFFF",
@@ -555,8 +561,11 @@ namespace LSR.XmlHelper.Wpf.Services
                 XmlGuidesWindowGuidesListItemSelectedText = "#FF000000",
                 XmlGuidesWindowFontPickerText = "#FF000000",
 
-                EditorText = "#FF000000",
+                EditorText = "#FF0000FF",
                 EditorBackground = "#FFFFFFFF",
+                EditorXmlSyntaxForeground = "#FF000000",
+                EditorScopeShadingColor = "#FF008080",
+                EditorRegionHighlightColor = "#FF000000",
 
                 MenuBackground = "#FFFFFFFF",
                 MenuText = "#FF000000",

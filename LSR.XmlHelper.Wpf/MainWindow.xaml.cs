@@ -1,8 +1,10 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Search;
+using ICSharpCode.AvalonEdit.Document;
+using System;
 using LSR.XmlHelper.Core.Services;
-using LSR.XmlHelper.Wpf.Infrastructure;
+using LSR.XmlHelper.Wpf.Infrastructure.Behaviors;
 using LSR.XmlHelper.Wpf.ViewModels;
 using LSR.XmlHelper.Wpf.Services.Appearance;
 using System.Windows.Controls;
@@ -25,6 +27,15 @@ namespace LSR.XmlHelper.Wpf
         private Views.XmlGuidesWindow? _xmlGuidesWindow;
         private readonly XmlHelperRootService _helperRoot = new XmlHelperRootService();
         private SearchPanel? _searchPanel;
+        private AvalonEditTextMarkerService? _rawXmlMarkerService;
+        private AvalonEditScopeShadingService? _rawXmlScopeShadingService;
+        private AvalonEditIndentGuidesService? _rawXmlIndentGuidesService;
+        private AvalonEditBackgroundRendererGuard? _rawXmlRendererGuard;
+        private AvalonEditXmlFoldingService? _rawXmlFoldingService;
+        private TextEditor? _xmlEditor;
+        private System.Windows.Threading.DispatcherTimer? _breadcrumbTimer;
+        private int _breadcrumbPendingOffset;
+        private bool _breadcrumbPending;
         private Views.FriendlySearchWindow? _friendlySearchWindow;
         private Views.ReplaceWindow? _replaceWindow;
         private bool _checkedUpdatesOnStartup;
@@ -36,27 +47,98 @@ namespace LSR.XmlHelper.Wpf
             var editor = FindName("XmlEditor") as TextEditor;
             if (editor is not null)
             {
+                _xmlEditor = editor;
                 editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
                 _searchPanel = SearchPanel.Install(editor);
+                var markerService = new AvalonEditTextMarkerService(editor.Document);
+                _rawXmlMarkerService = markerService;
+                editor.TextArea.TextView.BackgroundRenderers.Add(markerService);
+                var scopeShadingService = new AvalonEditScopeShadingService(editor.Document);
+                _rawXmlScopeShadingService = scopeShadingService;
+                editor.TextArea.TextView.BackgroundRenderers.Add(scopeShadingService);
+                var indentGuidesService = new AvalonEditIndentGuidesService(editor.Document, scopeShadingService);
+                _rawXmlIndentGuidesService = indentGuidesService;
+                editor.TextArea.TextView.BackgroundRenderers.Add(indentGuidesService);
+                _rawXmlRendererGuard = new AvalonEditBackgroundRendererGuard(editor, markerService, scopeShadingService, indentGuidesService);
+                _rawXmlFoldingService = new AvalonEditXmlFoldingService(editor);
+                _rawXmlFoldingService.OutlineChanged += (_, __) => RefreshRawOutline();
+                editor.TextArea.Caret.PositionChanged += (_, __) =>
+                {
+                    if (_rawXmlScopeShadingService is not null)
+                        _rawXmlScopeShadingService.CaretLine = editor.TextArea.Caret.Line;
+
+                    if (_rawXmlIndentGuidesService is not null)
+                    {
+                        _rawXmlIndentGuidesService.CaretLine = editor.TextArea.Caret.Position.Line;
+                        _rawXmlIndentGuidesService.CaretVisualColumn = editor.TextArea.Caret.Position.VisualColumn;
+                        ScheduleBreadcrumbUpdate();
+                    }
+                };
+
+                ScheduleBreadcrumbUpdate();
+                editor.TextChanged += (_, __) => ScheduleBreadcrumbUpdate();
+
+                if (_rawXmlScopeShadingService is not null)
+                    _rawXmlScopeShadingService.CaretLine = editor.TextArea.Caret.Line;
+
+                if (_rawXmlIndentGuidesService is not null)
+                {
+                    _rawXmlIndentGuidesService.CaretLine = editor.TextArea.Caret.Position.Line;
+                    _rawXmlIndentGuidesService.CaretVisualColumn = editor.TextArea.Caret.Position.VisualColumn;
+                }
             }
 
             DataContext = new MainWindowViewModel();
             if (DataContext is MainWindowViewModel vm)
             {
-                vm.RawNavigationRequested += VmOnRawNavigationRequested;
                 vm.PropertyChanged += Vm_PropertyChanged;
+                vm.RawXmlProblemsChanged += VmOnRawXmlProblemsChanged;
+                _rawXmlFoldingService?.SetDocumentKey(vm.SelectedXmlFile?.FullPath);
+                InitializeBreadcrumbTimer();
+                ScheduleBreadcrumbUpdate();
                 if (editor is not null)
                 {
                     XmlSyntaxHighlightingService.Apply(editor, vm.Appearance.EditorXmlSyntaxForeground);
+
+                    if (_rawXmlScopeShadingService is not null)
+                        _rawXmlScopeShadingService.ScopeShadingColor = vm.Appearance.EditorScopeShadingColor;
+                    if (_rawXmlScopeShadingService is not null)
+                        _rawXmlScopeShadingService.RegionHighlightColor = vm.Appearance.EditorRegionHighlightColor;
+                    if (_rawXmlScopeShadingService is not null)
+                        _rawXmlScopeShadingService.IsScopeShadingEnabled = vm.IsScopeShadingEnabled;
+                    if (_rawXmlScopeShadingService is not null)
+                        _rawXmlScopeShadingService.IsRegionHighlightEnabled = vm.IsRegionHighlightEnabled;
+                    if (_rawXmlIndentGuidesService is not null)
+                        _rawXmlIndentGuidesService.GuidesColor =
+                            string.IsNullOrWhiteSpace(vm.Appearance.EditorIndentGuidesColor)
+                                ? vm.Appearance.EditorScopeShadingColor
+                                : vm.Appearance.EditorIndentGuidesColor;
+                    if (_rawXmlIndentGuidesService is not null)
+                        _rawXmlIndentGuidesService.IsIndentGuidesEnabled = vm.IsIndentGuidesEnabled;
+                    if (_rawXmlIndentGuidesService is not null)
+                        _rawXmlIndentGuidesService.IsDarkMode = vm.IsDarkMode;
+                    if (_rawXmlIndentGuidesService is not null)
+                        _rawXmlIndentGuidesService.IsEnabled = !vm.IsFriendlyView;
 
                     vm.Appearance.PropertyChanged += (_, args) =>
                     {
                         if (args.PropertyName == nameof(Services.AppearanceService.EditorXmlSyntaxForeground))
                             XmlSyntaxHighlightingService.Apply(editor, vm.Appearance.EditorXmlSyntaxForeground);
+
+                        if (args.PropertyName == nameof(Services.AppearanceService.EditorScopeShadingColor) && _rawXmlScopeShadingService is not null)
+                            _rawXmlScopeShadingService.ScopeShadingColor = vm.Appearance.EditorScopeShadingColor;
+                        if ((args.PropertyName == nameof(Services.AppearanceService.EditorIndentGuidesColor) || args.PropertyName == nameof(Services.AppearanceService.EditorScopeShadingColor)) && _rawXmlIndentGuidesService is not null)
+                            _rawXmlIndentGuidesService.GuidesColor =
+                                string.IsNullOrWhiteSpace(vm.Appearance.EditorIndentGuidesColor)
+                                    ? vm.Appearance.EditorScopeShadingColor
+                                    : vm.Appearance.EditorIndentGuidesColor;
+                        if (args.PropertyName == nameof(Services.AppearanceService.EditorRegionHighlightColor) && _rawXmlScopeShadingService is not null)
+                            _rawXmlScopeShadingService.RegionHighlightColor = vm.Appearance.EditorRegionHighlightColor;
                     };
                 }
             }
             Loaded += MainWindow_Loaded;
+            Closed += (_, __) => { _rawXmlRendererGuard?.Dispose(); _rawXmlFoldingService?.Dispose(); };
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -84,23 +166,287 @@ namespace LSR.XmlHelper.Wpf
 
         private void Vm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(MainWindowViewModel.IsFriendlyView))
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (_rawXmlScopeShadingService is not null)
+            {
+                if (e.PropertyName == nameof(MainWindowViewModel.IsDarkMode))
+                    _rawXmlScopeShadingService.IsDarkMode = vm.IsDarkMode;
+
+                if (e.PropertyName == nameof(MainWindowViewModel.IsFriendlyView))
+                    _rawXmlScopeShadingService.IsEnabled = !vm.IsFriendlyView;
+
+                if (e.PropertyName == nameof(MainWindowViewModel.IsScopeShadingEnabled))
+                    _rawXmlScopeShadingService.IsScopeShadingEnabled = vm.IsScopeShadingEnabled;
+
+                if (e.PropertyName == nameof(MainWindowViewModel.IsRegionHighlightEnabled))
+                    _rawXmlScopeShadingService.IsRegionHighlightEnabled = vm.IsRegionHighlightEnabled;
+            }
+
+            if (_rawXmlIndentGuidesService is not null)
+            {
+                if (e.PropertyName == nameof(MainWindowViewModel.IsDarkMode))
+                    _rawXmlIndentGuidesService.IsDarkMode = vm.IsDarkMode;
+
+                if (e.PropertyName == nameof(MainWindowViewModel.IsFriendlyView))
+                    _rawXmlIndentGuidesService.IsEnabled = !vm.IsFriendlyView;
+
+                if (e.PropertyName == nameof(MainWindowViewModel.IsIndentGuidesEnabled))
+                    _rawXmlIndentGuidesService.IsIndentGuidesEnabled = vm.IsIndentGuidesEnabled;
+            }
+
+            if (e.PropertyName == nameof(MainWindowViewModel.IsFriendlyView))
+            {
+                if (vm.IsFriendlyView)
+                {
+                    if (_replaceWindow is not null)
+                    {
+                        var w = _replaceWindow;
+                        _replaceWindow = null;
+                        w.Close();
+                    }
+                }
+            }
+
+            if (e.PropertyName == nameof(MainWindowViewModel.SelectedXmlFile))
+            {
+                _rawXmlFoldingService?.SetDocumentKey(vm.SelectedXmlFile?.FullPath);
+                ScheduleBreadcrumbUpdate();
+            }
+
+            var editor = FindName("XmlEditor") as TextEditor;
+            editor?.TextArea.TextView.InvalidateVisual();
+        }
+        private void InitializeBreadcrumbTimer()
+        {
+            if (_breadcrumbTimer is not null)
+                return;
+
+            _breadcrumbTimer = new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Input)
+            {
+                Interval = TimeSpan.FromMilliseconds(40),
+            };
+
+            _breadcrumbTimer.Tick += BreadcrumbTimerOnTick;
+        }
+
+        private void ScheduleBreadcrumbUpdate()
+        {
+            if (_xmlEditor is null)
+                return;
+
+            if (DataContext is not MainWindowViewModel)
+                return;
+
+            if (_breadcrumbTimer is null)
+                return;
+
+            _breadcrumbPendingOffset = _xmlEditor.TextArea.Caret.Offset;
+            _breadcrumbPending = true;
+
+            _breadcrumbTimer.Stop();
+            _breadcrumbTimer.Start();
+        }
+
+        private void BreadcrumbTimerOnTick(object? sender, EventArgs e)
+        {
+            if (_breadcrumbTimer is null)
+                return;
+
+            _breadcrumbTimer.Stop();
+
+            if (!_breadcrumbPending)
+                return;
+
+            _breadcrumbPending = false;
+
+            if (_xmlEditor is null)
                 return;
 
             if (DataContext is not MainWindowViewModel vm)
                 return;
 
-            if (vm.IsFriendlyView == false)
+            var doc = _xmlEditor.Document;
+            if (doc is null)
                 return;
 
-            if (_replaceWindow is null)
-                return;
+            vm.RawBreadcrumbSegments.Clear();
 
-            var w = _replaceWindow;
-            _replaceWindow = null;
-            w.Close();
+            if (_rawXmlFoldingService is null)
+            {
+                var fallback = Infrastructure.Breadcrumbs.XmlBreadcrumbBuilder.Build(doc, _breadcrumbPendingOffset);
+                foreach (var s in fallback)
+                    vm.RawBreadcrumbSegments.Add(s);
+                return;
+            }
+
+            var segments = _rawXmlFoldingService.GetBreadcrumbSegments(_breadcrumbPendingOffset);
+
+            foreach (var s in segments)
+                vm.RawBreadcrumbSegments.Add(new BreadcrumbSegmentViewModel { Title = s.Title, Offset = s.Offset });
         }
 
+        private void RawBreadcrumbButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_xmlEditor is null)
+                return;
+
+            if (sender is not System.Windows.Controls.Button b)
+                return;
+
+            if (b.Tag is not int offset)
+                return;
+
+            if (offset < 0 || offset > _xmlEditor.Document.TextLength)
+                return;
+
+            _xmlEditor.TextArea.Caret.Offset = offset;
+            var line = _xmlEditor.Document.GetLocation(offset).Line;
+            _xmlEditor.ScrollToLine(line);
+            _xmlEditor.TextArea.Focus();
+        }
+        private void RefreshRawOutline()
+        {
+            if (_rawXmlFoldingService is null)
+                return;
+
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            var roots = _rawXmlFoldingService.GetOutlineRoots();
+
+            vm.RawOutlineNodes.Clear();
+
+            foreach (var r in roots)
+                vm.RawOutlineNodes.Add(BuildOutlineNode(r));
+        }
+
+        private RawXmlOutlineNodeViewModel BuildOutlineNode(LSR.XmlHelper.Wpf.Infrastructure.Outline.RawXmlOutlineEntry entry)
+        {
+            var node = new RawXmlOutlineNodeViewModel
+            {
+                Title = entry.Title,
+                Offset = entry.Offset
+            };
+
+            foreach (var c in entry.Children)
+                node.Children.Add(BuildOutlineNode(c));
+
+            return node;
+        }
+
+        private void RawOutlineTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (_xmlEditor is null)
+                return;
+
+            if (e.NewValue is not RawXmlOutlineNodeViewModel node)
+                return;
+
+            var doc = _xmlEditor.Document;
+            if (doc is null)
+                return;
+
+            var offset = node.Offset;
+            if (offset < 0 || offset > doc.TextLength)
+                return;
+
+            _xmlEditor.TextArea.Caret.Offset = offset;
+
+            var line = doc.GetLocation(offset).Line;
+            _xmlEditor.ScrollToLine(line);
+            _xmlEditor.TextArea.Focus();
+        }
+
+        private void VmOnRawXmlProblemsChanged(object? sender, EventArgs e)
+        {
+            var editor = XmlEditor;
+            if (editor is null)
+                return;
+
+            if (_rawXmlMarkerService is null)
+                return;
+
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            _rawXmlMarkerService.Clear();
+
+            foreach (var p in vm.RawXmlProblems)
+            {
+                var offset = p.Offset;
+                if (offset < 0)
+                    continue;
+
+                if (offset >= editor.Document.TextLength)
+                    offset = Math.Max(0, editor.Document.TextLength - 1);
+
+                var length = GetUnderlineLength(editor.Document, offset);
+                _rawXmlMarkerService.AddSquiggle(offset, length, p.DisplayText, p.IsWarning);
+            }
+
+            if (_rawXmlScopeShadingService is not null)
+            {
+                _rawXmlScopeShadingService.IsDarkMode = vm.IsDarkMode;
+                _rawXmlScopeShadingService.IsEnabled = !vm.IsFriendlyView;
+            }
+
+            if (_rawXmlIndentGuidesService is not null)
+            {
+                _rawXmlIndentGuidesService.IsDarkMode = vm.IsDarkMode;
+                _rawXmlIndentGuidesService.IsEnabled = !vm.IsFriendlyView;
+            }
+
+            editor.TextArea.TextView.InvalidateVisual();
+        }
+
+        private void RawXmlProblemsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            var p = vm.SelectedRawXmlProblem;
+            if (p is null)
+                return;
+
+            var editor = XmlEditor;
+            if (editor is null)
+                return;
+
+            var offset = p.Offset;
+            if (offset < 0)
+                return;
+
+            if (offset >= editor.Document.TextLength)
+                offset = Math.Max(0, editor.Document.TextLength - 1);
+
+            var length = GetUnderlineLength(editor.Document, offset);
+            editor.Select(offset, length);
+            editor.TextArea.Caret.Offset = offset;
+            editor.TextArea.Caret.BringCaretToView();
+            editor.Focus();
+        }
+
+        private static int GetUnderlineLength(TextDocument doc, int offset)
+        {
+            if (offset < 0)
+                return 1;
+
+            if (offset >= doc.TextLength)
+                return 1;
+
+            var line = doc.GetLineByOffset(offset);
+            var max = Math.Min(line.EndOffset, offset + 60);
+            var text = doc.GetText(offset, max - offset);
+            for (var i = 0; i < text.Length; i++)
+            {
+                var c = text[i];
+                if (char.IsWhiteSpace(c) || c == '>' || c == '<' || c == '\r' || c == '\n')
+                    return Math.Max(1, i);
+            }
+            return Math.Max(1, text.Length);
+        }
 
         private void MainWindowRoot_Drop(object sender, System.Windows.DragEventArgs e)
         {
@@ -644,32 +990,8 @@ namespace LSR.XmlHelper.Wpf
             return null;
         }
 
-        private void VmOnRawNavigationRequested(object? sender, RawNavigationRequest e)
+        private void VmOnRawNavigationRequested(object? sender, EventArgs e)
         {
-            TrySelectFileInPane1(e.FilePath);
-
-            var editor = FindName("XmlEditor") as TextEditor;
-            if (editor is null)
-                return;
-
-            var offset = e.Offset;
-            if (offset < 0)
-                offset = 0;
-
-            if (offset > editor.Text.Length)
-                offset = editor.Text.Length;
-
-            var length = e.Length;
-            if (length < 0)
-                length = 0;
-
-            if (offset + length > editor.Text.Length)
-                length = editor.Text.Length - offset;
-
-            editor.Select(offset, length);
-            editor.TextArea.Caret.Offset = offset;
-            editor.TextArea.Caret.BringCaretToView();
-            editor.Focus();
         }
 
         private void TrySelectFileInPane1(string filePath)

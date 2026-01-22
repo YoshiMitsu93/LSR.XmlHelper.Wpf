@@ -74,7 +74,56 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 OnPropertyChanged();
             }
         }
+        public bool IsScopeShadingEnabled
+        {
+            get => _main.IsScopeShadingEnabled;
+            set
+            {
+                if (_main.IsScopeShadingEnabled == value)
+                    return;
 
+                _main.IsScopeShadingEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsRegionHighlightEnabled
+        {
+            get => _main.IsRegionHighlightEnabled;
+            set
+            {
+                if (_main.IsRegionHighlightEnabled == value)
+                    return;
+
+                _main.IsRegionHighlightEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+        public bool IsIndentGuidesEnabled
+        {
+            get => _main.IsIndentGuidesEnabled;
+            set
+            {
+                if (_main.IsIndentGuidesEnabled == value)
+                    return;
+
+                _main.IsIndentGuidesEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsRawOutlineEnabled
+        {
+            get => _main.IsRawOutlineEnabled;
+            set
+            {
+                if (_main.IsRawOutlineEnabled == value)
+                    return;
+
+                _main.IsRawOutlineEnabled = value;
+                OnPropertyChanged();
+            }
+        }
         public XmlListViewMode ViewMode
         {
             get => _main.ViewMode;

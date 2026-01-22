@@ -168,6 +168,9 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush XmlGuidesWindowFontPickerTextBrush => CreateFrozenBrush(Active.XmlGuidesWindowFontPickerText);
         public WpfBrush EditorBackgroundBrush => CreateFrozenBrush(Active.EditorBackground);
         public string EditorXmlSyntaxForeground => Active.EditorXmlSyntaxForeground;
+        public string EditorScopeShadingColor => Active.EditorScopeShadingColor;
+        public string EditorIndentGuidesColor => Active.EditorIndentGuidesColor;
+        public string EditorRegionHighlightColor => Active.EditorRegionHighlightColor;
         public WpfBrush MenuBackgroundBrush => CreateFrozenBrush(Active.MenuBackground);
         public WpfBrush MenuTextBrush => CreateFrozenBrush(Active.MenuText);
         public WpfBrush TreeTextBrush => CreateFrozenBrush(_isFriendlyView ? Active.FriendlyTreeText : Active.RawTreeText);
@@ -341,6 +344,9 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(EditorTextBrush));
             OnPropertyChanged(nameof(EditorBackgroundBrush));
             OnPropertyChanged(nameof(EditorXmlSyntaxForeground));
+            OnPropertyChanged(nameof(EditorScopeShadingColor));
+            OnPropertyChanged(nameof(EditorIndentGuidesColor));
+            OnPropertyChanged(nameof(EditorRegionHighlightColor));
 
             OnPropertyChanged(nameof(MenuTextBrush));
             OnPropertyChanged(nameof(MenuBackgroundBrush));
