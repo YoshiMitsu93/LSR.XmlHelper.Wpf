@@ -29,30 +29,33 @@
   <ItemGroup>
     <ProjectReference Include="..\LSR.XmlHelper.Core\LSR.XmlHelper.Core.csproj" />
   </ItemGroup>
-  
+
+    <Target Name="BuildGuidesZip" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <GuidesSourceDir>$(MSBuildProjectDirectory)\Guides</GuidesSourceDir>
+      <GuidesZipPath>$(IntermediateOutputPath)Guides.zip</GuidesZipPath>
+    </PropertyGroup>
+
+    <Exec Condition="Exists('$(GuidesSourceDir)')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$src='$(GuidesSourceDir)'; $dst='$(GuidesZipPath)'; if(Test-Path $dst){ Remove-Item $dst -Force }; Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory($src,$dst)&quot;" />
+  </Target>
+
   <ItemGroup>
-    <Content Include="Guides\**\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="$(IntermediateOutputPath)Guides.zip" LogicalName="Guides.zip" Condition="Exists('$(IntermediateOutputPath)Guides.zip')" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Remove="Guides\Guides\**" />
-    <Content Remove="Guides\Guides\**" />
-    <EmbeddedResource Remove="Guides\Guides\**" />
-    <None Remove="Guides\Guides\**" />
-    <Page Remove="Guides\Guides\**" />
+
+    <ItemGroup>
+    <Compile Remove="Guides\**" />
+    <Content Remove="Guides\**" />
+    <EmbeddedResource Remove="Guides\**" />
+    <None Remove="Guides\**" />
+    <Page Remove="Guides\**" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Content Include="README.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Guides\CommunityGuides\" />
   </ItemGroup>
 
 </Project>

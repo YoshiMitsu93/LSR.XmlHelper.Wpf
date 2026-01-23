@@ -14,6 +14,8 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media.Imaging;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 {
@@ -37,7 +39,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         private string _guideFontFamily = "";
         private double _guideFontSize;
         private double _guideZoom = 100;
-
+        private readonly DispatcherTimer _rebuildGuideDocumentTimer;
+        private bool _isSaving;
         public XmlGuidesWindowViewModel(AppearanceService appearance, string helperRootFolder)
         {
             Appearance = appearance;
@@ -50,13 +53,19 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 
             GuideFontSizes = new ObservableCollection<double>(new[]
             {
-                10d, 11d, 12d, 13d, 14d, 15d, 16d, 18d, 20d, 22d, 24d, 28d, 32d
-            });
+        10d, 11d, 12d, 13d, 14d, 15d, 16d, 18d, 20d, 22d, 24d, 28d, 32d
+    });
 
             _guideFontFamily = Appearance.UiFontFamily.Source;
             _guideFontSize = Appearance.UiFontSize;
 
-            _store = new XmlGuideStoreService(helperRootFolder);
+            var embeddedSource = new EmbeddedGuidesSourceService();
+            var appGuidesFolder = embeddedSource.EnsureExtracted(helperRootFolder);
+
+            _store = string.IsNullOrWhiteSpace(appGuidesFolder)
+                ? new XmlGuideStoreService(helperRootFolder)
+                : new XmlGuideStoreService(helperRootFolder, appGuidesFolder);
+
             _allGuides = new ObservableCollection<XmlGuide>(_store.LoadAll());
 
             GuidesView = CollectionViewSource.GetDefaultView(_allGuides);
@@ -66,7 +75,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             GuidesView.Filter = FilterGuide;
 
             NewGuideCommand = new RelayCommand(NewGuide);
-            SaveGuideCommand = new RelayCommand(SaveGuide, CanSaveGuide);
+            SaveGuideCommand = new NotifyRelayCommand(SaveGuide, CanSaveGuide);
             DeleteGuideCommand = new RelayCommand(DeleteGuide, CanDeleteGuide);
             ExportGuideCommand = new RelayCommand(ExportGuide, CanExportGuide);
             ImportGuideCommand = new RelayCommand(ImportGuide);
@@ -74,26 +83,29 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             ToggleEditModeCommand = new RelayCommand(ToggleEditMode, CanToggleEditMode);
             InsertImageCommand = new RelayCommand(InsertImage, CanInsertImage);
 
+            _rebuildGuideDocumentTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+            _rebuildGuideDocumentTimer.Tick += (_, __) =>
+            {
+                _rebuildGuideDocumentTimer.Stop();
+                RebuildGuideDocument();
+            };
+
             SelectedGuide = _allGuides.FirstOrDefault();
         }
 
         public AppearanceService Appearance { get; }
-
         public ICollectionView GuidesView { get; }
-
         public ObservableCollection<string> GuideFontFamilies { get; }
         public ObservableCollection<double> GuideFontSizes { get; }
-
         public string GuideFontFamily
         {
             get => _guideFontFamily;
             set
             {
                 if (SetProperty(ref _guideFontFamily, value))
-                    RebuildGuideDocument();
+                    ScheduleRebuildGuideDocument();
             }
         }
-
         public double GuideFontSize
         {
             get => _guideFontSize;
@@ -104,7 +116,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                     v = 6;
 
                 if (SetProperty(ref _guideFontSize, v))
-                    RebuildGuideDocument();
+                    ScheduleRebuildGuideDocument();
             }
         }
 
@@ -124,7 +136,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         }
 
         public RelayCommand NewGuideCommand { get; }
-        public RelayCommand SaveGuideCommand { get; }
+        public NotifyRelayCommand SaveGuideCommand { get; }
         public RelayCommand DeleteGuideCommand { get; }
         public RelayCommand ExportGuideCommand { get; }
         public RelayCommand ImportGuideCommand { get; }
@@ -210,7 +222,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 _title = value ?? "";
                 OnPropertyChanged();
                 MarkDirty();
-                RebuildGuideDocument();
+                ScheduleRebuildGuideDocument();
             }
         }
 
@@ -225,7 +237,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 _category = value ?? "";
                 OnPropertyChanged();
                 MarkDirty();
-                RebuildGuideDocument();
+                ScheduleRebuildGuideDocument();
             }
         }
 
@@ -240,7 +252,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 _summary = value ?? "";
                 OnPropertyChanged();
                 MarkDirty();
-                RebuildGuideDocument();
+                ScheduleRebuildGuideDocument();
             }
         }
 
@@ -255,10 +267,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 _body = value ?? "";
                 OnPropertyChanged();
                 MarkDirty();
-                RebuildGuideDocument();
+                ScheduleRebuildGuideDocument();
             }
         }
-
         public bool IsDirty
         {
             get => _isDirty;
@@ -271,7 +282,19 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 OnPropertyChanged();
             }
         }
+        public bool IsSaving
+        {
+            get => _isSaving;
+            private set
+            {
+                if (_isSaving == value)
+                    return;
 
+                _isSaving = value;
+                OnPropertyChanged();
+                InvalidateCommands();
+            }
+        }
         private bool FilterGuide(object obj)
         {
             if (obj is not XmlGuide g)
@@ -343,6 +366,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 
         private void InvalidateCommands()
         {
+            SaveGuideCommand.RaiseCanExecuteChanged();
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             OnPropertyChanged(nameof(IsBuiltInSelected));
         }
@@ -371,6 +395,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             if (!IsEditMode)
                 return false;
 
+            if (IsSaving)
+                return false;
+
             if (SelectedGuide is null)
                 return false;
 
@@ -380,11 +407,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             if (!IsDirty)
                 return false;
 
-            return !string.IsNullOrWhiteSpace(Title);
+            return !string.IsNullOrWhiteSpace((Title ?? "").Trim());
         }
-
-        private void SaveGuide()
+        private async void SaveGuide()
         {
+            if (IsSaving)
+                return;
+
             if (SelectedGuide is null)
                 return;
 
@@ -404,7 +433,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             SelectedGuide.Body = Body ?? "";
             SelectedGuide.UpdatedUtc = DateTimeOffset.UtcNow;
 
-            _store.SaveUserGuides(_allGuides);
+            IsSaving = true;
+
+            try
+            {
+                await Task.Run(() => _store.SaveUserGuides(_allGuides));
+            }
+            finally
+            {
+                IsSaving = false;
+            }
 
             IsDirty = false;
             GuidesView.Refresh();
@@ -770,6 +808,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             token = bestToken;
             tokenIndex = best;
             return true;
+        }
+        private void ScheduleRebuildGuideDocument()
+        {
+            if (_rebuildGuideDocumentTimer.IsEnabled)
+                _rebuildGuideDocumentTimer.Stop();
+
+            _rebuildGuideDocumentTimer.Start();
         }
         private void RebuildGuideDocument()
         {
