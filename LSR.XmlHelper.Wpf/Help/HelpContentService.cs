@@ -156,6 +156,37 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                     "If you are unsure about a Replace All, use Find Next and Replace first to confirm you are hitting the right text.",
                     "replace", "ctrl+h", "replace all", "raw xml", "search", "find"
                 ),
+                                new HelpTopic(
+                    3,
+                    "Editing (Raw XML)",
+                    5,
+                    "Right-click Quick Actions (Context Menu)",
+                    "Context-aware actions in Raw XML to edit faster without memorizing everything.",
+                    "What it is:\n" +
+                    "- In the Raw XML editor, you can right-click to open a context menu with common actions\n" +
+                    "- Some actions are context-aware and only work when you are inside an entry\n\n" +
+                    "Quick Actions:\n" +
+                    "- Duplicate entry (Ctrl+Alt+D): duplicates the entry your caret is currently inside\n" +
+                    "- Duplicate line (Ctrl+D): duplicates the current line\n" +
+                    "- Cut (Ctrl+X): cuts the selected text, or the current line if nothing is selected\n" +
+                    "- Copy (Ctrl+C): copies the selected text, or the current line if nothing is selected (Smart Copy)\n" +
+                    "- Paste (Ctrl+V): pastes clipboard content at the caret\n" +
+                    "- Collapse element (Ctrl+Alt+Up): folds the smallest element that contains the caret\n" +
+                    "- Expand element (Ctrl+Alt+Down): unfolds the smallest element that contains the caret\n" +
+                    "- Collapse all (Ctrl+Alt+Shift+Up): folds all elements\n" +
+                    "- Expand all (Ctrl+Alt+Shift+Down): unfolds all elements\n\n" +
+                    "Notes:\n" +
+                    "- Format is available from the top toolbar and shortcut (Ctrl+K)\n" +
+                    "- Duplicate entry is only enabled when the editor can detect an entry at the caret\n\n" +
+                    "Example:\n" +
+                    "If your XML contains repeated items like:\n" +
+                    "<Vehicles>\n" +
+                    "  <Vehicle>...</Vehicle>\n" +
+                    "  <Vehicle>...</Vehicle>\n" +
+                    "</Vehicles>\n\n" +
+                    "Placing your caret inside a <Vehicle> and using Duplicate entry will duplicate that whole <Vehicle> block.",
+                    "raw xml", "context menu", "quick actions", "duplicate entry", "duplicate line", "cut", "copy", "paste", "smart copy", "fold", "collapse", "expand"
+                ),
 
                 new HelpTopic(
                     4,

@@ -12,7 +12,8 @@
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
     PreviewDragOver="CompareWindow_PreviewDragOver"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}">
             <Setter Property="Foreground" Value="{Binding Appearance.CompareXmlWindowTextBrush}" />

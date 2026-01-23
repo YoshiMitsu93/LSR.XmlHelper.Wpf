@@ -12,7 +12,8 @@
     FontWeight="{Binding Appearance.UiFontWeight}"
     Foreground="{Binding Appearance.XmlGuidesWindowTextBrush}"
     Icon="/Assets/AppIcon.ico"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />

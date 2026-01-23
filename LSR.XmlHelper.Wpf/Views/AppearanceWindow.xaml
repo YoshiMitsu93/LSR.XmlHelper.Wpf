@@ -12,7 +12,8 @@
     FontSize="{Binding PreviewUiFontSize}"
     ResizeMode="CanResize"
     ShowInTaskbar="False"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />

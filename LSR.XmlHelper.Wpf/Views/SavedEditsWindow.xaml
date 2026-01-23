@@ -9,7 +9,8 @@
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
     Foreground="{Binding Appearance.SavedEditsWindowTextBrush}"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="{Binding DataContext.Appearance.SavedEditsWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />

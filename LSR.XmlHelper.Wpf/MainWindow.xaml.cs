@@ -1,22 +1,27 @@
 ﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Search;
-using ICSharpCode.AvalonEdit.Document;
-using System;
 using LSR.XmlHelper.Core.Services;
+using LSR.XmlHelper.Wpf.Infrastructure;
 using LSR.XmlHelper.Wpf.Infrastructure.Behaviors;
-using LSR.XmlHelper.Wpf.ViewModels;
+using LSR.XmlHelper.Wpf.Infrastructure.Commands;
 using LSR.XmlHelper.Wpf.Services.Appearance;
-using System.Windows.Controls;
+using LSR.XmlHelper.Wpf.Services.RawXml;
+using LSR.XmlHelper.Wpf.Services.Updates;
+using LSR.XmlHelper.Wpf.Services.UndoRedo;
+using LSR.XmlHelper.Wpf.ViewModels;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using LSR.XmlHelper.Wpf.Services.Updates;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
-
+using System.Windows.Media;
 
 namespace LSR.XmlHelper.Wpf
 {
@@ -33,13 +38,19 @@ namespace LSR.XmlHelper.Wpf
         private AvalonEditBackgroundRendererGuard? _rawXmlRendererGuard;
         private AvalonEditXmlFoldingService? _rawXmlFoldingService;
         private TextEditor? _xmlEditor;
+        private AvalonEditCaretKeepAliveService? _rawXmlCaretKeepAliveService;
+        private readonly RawXmlContextActionService _rawXmlContextActionService = new RawXmlContextActionService();
         private System.Windows.Threading.DispatcherTimer? _breadcrumbTimer;
         private int _breadcrumbPendingOffset;
         private bool _breadcrumbPending;
         private Views.FriendlySearchWindow? _friendlySearchWindow;
         private Views.ReplaceWindow? _replaceWindow;
         private bool _checkedUpdatesOnStartup;
+        private readonly FriendlyUndoRedoService _friendlyUndoRedo = new FriendlyUndoRedoService();
+        private string _lastFriendlyXmlText = "";
+        private bool _suppressFriendlyUndoCapture;
 
+        private int _rawOutlineLastSelectedOffset = -1;
         public MainWindow()
         {
             InitializeComponent();
@@ -47,6 +58,8 @@ namespace LSR.XmlHelper.Wpf
             var editor = FindName("XmlEditor") as TextEditor;
             if (editor is not null)
             {
+                _rawXmlCaretKeepAliveService = new AvalonEditCaretKeepAliveService(editor);
+                _rawXmlCaretKeepAliveService.Start();
                 _xmlEditor = editor;
                 editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
                 _searchPanel = SearchPanel.Install(editor);
@@ -93,6 +106,7 @@ namespace LSR.XmlHelper.Wpf
             {
                 vm.PropertyChanged += Vm_PropertyChanged;
                 vm.RawXmlProblemsChanged += VmOnRawXmlProblemsChanged;
+                _lastFriendlyXmlText = vm.XmlText ?? "";
                 _rawXmlFoldingService?.SetDocumentKey(vm.SelectedXmlFile?.FullPath);
                 InitializeBreadcrumbTimer();
                 ScheduleBreadcrumbUpdate();
@@ -138,7 +152,7 @@ namespace LSR.XmlHelper.Wpf
                 }
             }
             Loaded += MainWindow_Loaded;
-            Closed += (_, __) => { _rawXmlRendererGuard?.Dispose(); _rawXmlFoldingService?.Dispose(); };
+            Closed += (_, __) => { _rawXmlCaretKeepAliveService?.Dispose(); _rawXmlRendererGuard?.Dispose(); _rawXmlFoldingService?.Dispose(); };
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -215,9 +229,116 @@ namespace LSR.XmlHelper.Wpf
                 ScheduleBreadcrumbUpdate();
             }
 
+            if (e.PropertyName == nameof(MainWindowViewModel.XmlText))
+            {
+                if (vm.IsFriendlyView && !_suppressFriendlyUndoCapture)
+                {
+                    var current = vm.XmlText ?? "";
+                    if (!string.Equals(current, _lastFriendlyXmlText, StringComparison.Ordinal))
+                        _friendlyUndoRedo.Record(_lastFriendlyXmlText);
+
+                    _lastFriendlyXmlText = current;
+                }
+                else
+                {
+                    _lastFriendlyXmlText = vm.XmlText ?? "";
+                }
+            }
+
+            if (e.PropertyName == nameof(MainWindowViewModel.IsFriendlyView))
+            {
+                _lastFriendlyXmlText = vm.XmlText ?? "";
+                _friendlyUndoRedo.Clear();
+            }
+
             var editor = FindName("XmlEditor") as TextEditor;
             editor?.TextArea.TextView.InvalidateVisual();
         }
+
+        private void EditorUndoRedo_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+
+            if (DataContext is not MainWindowViewModel vm)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            if (vm.IsFriendlyView)
+            {
+                if (e.Command == EditorUndoRedoCommands.Undo)
+                    e.CanExecute = _friendlyUndoRedo.CanUndo;
+                else if (e.Command == EditorUndoRedoCommands.Redo)
+                    e.CanExecute = _friendlyUndoRedo.CanRedo;
+                else
+                    e.CanExecute = false;
+
+                return;
+            }
+
+            if (XmlEditor is null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            if (e.Command == EditorUndoRedoCommands.Undo)
+                e.CanExecute = XmlEditor.CanUndo;
+            else if (e.Command == EditorUndoRedoCommands.Redo)
+                e.CanExecute = XmlEditor.CanRedo;
+            else
+                e.CanExecute = false;
+        }
+
+        private void EditorUndoRedo_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (vm.IsFriendlyView)
+            {
+                var current = vm.XmlText ?? "";
+
+                if (e.Command == EditorUndoRedoCommands.Undo)
+                {
+                    if (_friendlyUndoRedo.TryUndo(current, out var previous))
+                    {
+                        _suppressFriendlyUndoCapture = true;
+                        vm.XmlText = previous;
+                        _lastFriendlyXmlText = previous;
+                        _suppressFriendlyUndoCapture = false;
+                    }
+
+                    return;
+                }
+
+                if (e.Command == EditorUndoRedoCommands.Redo)
+                {
+                    if (_friendlyUndoRedo.TryRedo(current, out var next))
+                    {
+                        _suppressFriendlyUndoCapture = true;
+                        vm.XmlText = next;
+                        _lastFriendlyXmlText = next;
+                        _suppressFriendlyUndoCapture = false;
+                    }
+                }
+
+                return;
+            }
+
+            if (XmlEditor is null)
+                return;
+
+            if (e.Command == EditorUndoRedoCommands.Undo)
+            {
+                XmlEditor.Undo();
+                return;
+            }
+
+            if (e.Command == EditorUndoRedoCommands.Redo)
+                XmlEditor.Redo();
+        }
+
         private void InitializeBreadcrumbTimer()
         {
             if (_breadcrumbTimer is not null)
@@ -314,14 +435,93 @@ namespace LSR.XmlHelper.Wpf
             if (DataContext is not MainWindowViewModel vm)
                 return;
 
+            var scrollViewer = FindDescendantScrollViewer(RawOutlineTreeView);
+            var scrollOffset = scrollViewer?.VerticalOffset ?? 0;
+            var selectedOffset = _rawOutlineLastSelectedOffset;
+
             var roots = _rawXmlFoldingService.GetOutlineRoots();
 
             vm.RawOutlineNodes.Clear();
 
             foreach (var r in roots)
                 vm.RawOutlineNodes.Add(BuildOutlineNode(r));
+
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (scrollViewer is not null)
+                    scrollViewer.ScrollToVerticalOffset(scrollOffset);
+
+                if (selectedOffset >= 0)
+                    SelectRawOutlineNodeByOffset(selectedOffset);
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+        private void SelectRawOutlineNodeByOffset(int offset)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (vm.RawOutlineNodes.Count == 0)
+                return;
+
+            var path = new System.Collections.Generic.List<RawXmlOutlineNodeViewModel>();
+            if (!TryFindPathByOffset(vm.RawOutlineNodes, offset, path))
+                return;
+
+            ItemsControl parent = RawOutlineTreeView;
+
+            for (var i = 0; i < path.Count; i++)
+            {
+                var current = path[i];
+                var container = parent.ItemContainerGenerator.ContainerFromItem(current) as TreeViewItem;
+                if (container is null)
+                    return;
+
+                if (i < path.Count - 1)
+                {
+                    container.IsExpanded = true;
+                    parent = container;
+                    continue;
+                }
+
+                container.IsSelected = true;
+                container.BringIntoView();
+            }
         }
 
+        private static bool TryFindPathByOffset(System.Collections.ObjectModel.ObservableCollection<RawXmlOutlineNodeViewModel> nodes, int offset, System.Collections.Generic.List<RawXmlOutlineNodeViewModel> path)
+        {
+            foreach (var n in nodes)
+            {
+                path.Add(n);
+
+                if (n.Offset == offset)
+                    return true;
+
+                if (TryFindPathByOffset(n.Children, offset, path))
+                    return true;
+
+                path.RemoveAt(path.Count - 1);
+            }
+
+            return false;
+        }
+
+        private static ScrollViewer? FindDescendantScrollViewer(DependencyObject root)
+        {
+            if (root is ScrollViewer sv)
+                return sv;
+
+            var count = VisualTreeHelper.GetChildrenCount(root);
+            for (var i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                var result = FindDescendantScrollViewer(child);
+                if (result is not null)
+                    return result;
+            }
+
+            return null;
+        }
         private RawXmlOutlineNodeViewModel BuildOutlineNode(LSR.XmlHelper.Wpf.Infrastructure.Outline.RawXmlOutlineEntry entry)
         {
             var node = new RawXmlOutlineNodeViewModel
@@ -335,7 +535,6 @@ namespace LSR.XmlHelper.Wpf
 
             return node;
         }
-
         private void RawOutlineTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (_xmlEditor is null)
@@ -343,6 +542,8 @@ namespace LSR.XmlHelper.Wpf
 
             if (e.NewValue is not RawXmlOutlineNodeViewModel node)
                 return;
+
+            _rawOutlineLastSelectedOffset = node.Offset;
 
             var doc = _xmlEditor.Document;
             if (doc is null)
@@ -357,6 +558,30 @@ namespace LSR.XmlHelper.Wpf
             var line = doc.GetLocation(offset).Line;
             _xmlEditor.ScrollToLine(line);
             _xmlEditor.TextArea.Focus();
+        }
+        private void RawOutlineTreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not TreeViewItem item)
+                return;
+
+            item.IsSelected = true;
+            item.Focus();
+        }
+
+        private void RawOutlineDuplicateEntry_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem mi)
+                return;
+
+            if (mi.DataContext is not RawXmlOutlineNodeViewModel node)
+                return;
+
+            if (XmlEditor is null)
+                return;
+
+            XmlEditor.CaretOffset = node.Offset;
+
+            RawDuplicateEntry_Click(sender, e);
         }
 
         private void VmOnRawXmlProblemsChanged(object? sender, EventArgs e)
@@ -935,6 +1160,246 @@ namespace LSR.XmlHelper.Wpf
                 return;
 
             SetLookupGroupExpanders(grid, false);
+        }
+        private void RawDuplicateLine_Click(object sender, RoutedEventArgs e)
+        {
+            if (XmlEditor is null)
+                return;
+
+            var doc = XmlEditor.Document;
+            if (doc is null)
+                return;
+
+            var caret = Math.Max(0, Math.Min(doc.TextLength, XmlEditor.CaretOffset));
+            var line = doc.GetLineByOffset(caret);
+            var lineText = doc.GetText(line);
+
+            var newline = doc.Text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+            var insertOffset = line.EndOffset;
+
+            doc.Insert(insertOffset, newline + lineText);
+            XmlEditor.CaretOffset = Math.Max(0, Math.Min(doc.TextLength, insertOffset + newline.Length));
+
+            if (DataContext is MainWindowViewModel vm)
+                vm.Status = "Duplicated line.";
+        }
+
+        private void RawDuplicateEntry_Click(object sender, RoutedEventArgs e)
+        {
+            if (XmlEditor is null || _rawXmlFoldingService is null)
+                return;
+
+            var doc = XmlEditor.Document;
+            if (doc is null)
+                return;
+
+            if (!_rawXmlFoldingService.TryGetEntrySpan(XmlEditor.CaretOffset, out var start, out var end))
+                return;
+
+            if (!_rawXmlContextActionService.TryDuplicateSpan(doc.Text, start, end, out var updated, out var newCaret))
+                return;
+
+            doc.UndoStack.StartUndoGroup();
+            doc.Replace(0, doc.TextLength, updated);
+            doc.UndoStack.EndUndoGroup();
+            XmlEditor.CaretOffset = Math.Max(0, Math.Min(doc.TextLength, newCaret));
+
+            if (DataContext is MainWindowViewModel vm)
+                vm.Status = "Duplicated entry.";
+        }
+        private void RawDeleteEntry_Click(object sender, RoutedEventArgs e)
+        {
+            if (XmlEditor is null || _rawXmlFoldingService is null)
+                return;
+
+            var doc = XmlEditor.Document;
+            if (doc is null)
+                return;
+
+            if (!_rawXmlFoldingService.TryGetEntrySpan(XmlEditor.CaretOffset, out var start, out var end))
+                return;
+
+            if (!_rawXmlContextActionService.TryDeleteSpan(doc.Text, start, end, out var updated, out var newCaret))
+                return;
+
+            doc.UndoStack.StartUndoGroup();
+            doc.Replace(0, doc.TextLength, updated);
+            doc.UndoStack.EndUndoGroup();
+            XmlEditor.CaretOffset = Math.Max(0, Math.Min(doc.TextLength, newCaret));
+
+            if (DataContext is MainWindowViewModel vm)
+                vm.Status = "Deleted entry.";
+        }
+
+        private void RawCollapseElement_Click(object sender, RoutedEventArgs e)
+        {
+            if (XmlEditor is null || _rawXmlFoldingService is null)
+                return;
+
+            _rawXmlFoldingService.CollapseContainingElement(XmlEditor.CaretOffset);
+        }
+
+        private void RawExpandElement_Click(object sender, RoutedEventArgs e)
+        {
+            if (XmlEditor is null || _rawXmlFoldingService is null)
+                return;
+
+            _rawXmlFoldingService.ExpandContainingElement(XmlEditor.CaretOffset);
+        }
+
+        private void RawCollapseAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (_rawXmlFoldingService is null)
+                return;
+
+            _rawXmlFoldingService.CollapseAll();
+        }
+
+        private void RawExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (_rawXmlFoldingService is null)
+                return;
+
+            _rawXmlFoldingService.ExpandAll();
+        }
+        private void RawOutlineCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (XmlEditor is null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            if (_rawXmlFoldingService is null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            if (e.Parameter is not RawXmlOutlineNodeViewModel node)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            e.CanExecute = _rawXmlFoldingService.TryGetEntrySpan(node.Offset, out _, out _);
+        }
+
+        private void RawOutlineCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (XmlEditor is null)
+                return;
+
+            if (e.Parameter is not RawXmlOutlineNodeViewModel node)
+                return;
+
+            XmlEditor.CaretOffset = node.Offset;
+
+            if (e.Command == RawOutlineCommands.DuplicateEntry)
+            {
+                RawDuplicateEntry_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawOutlineCommands.DeleteEntry)
+            {
+                RawDeleteEntry_Click(sender, new RoutedEventArgs());
+            }
+        }
+
+        private void RawXmlQuickAction_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if (XmlEditor is null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            if (_rawXmlFoldingService is null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            var doc = XmlEditor.Document;
+            if (doc is null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.DuplicateEntry || e.Command == RawXmlQuickActionsCommands.DeleteEntry)
+            {
+                e.CanExecute = _rawXmlFoldingService.TryGetEntrySpan(XmlEditor.CaretOffset, out _, out _);
+                return;
+            }
+
+            e.CanExecute = true;
+        }
+
+        private void RawXmlQuickAction_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (e.Command == RawXmlQuickActionsCommands.DuplicateEntry)
+            {
+                RawDuplicateEntry_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.DeleteEntry)
+            {
+                RawDeleteEntry_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.DuplicateLine)
+            {
+                RawDuplicateLine_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.CollapseElement)
+            {
+                RawCollapseElement_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.ExpandElement)
+            {
+                RawExpandElement_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.CollapseAll)
+            {
+                RawCollapseAll_Click(sender, new RoutedEventArgs());
+                return;
+            }
+
+            if (e.Command == RawXmlQuickActionsCommands.ExpandAll)
+            {
+                RawExpandAll_Click(sender, new RoutedEventArgs());
+            }
+        }
+
+        private void RawFormatElement_Click(object sender, RoutedEventArgs e)
+        {
+            if (XmlEditor is null)
+                return;
+
+            var doc = XmlEditor.Document;
+            if (doc is null)
+                return;
+
+            if (!_rawXmlContextActionService.TryFormatContainingElement(doc.Text, XmlEditor.CaretOffset, out var updated, out var newCaret))
+                return;
+
+            doc.UndoStack.StartUndoGroup();
+            doc.Replace(0, doc.TextLength, updated);
+            doc.UndoStack.EndUndoGroup();
+            XmlEditor.CaretOffset = Math.Max(0, Math.Min(doc.TextLength, newCaret));
+
+            if (DataContext is MainWindowViewModel vm)
+                vm.Status = "Formatted element.";
         }
 
         private static void SetLookupGroupExpanders(System.Windows.Controls.DataGrid grid, bool isExpanded)

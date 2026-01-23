@@ -260,6 +260,138 @@ namespace LSR.XmlHelper.Wpf.Infrastructure.Behaviors
             list.Reverse();
             return list;
         }
+        public void CollapseAll()
+        {
+            foreach (var folding in _foldingManager.AllFoldings)
+            {
+                if (folding is null)
+                    continue;
+
+                folding.IsFolded = true;
+            }
+        }
+
+        public void ExpandAll()
+        {
+            foreach (var folding in _foldingManager.AllFoldings)
+            {
+                if (folding is null)
+                    continue;
+
+                folding.IsFolded = false;
+            }
+        }
+
+        public bool CollapseContainingElement(int caretOffset)
+        {
+            return SetContainingElementFold(caretOffset, true);
+        }
+
+        public bool ExpandContainingElement(int caretOffset)
+        {
+            return SetContainingElementFold(caretOffset, false);
+        }
+        public bool TryGetEntrySpan(int caretOffset, out int startOffset, out int endOffset)
+        {
+            startOffset = 0;
+            endOffset = 0;
+
+            if (_breadcrumbNodes.Count == 0)
+                return false;
+
+            var deepestIndex = FindDeepestNodeIndex(caretOffset);
+            if (deepestIndex < 0)
+                return false;
+
+            var entryIndex = FindEntryNodeIndex(deepestIndex);
+            if (entryIndex < 0 || entryIndex >= _breadcrumbNodes.Count)
+                return false;
+
+            var node = _breadcrumbNodes[entryIndex];
+            startOffset = node.StartOffset;
+            endOffset = node.EndOffset;
+            return true;
+        }
+
+        private int FindDeepestNodeIndex(int caretOffset)
+        {
+            var idx = FindRightmostStartIndex(caretOffset);
+            if (idx < 0)
+                return -1;
+
+            for (var i = idx; i >= 0; i--)
+            {
+                var n = _breadcrumbNodes[i];
+                if (caretOffset < n.StartOffset)
+                    continue;
+
+                if (caretOffset <= n.EndOffset)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private int FindEntryNodeIndex(int deepestIndex)
+        {
+            var current = deepestIndex;
+
+            while (current >= 0)
+            {
+                var node = _breadcrumbNodes[current];
+                var parentIndex = node.ParentIndex;
+
+                if (parentIndex >= 0)
+                {
+                    var siblingCount = 0;
+
+                    for (var i = 0; i < _breadcrumbNodes.Count; i++)
+                    {
+                        var n = _breadcrumbNodes[i];
+                        if (n.ParentIndex == parentIndex && string.Equals(n.Name, node.Name, StringComparison.Ordinal))
+                            siblingCount++;
+                    }
+
+                    if (siblingCount > 1)
+                        return current;
+                }
+
+                current = node.ParentIndex;
+            }
+
+            return deepestIndex;
+        }
+
+        private bool SetContainingElementFold(int caretOffset, bool isFolded)
+        {
+            FoldingSection? best = null;
+
+            foreach (var folding in _foldingManager.AllFoldings)
+            {
+                if (folding is null)
+                    continue;
+
+                if (caretOffset < folding.StartOffset || caretOffset > folding.EndOffset)
+                    continue;
+
+                if (best is null)
+                {
+                    best = folding;
+                    continue;
+                }
+
+                var bestLen = best.EndOffset - best.StartOffset;
+                var thisLen = folding.EndOffset - folding.StartOffset;
+                if (thisLen < bestLen)
+                    best = folding;
+            }
+
+            if (best is null)
+                return false;
+
+            best.IsFolded = isFolded;
+            return true;
+        }
 
         private int FindRightmostStartIndex(int caretOffset)
         {

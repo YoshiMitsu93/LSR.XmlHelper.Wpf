@@ -10,7 +10,8 @@
     FontSize="{Binding Appearance.UiFontSize}"
     Foreground="{Binding Appearance.SettingsInfoWindowTextBrush}"
     Icon="/Assets/AppIcon.ico"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
     <Window.Resources>
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="{Binding DataContext.Appearance.SettingsInfoWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />

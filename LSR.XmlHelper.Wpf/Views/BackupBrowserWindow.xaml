@@ -9,7 +9,8 @@
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
     Foreground="{Binding Appearance.BackupBrowserWindowTextBrush}"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
 
     <Window.Resources>
         <CollectionViewSource x:Key="BackupsView" Source="{Binding Backups}">

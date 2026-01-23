@@ -8,7 +8,8 @@
     Background="{Binding Appearance.SharedConfigPacksWindowBackgroundBrush}"
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterOwner"
+    WindowState="Maximized">
 
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}">
@@ -265,7 +266,8 @@
                         Margin="0,0,0,10">
                         <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
                             <TextBlock
-                                Width="110" Margin="0,0,10,0"
+                                Width="110"
+                                Margin="0,0,10,0"
                                 Padding="6,2"
                                 VerticalAlignment="Center"
                                 FontWeight="Bold"
@@ -273,7 +275,8 @@
                                 Text="Pack Name:" />
                             <TextBox Width="400" Text="{Binding PackName, UpdateSourceTrigger=PropertyChanged}" />
                             <CheckBox
-                                Margin="26,0,0,0" VerticalAlignment="Center"
+                                Margin="26,0,0,0"
+                                VerticalAlignment="Center"
                                 Content="Include Appearance"
                                 IsChecked="{Binding IncludeAppearance}"
                                 ToolTip="Includes Appearance settings in the pack. Leave off unless you want to share UI/visual settings too." />
