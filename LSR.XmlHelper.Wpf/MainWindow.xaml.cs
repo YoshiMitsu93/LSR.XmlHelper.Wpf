@@ -49,8 +49,6 @@ namespace LSR.XmlHelper.Wpf
         private readonly FriendlyUndoRedoService _friendlyUndoRedo = new FriendlyUndoRedoService();
         private string _lastFriendlyXmlText = "";
         private bool _suppressFriendlyUndoCapture;
-
-        private int _rawOutlineLastSelectedOffset = -1;
         public MainWindow()
         {
             InitializeComponent();
@@ -369,7 +367,7 @@ namespace LSR.XmlHelper.Wpf
             _breadcrumbTimer.Stop();
             _breadcrumbTimer.Start();
         }
-
+      
         private void BreadcrumbTimerOnTick(object? sender, EventArgs e)
         {
             if (_breadcrumbTimer is null)
@@ -435,10 +433,6 @@ namespace LSR.XmlHelper.Wpf
             if (DataContext is not MainWindowViewModel vm)
                 return;
 
-            var scrollViewer = FindDescendantScrollViewer(RawOutlineTreeView);
-            var scrollOffset = scrollViewer?.VerticalOffset ?? 0;
-            var selectedOffset = _rawOutlineLastSelectedOffset;
-
             var roots = _rawXmlFoldingService.GetOutlineRoots();
 
             vm.RawOutlineNodes.Clear();
@@ -448,62 +442,26 @@ namespace LSR.XmlHelper.Wpf
 
             Dispatcher.BeginInvoke(() =>
             {
-                if (scrollViewer is not null)
-                    scrollViewer.ScrollToVerticalOffset(scrollOffset);
-
-                if (selectedOffset >= 0)
-                    SelectRawOutlineNodeByOffset(selectedOffset);
+                ExpandRawOutlineRootItems();
             }, System.Windows.Threading.DispatcherPriority.Loaded);
         }
-        private void SelectRawOutlineNodeByOffset(int offset)
+
+        private void ExpandRawOutlineRootItems()
         {
             if (DataContext is not MainWindowViewModel vm)
                 return;
 
-            if (vm.RawOutlineNodes.Count == 0)
-                return;
+            RawOutlineTreeView.UpdateLayout();
 
-            var path = new System.Collections.Generic.List<RawXmlOutlineNodeViewModel>();
-            if (!TryFindPathByOffset(vm.RawOutlineNodes, offset, path))
-                return;
-
-            ItemsControl parent = RawOutlineTreeView;
-
-            for (var i = 0; i < path.Count; i++)
+            for (var i = 0; i < vm.RawOutlineNodes.Count; i++)
             {
-                var current = path[i];
-                var container = parent.ItemContainerGenerator.ContainerFromItem(current) as TreeViewItem;
+                var root = vm.RawOutlineNodes[i];
+                var container = RawOutlineTreeView.ItemContainerGenerator.ContainerFromItem(root) as TreeViewItem;
                 if (container is null)
-                    return;
-
-                if (i < path.Count - 1)
-                {
-                    container.IsExpanded = true;
-                    parent = container;
                     continue;
-                }
 
-                container.IsSelected = true;
-                container.BringIntoView();
+                container.IsExpanded = true;
             }
-        }
-
-        private static bool TryFindPathByOffset(System.Collections.ObjectModel.ObservableCollection<RawXmlOutlineNodeViewModel> nodes, int offset, System.Collections.Generic.List<RawXmlOutlineNodeViewModel> path)
-        {
-            foreach (var n in nodes)
-            {
-                path.Add(n);
-
-                if (n.Offset == offset)
-                    return true;
-
-                if (TryFindPathByOffset(n.Children, offset, path))
-                    return true;
-
-                path.RemoveAt(path.Count - 1);
-            }
-
-            return false;
         }
 
         private static ScrollViewer? FindDescendantScrollViewer(DependencyObject root)
@@ -537,13 +495,36 @@ namespace LSR.XmlHelper.Wpf
         }
         private void RawOutlineTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (_xmlEditor is null)
-                return;
-
             if (e.NewValue is not RawXmlOutlineNodeViewModel node)
                 return;
 
-            _rawOutlineLastSelectedOffset = node.Offset;
+            NavigateToRawOutlineNode(node, preserveTreeScroll: true);
+        }
+
+        private void RawOutlineTreeView_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is not DependencyObject dep)
+                return;
+
+            if (FindAncestor<System.Windows.Controls.Primitives.ToggleButton>(dep) is not null)
+                return;
+
+            if (FindAncestor<System.Windows.Controls.Primitives.ScrollBar>(dep) is not null)
+                return;
+
+            var item = FindAncestor<TreeViewItem>(dep);
+            if (item is null)
+                return;
+
+            if (item.DataContext is not RawXmlOutlineNodeViewModel node)
+                return;
+
+            NavigateToRawOutlineNode(node, preserveTreeScroll: true);
+        }
+        private void NavigateToRawOutlineNode(RawXmlOutlineNodeViewModel node, bool preserveTreeScroll)
+        {
+            if (_xmlEditor is null)
+                return;
 
             var doc = _xmlEditor.Document;
             if (doc is null)
@@ -553,19 +534,26 @@ namespace LSR.XmlHelper.Wpf
             if (offset < 0 || offset > doc.TextLength)
                 return;
 
+            ScrollViewer? scrollViewer = null;
+            var scrollOffset = 0.0;
+
+            if (preserveTreeScroll)
+            {
+                scrollViewer = FindDescendantScrollViewer(RawOutlineTreeView);
+                scrollOffset = scrollViewer?.VerticalOffset ?? 0;
+            }
+
             _xmlEditor.TextArea.Caret.Offset = offset;
 
             var line = doc.GetLocation(offset).Line;
             _xmlEditor.ScrollToLine(line);
             _xmlEditor.TextArea.Focus();
-        }
-        private void RawOutlineTreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is not TreeViewItem item)
-                return;
 
-            item.IsSelected = true;
-            item.Focus();
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (scrollViewer is not null)
+                    scrollViewer.ScrollToVerticalOffset(scrollOffset);
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void RawOutlineDuplicateEntry_Click(object sender, RoutedEventArgs e)

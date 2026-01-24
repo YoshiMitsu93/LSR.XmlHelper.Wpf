@@ -10,7 +10,6 @@
     xmlns:vm="clr-namespace:LSR.XmlHelper.Wpf.ViewModels"
     x:Name="MainWindowRoot"
     Title="{Binding Title}"
-    WindowState="Maximized"
     Width="900"
     Height="450"
     AllowDrop="True"
@@ -21,6 +20,7 @@
     FontWeight="{Binding Appearance.UiFontWeight}"
     Icon="Assets/AppIcon.ico"
     PreviewDragOver="MainWindowRoot_PreviewDragOver"
+    WindowState="Maximized"
     mc:Ignorable="d">
     <Window.InputBindings>
         <KeyBinding
@@ -65,8 +65,14 @@
             Command="{x:Static ApplicationCommands.Replace}"
             Modifiers="Control" />
         <KeyBinding Key="Escape" Command="{Binding HideRawXmlProblemsOverlayCommand}" />
-        <KeyBinding Key="Z" Modifiers="Control" Command="{x:Static infraCmd:EditorUndoRedoCommands.Undo}" />
-        <KeyBinding Key="Y" Modifiers="Control" Command="{x:Static infraCmd:EditorUndoRedoCommands.Redo}" />
+        <KeyBinding
+            Key="Z"
+            Command="{x:Static infraCmd:EditorUndoRedoCommands.Undo}"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="Y"
+            Command="{x:Static infraCmd:EditorUndoRedoCommands.Redo}"
+            Modifiers="Control" />
     </Window.InputBindings>
     <Window.CommandBindings>
         <CommandBinding
@@ -266,8 +272,7 @@
                                 x:Name="ItemBackground"
                                 Grid.Row="0"
                                 Grid.ColumnSpan="2"
-                                Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}}"
-                                HorizontalAlignment="Left"
+                                HorizontalAlignment="Stretch"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="2"
                                 SnapsToDevicePixels="True" />
@@ -567,9 +572,9 @@
                 IsExpanded="{Binding IsExpanded}">
                 <DataGrid
                     infra:DataGridBulkEditSelectedRowsBehavior.Enable="True"
+                    infra:DataGridClearOtherSelectionsOnClickBehavior.Enable="True"
                     infra:DataGridForceExtendedSelectionBehavior.Enable="True"
                     infra:DataGridPreserveMultiSelectionOnEditBehavior.Enable="True"
-                    infra:DataGridClearOtherSelectionsOnClickBehavior.Enable="True"
                     infra:DataGridSelectedItemsBehavior.Enable="True"
                     infra:DataGridSelectedItemsBehavior.SelectedItems="{Binding DataContext.SelectedFriendlyFields, RelativeSource={RelativeSource AncestorType=Window}}"
                     infra:DataGridUpdateSourceOnCommitBehavior.Enable="True"
@@ -867,14 +872,22 @@
                     ToolTip="Close the application." />
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Command="{x:Static infraCmd:EditorUndoRedoCommands.Undo}" Header="_Undo" InputGestureText="Ctrl+Z" ToolTip="Undo the last change. (Ctrl+Z)">
+                <MenuItem
+                    Command="{x:Static infraCmd:EditorUndoRedoCommands.Undo}"
+                    Header="_Undo"
+                    InputGestureText="Ctrl+Z"
+                    ToolTip="Undo the last change. (Ctrl+Z)">
                     <MenuItem.Icon>
                         <Viewbox Width="16" Height="16">
                             <Path Data="M12,5H6.41L8.7,2.71L8,2L4.5,5.5L8,9L8.7,8.29L6.41,6H12C14.21,6 16,7.79 16,10C16,12.21 14.21,14 12,14H7V15H12C14.76,15 17,12.76 17,10C17,7.24 14.76,5 12,5Z" Fill="{Binding Appearance.GridTextBrush}" />
                         </Viewbox>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Command="{x:Static infraCmd:EditorUndoRedoCommands.Redo}" Header="_Redo" InputGestureText="Ctrl+Y" ToolTip="Redo the last undone change. (Ctrl+Y)">
+                <MenuItem
+                    Command="{x:Static infraCmd:EditorUndoRedoCommands.Redo}"
+                    Header="_Redo"
+                    InputGestureText="Ctrl+Y"
+                    ToolTip="Redo the last undone change. (Ctrl+Y)">
                     <MenuItem.Icon>
                         <Viewbox Width="16" Height="16">
                             <Path Data="M12,5C14.76,5 17,7.24 17,10C17,12.76 14.76,15 12,15H7V14H12C14.21,14 16,12.21 16,10C16,7.79 14.21,6 12,6H6.41L8.7,8.29L8,9L4.5,5.5L8,2L8.7,2.71L6.41,5H12Z" Fill="{Binding Appearance.GridTextBrush}" />
@@ -1194,6 +1207,7 @@
                     <TreeView
                         x:Name="XmlTreeView"
                         HorizontalContentAlignment="Stretch"
+                        infra:TreeViewBringIntoViewSuppressionBehavior.Enable="True"
                         ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
                         ItemsSource="{Binding XmlTree}"
                         KeyDown="TreeView_KeyDown"
@@ -1381,23 +1395,24 @@
                             x:Name="RawOutlineTreeView"
                             HorizontalContentAlignment="Stretch"
                             ItemsSource="{Binding RawOutlineNodes}"
+                            PreviewMouseLeftButtonUp="RawOutlineTreeView_PreviewMouseLeftButtonUp"
                             ScrollViewer.CanContentScroll="True"
                             SelectedItemChanged="RawOutlineTreeView_SelectedItemChanged"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.VirtualizationMode="Recycling">
                             <TreeView.ItemContainerStyle>
-                                <Style TargetType="TreeViewItem">
+                                <Style BasedOn="{StaticResource XmlTreeItemStyle}" TargetType="TreeViewItem">
                                     <Setter Property="ContextMenu">
                                         <Setter.Value>
                                             <ContextMenu>
                                                 <MenuItem
-                                                    Header="Duplicate entry"
                                                     Command="{x:Static infraCmd:RawOutlineCommands.DuplicateEntry}"
-                                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                    Header="Duplicate entry" />
                                                 <MenuItem
-                                                    Header="Delete entry"
                                                     Command="{x:Static infraCmd:RawOutlineCommands.DeleteEntry}"
-                                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                    CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                    Header="Delete entry" />
                                             </ContextMenu>
                                         </Setter.Value>
                                     </Setter>
@@ -1439,28 +1454,86 @@
                         ShowLineNumbers="True"
                         VerticalScrollBarVisibility="Auto">
                         <avalonedit:TextEditor.InputBindings>
-                            <KeyBinding Key="D" Modifiers="Control+Alt" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DuplicateEntry}" />
-                            <KeyBinding Key="Back" Modifiers="Control+Alt" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DeleteEntry}" />
-                            <KeyBinding Key="Up" Modifiers="Control+Alt" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseElement}" />
-                            <KeyBinding Key="Down" Modifiers="Control+Alt" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandElement}" />
-                            <KeyBinding Key="Up" Modifiers="Control+Alt+Shift" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseAll}" />
-                            <KeyBinding Key="Down" Modifiers="Control+Alt+Shift" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandAll}" />
+                            <KeyBinding
+                                Key="D"
+                                Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DuplicateEntry}"
+                                Modifiers="Control+Alt" />
+                            <KeyBinding
+                                Key="Back"
+                                Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DeleteEntry}"
+                                Modifiers="Control+Alt" />
+                            <KeyBinding
+                                Key="Up"
+                                Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseElement}"
+                                Modifiers="Control+Alt" />
+                            <KeyBinding
+                                Key="Down"
+                                Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandElement}"
+                                Modifiers="Control+Alt" />
+                            <KeyBinding
+                                Key="Up"
+                                Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseAll}"
+                                Modifiers="Control+Alt+Shift" />
+                            <KeyBinding
+                                Key="Down"
+                                Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandAll}"
+                                Modifiers="Control+Alt+Shift" />
                         </avalonedit:TextEditor.InputBindings>
                         <avalonedit:TextEditor.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Duplicate entry" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DuplicateEntry}" InputGestureText="Ctrl+Alt+D" ToolTip="Duplicate the entry that contains your caret (the repeated item under a parent). Shortcut: Ctrl+Alt+D" />
-                                <MenuItem Header="Delete entry" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DeleteEntry}" InputGestureText="Ctrl+Alt+Backspace" ToolTip="Delete the entry that contains your caret (the repeated item under a parent). Shortcut: Ctrl+Alt+Backspace" />
-                                <MenuItem Header="Duplicate line" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DuplicateLine}" InputGestureText="Ctrl+D" ToolTip="Duplicate the current line in the Raw XML editor. Shortcut: Ctrl+D" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DuplicateEntry}"
+                                    Header="Duplicate entry"
+                                    InputGestureText="Ctrl+Alt+D"
+                                    ToolTip="Duplicate the entry that contains your caret (the repeated item under a parent). Shortcut: Ctrl+Alt+D" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DeleteEntry}"
+                                    Header="Delete entry"
+                                    InputGestureText="Ctrl+Alt+Backspace"
+                                    ToolTip="Delete the entry that contains your caret (the repeated item under a parent). Shortcut: Ctrl+Alt+Backspace" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.DuplicateLine}"
+                                    Header="Duplicate line"
+                                    InputGestureText="Ctrl+D"
+                                    ToolTip="Duplicate the current line in the Raw XML editor. Shortcut: Ctrl+D" />
                                 <Separator />
-                                <MenuItem Header="Cut" Command="ApplicationCommands.Cut" InputGestureText="Ctrl+X" ToolTip="Cut the selected text, or the entire current line if nothing is selected. Shortcut: Ctrl+X" />
-                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" InputGestureText="Ctrl+C" ToolTip="Copy the selected text, or the entire current line if nothing is selected. Shortcut: Ctrl+C" />
-                                <MenuItem Header="Paste" Command="ApplicationCommands.Paste" InputGestureText="Ctrl+V" ToolTip="Paste from the clipboard. Shortcut: Ctrl+V" />
+                                <MenuItem
+                                    Command="ApplicationCommands.Cut"
+                                    Header="Cut"
+                                    InputGestureText="Ctrl+X"
+                                    ToolTip="Cut the selected text, or the entire current line if nothing is selected. Shortcut: Ctrl+X" />
+                                <MenuItem
+                                    Command="ApplicationCommands.Copy"
+                                    Header="Copy"
+                                    InputGestureText="Ctrl+C"
+                                    ToolTip="Copy the selected text, or the entire current line if nothing is selected. Shortcut: Ctrl+C" />
+                                <MenuItem
+                                    Command="ApplicationCommands.Paste"
+                                    Header="Paste"
+                                    InputGestureText="Ctrl+V"
+                                    ToolTip="Paste from the clipboard. Shortcut: Ctrl+V" />
                                 <Separator />
-                                <MenuItem Header="Collapse element" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseElement}" InputGestureText="Ctrl+Alt+Up" ToolTip="Collapse (fold) the smallest element that contains your caret. Shortcut: Ctrl+Alt+Up" />
-                                <MenuItem Header="Expand element" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandElement}" InputGestureText="Ctrl+Alt+Down" ToolTip="Expand (unfold) the smallest element that contains your caret. Shortcut: Ctrl+Alt+Down" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseElement}"
+                                    Header="Collapse element"
+                                    InputGestureText="Ctrl+Alt+Up"
+                                    ToolTip="Collapse (fold) the smallest element that contains your caret. Shortcut: Ctrl+Alt+Up" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandElement}"
+                                    Header="Expand element"
+                                    InputGestureText="Ctrl+Alt+Down"
+                                    ToolTip="Expand (unfold) the smallest element that contains your caret. Shortcut: Ctrl+Alt+Down" />
                                 <Separator />
-                                <MenuItem Header="Collapse all" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseAll}" InputGestureText="Ctrl+Alt+Shift+Up" ToolTip="Collapse (fold) all foldable elements in the Raw XML editor. Shortcut: Ctrl+Alt+Shift+Up" />
-                                <MenuItem Header="Expand all" Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandAll}" InputGestureText="Ctrl+Alt+Shift+Down" ToolTip="Expand (unfold) all folded elements in the Raw XML editor. Shortcut: Ctrl+Alt+Shift+Down" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.CollapseAll}"
+                                    Header="Collapse all"
+                                    InputGestureText="Ctrl+Alt+Shift+Up"
+                                    ToolTip="Collapse (fold) all foldable elements in the Raw XML editor. Shortcut: Ctrl+Alt+Shift+Up" />
+                                <MenuItem
+                                    Command="{x:Static infraCmd:RawXmlQuickActionsCommands.ExpandAll}"
+                                    Header="Expand all"
+                                    InputGestureText="Ctrl+Alt+Shift+Down"
+                                    ToolTip="Expand (unfold) all folded elements in the Raw XML editor. Shortcut: Ctrl+Alt+Shift+Down" />
                             </ContextMenu>
                         </avalonedit:TextEditor.ContextMenu>
                     </avalonedit:TextEditor>
