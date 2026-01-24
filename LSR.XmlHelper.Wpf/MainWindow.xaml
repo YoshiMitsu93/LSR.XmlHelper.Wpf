@@ -569,6 +569,7 @@
                     infra:DataGridBulkEditSelectedRowsBehavior.Enable="True"
                     infra:DataGridForceExtendedSelectionBehavior.Enable="True"
                     infra:DataGridPreserveMultiSelectionOnEditBehavior.Enable="True"
+                    infra:DataGridClearOtherSelectionsOnClickBehavior.Enable="True"
                     infra:DataGridSelectedItemsBehavior.Enable="True"
                     infra:DataGridSelectedItemsBehavior.SelectedItems="{Binding DataContext.SelectedFriendlyFields, RelativeSource={RelativeSource AncestorType=Window}}"
                     infra:DataGridUpdateSourceOnCommitBehavior.Enable="True"
