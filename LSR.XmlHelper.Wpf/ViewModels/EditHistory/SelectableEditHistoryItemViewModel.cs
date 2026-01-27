@@ -35,6 +35,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     return $"{Item.TimestampUtc:u} | {col} | DUPLICATE | {srcKey}#{srcOcc} -> {Item.EntryKey}#{Item.EntryOccurrence} | {file}";
                 }
 
+                if (Item.Operation == EditHistoryOperation.AddEntry)
+                {
+                    return $"{Item.TimestampUtc:u} | {col} | ADD | {Item.EntryKey}#{Item.EntryOccurrence} | {file}";
+                }
+
                 var oldV = Item.OldValue ?? "";
                 if (Item.Operation == EditHistoryOperation.DeleteEntry)
                 {

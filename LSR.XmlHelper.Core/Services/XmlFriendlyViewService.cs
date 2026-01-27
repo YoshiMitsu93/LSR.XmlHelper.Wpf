@@ -266,6 +266,157 @@ namespace LSR.XmlHelper.Core.Services
                 return false;
             }
         }
+        public bool TryAddEntryFromXml(XmlFriendlyDocument document, string? collectionTitle, string entryXml, out string? error)
+        {
+            error = null;
+
+            if (document is null)
+            {
+                error = "Document is null.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(collectionTitle))
+            {
+                error = "Collection title is missing.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(entryXml))
+            {
+                error = "Entry XML is missing.";
+                return false;
+            }
+
+            var root = document.Document.Root;
+            if (root is null)
+            {
+                error = "XML has no root element.";
+                return false;
+            }
+
+            XElement entryElement;
+            try
+            {
+                entryElement = XElement.Parse(entryXml, LoadOptions.PreserveWhitespace);
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+
+            if (TryResolveInsertionTarget(root, collectionTitle, out var container, out var expectedEntryLocalName, out var resolveError) == false)
+            {
+                error = resolveError ?? "Could not resolve insertion target.";
+                return false;
+            }
+
+            if (!string.Equals(entryElement.Name.LocalName, expectedEntryLocalName, StringComparison.OrdinalIgnoreCase))
+            {
+                error = $"Entry XML root element '{entryElement.Name.LocalName}' does not match expected '{expectedEntryLocalName}'.";
+                return false;
+            }
+
+            try
+            {
+                AddToEndPreservingWhitespace(container, entryElement);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        private static bool TryResolveInsertionTarget(
+            XElement root,
+            string collectionTitle,
+            out XElement container,
+            out string expectedEntryLocalName,
+            out string? error)
+        {
+            container = root;
+            expectedEntryLocalName = "";
+            error = null;
+
+            if (collectionTitle.Contains("/", StringComparison.Ordinal))
+            {
+                var parts = collectionTitle.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2)
+                {
+                    error = "Collection title path is invalid.";
+                    return false;
+                }
+
+                var rootChildName = parts[0];
+                var rootChild = FindDirectChildByLocalName(root, rootChildName);
+                if (rootChild is null)
+                {
+                    error = $"Collection root element not found: {rootChildName}";
+                    return false;
+                }
+
+                var pathParts = parts.Skip(1).ToArray();
+                var last = pathParts[pathParts.Length - 1];
+
+                var current = rootChild;
+                for (var i = 0; i < pathParts.Length - 1; i++)
+                {
+                    var next = FindDirectChildByLocalName(current, pathParts[i]);
+                    if (next is null)
+                    {
+                        error = $"Container path element not found: {pathParts[i]}";
+                        return false;
+                    }
+
+                    current = next;
+                }
+
+                container = current;
+                expectedEntryLocalName = last;
+                return true;
+            }
+
+            var repeatingRootChildren = root.Elements()
+                .Where(e => string.Equals(e.Name.LocalName, collectionTitle, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (repeatingRootChildren.Count > 1)
+            {
+                container = root;
+                expectedEntryLocalName = collectionTitle;
+                return true;
+            }
+
+            var singleRootChild = FindDirectChildByLocalName(root, collectionTitle);
+            if (singleRootChild is null)
+            {
+                error = $"Collection element not found: {collectionTitle}";
+                return false;
+            }
+
+            var repeatingGroups = singleRootChild.Elements()
+                .GroupBy(e => e.Name.LocalName, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .ToList();
+
+            if (repeatingGroups.Count != 1)
+            {
+                error = $"Could not determine entry element type for collection '{collectionTitle}'.";
+                return false;
+            }
+
+            container = singleRootChild;
+            expectedEntryLocalName = repeatingGroups[0].Key;
+            return true;
+        }
+
+        private static XElement? FindDirectChildByLocalName(XElement parent, string localName)
+        {
+            return parent.Elements().FirstOrDefault(e => string.Equals(e.Name.LocalName, localName, StringComparison.OrdinalIgnoreCase));
+        }
 
         public bool TryDeleteEntry(XmlFriendlyDocument document, XmlFriendlyEntry entry, out string? error)
         {

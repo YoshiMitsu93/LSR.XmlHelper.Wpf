@@ -8,7 +8,8 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
         DuplicateEntry = 1,
         DeleteEntry = 2,
         DuplicateChildBlock = 3,
-        DeleteChildBlock = 4
+        DeleteChildBlock = 4,
+        AddEntry = 5
     }
 
     public sealed class EditHistoryItem

@@ -280,21 +280,15 @@
                     <DataGrid
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
+                        FrozenColumnCount="3"
                         IsReadOnly="False"
                         ItemsSource="{Binding PendingRowsView}"
                         SelectionMode="Extended">
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Width="40" Header="">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <CheckBox
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
+                            <DataGridCheckBoxColumn
+                                Width="40"
+                                Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Header="" />
                             <DataGridTextColumn
                                 Width="160"
                                 Binding="{Binding Item.TimestampUtc}"
@@ -315,16 +309,40 @@
                                 Binding="{Binding Item.FieldPath}"
                                 Header="Field"
                                 IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="120"
-                                Binding="{Binding Item.OldValue}"
+                            <DataGridTemplateColumn
+                                Width="450"
                                 Header="Old"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="120"
-                                Binding="{Binding Item.NewValue}"
+                                IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox
+                                            AcceptsReturn="True"
+                                            BorderThickness="0"
+                                            HorizontalScrollBarVisibility="Auto"
+                                            IsReadOnly="True"
+                                            Text="{Binding Item.OldValue}"
+                                            TextWrapping="Wrap"
+                                            VerticalScrollBarVisibility="Auto" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn
+                                Width="450"
                                 Header="New"
-                                IsReadOnly="True" />
+                                IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox
+                                            AcceptsReturn="True"
+                                            BorderThickness="0"
+                                            HorizontalScrollBarVisibility="Auto"
+                                            IsReadOnly="True"
+                                            Text="{Binding Item.NewValue}"
+                                            TextWrapping="Wrap"
+                                            VerticalScrollBarVisibility="Auto" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -386,21 +404,15 @@
                     <DataGrid
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
+                        FrozenColumnCount="3"
                         IsReadOnly="False"
                         ItemsSource="{Binding CommittedRowsView}"
                         SelectionMode="Extended">
                         <DataGrid.Columns>
-                            <DataGridTemplateColumn Width="40" Header="">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <CheckBox
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-
+                            <DataGridCheckBoxColumn
+                                Width="40"
+                                Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Header="" />
                             <DataGridTextColumn
                                 Width="90"
                                 Binding="{Binding Status}"
@@ -431,16 +443,43 @@
                                 Binding="{Binding Item.FieldPath}"
                                 Header="Field"
                                 IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="120"
-                                Binding="{Binding Item.OldValue}"
+                            <DataGridTemplateColumn
+                                Width="450"
                                 Header="Old"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="120"
-                                Binding="{Binding Item.NewValue}"
+                                IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox
+                                            Height="180"
+                                            AcceptsReturn="True"
+                                            BorderThickness="0"
+                                            HorizontalScrollBarVisibility="Auto"
+                                            IsReadOnly="True"
+                                            Text="{Binding Item.OldValue}"
+                                            TextWrapping="Wrap"
+                                            VerticalScrollBarVisibility="Auto" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn
+                                Width="450"
                                 Header="New"
-                                IsReadOnly="True" />
+                                IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox
+                                            Height="180"
+                                            AcceptsReturn="True"
+                                            BorderThickness="0"
+                                            HorizontalScrollBarVisibility="Auto"
+                                            IsReadOnly="True"
+                                            Text="{Binding Item.NewValue}"
+                                            TextWrapping="Wrap"
+                                            VerticalScrollBarVisibility="Auto" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

@@ -195,7 +195,21 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
                 foreach (var newEntry in newCollection.Entries)
                 {
                     if (!TryGetEntry(oldDoc, newCollection.Title, newEntry.Key, newEntry.Occurrence, out var oldEntry))
+                    {
+                        items.Add(new EditHistoryItem
+                        {
+                            Operation = EditHistoryOperation.AddEntry,
+                            FilePath = filePath,
+                            CollectionTitle = newCollection.Title,
+                            EntryKey = newEntry.Key,
+                            EntryOccurrence = newEntry.Occurrence,
+                            FieldPath = "ADD_ENTRY",
+                            OldValue = null,
+                            NewValue = newEntry.Element.ToString(System.Xml.Linq.SaveOptions.DisableFormatting)
+                        });
+
                         continue;
+                    }
 
                     foreach (var kvp in newEntry.Fields)
                     {
@@ -269,6 +283,25 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
 
             foreach (var e in edits.OrderBy(x => x.TimestampUtc).ThenBy(x => x.Id))
             {
+                if (e.Operation == EditHistoryOperation.AddEntry)
+                {
+                    if (!_friendly.TryAddEntryFromXml(doc, e.CollectionTitle, e.NewValue, out var addErr))
+                    {
+                        error = addErr ?? "Add entry failed.";
+                        return false;
+                    }
+
+                    var rebuiltAfterAdd = _friendly.TryBuild(_friendly.ToXml(doc));
+                    if (rebuiltAfterAdd is null)
+                    {
+                        error = "XML could not be rebuilt after adding entry.";
+                        return false;
+                    }
+
+                    doc = rebuiltAfterAdd;
+                    continue;
+                }
+
                 if (e.Operation == EditHistoryOperation.DuplicateEntry)
                 {
                     var srcKey = e.SourceEntryKey ?? e.EntryKey;

@@ -352,6 +352,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     if (token.IsCancellationRequested)
                         return map;
 
+                    if (e.Operation == EditHistoryOperation.AddEntry)
+                    {
+                        if (_history.TryEntryExists(xml, e.CollectionTitle, e.EntryKey, e.EntryOccurrence))
+                            map[e.Id] = ("Active", null);
+                        else
+                            map[e.Id] = ("Missing", null);
+
+                        continue;
+                    }
+
                     if (e.Operation == EditHistoryOperation.DuplicateEntry)
                     {
                         if (_history.TryEntryExists(xml, e.CollectionTitle, e.EntryKey, e.EntryOccurrence))
