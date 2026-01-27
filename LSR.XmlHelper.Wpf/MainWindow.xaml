@@ -1396,7 +1396,7 @@
                             HorizontalContentAlignment="Stretch"
                             ItemsSource="{Binding RawOutlineNodes}"
                             PreviewMouseLeftButtonUp="RawOutlineTreeView_PreviewMouseLeftButtonUp"
-                            ScrollViewer.CanContentScroll="True"
+                            ScrollViewer.CanContentScroll="False"
                             SelectedItemChanged="RawOutlineTreeView_SelectedItemChanged"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.VirtualizationMode="Recycling">

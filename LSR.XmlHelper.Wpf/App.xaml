@@ -40,5 +40,9 @@
             <Setter Property="Margin" Value="0,6,0,6" />
             <Setter Property="Foreground" Value="{Binding DataContext.PreviewAppearanceWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
         </Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="infra:ScrollBarArrowHoldScrollBehavior.Enable" Value="True" />
+            <Setter Property="infra:ScrollBarArrowHoldScrollBehavior.SpeedScale" Value="0.20" />
+        </Style>
     </Application.Resources>
 </Application>

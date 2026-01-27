@@ -59,6 +59,9 @@ namespace LSR.XmlHelper.Wpf
                 _rawXmlCaretKeepAliveService = new AvalonEditCaretKeepAliveService(editor);
                 _rawXmlCaretKeepAliveService.Start();
                 _xmlEditor = editor;
+                 var editorScrollViewer = FindDescendantScrollViewer(editor);
+                if (editorScrollViewer is not null)
+                    editorScrollViewer.CanContentScroll = false;
                 editor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XML");
                 _searchPanel = SearchPanel.Install(editor);
                 var markerService = new AvalonEditTextMarkerService(editor.Document);
