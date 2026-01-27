@@ -35,7 +35,6 @@
 - Duplicate selected entry (Ctrl+D)
 - Duplicate entire block including child nodes (Ctrl+Shift+D)
 - Edit tracking for modified entries
-- Saved Edits list to review what has been changed (updates live while open)
 - Asynchronous status evaluation to prevent UI freezes
 - Clear status indicators while edits are being checked
 - Edit Summary export for review or sharing
