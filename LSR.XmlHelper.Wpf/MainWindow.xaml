@@ -1211,14 +1211,18 @@
                         ItemContainerStyle="{StaticResource XmlTreeItemStyle}"
                         ItemsSource="{Binding XmlTree}"
                         KeyDown="TreeView_KeyDown"
+                        ScrollViewer.CanContentScroll="False"
                         SelectedItemChanged="TreeView_SelectedItemChanged"
+                        VirtualizingPanel.ScrollUnit="Pixel"
                         Visibility="{Binding IsFoldersMode, Converter={StaticResource BoolToVis}}" />
                     <ListBox
                         infra:ListBoxScrollIntoViewOnSelectionBehavior.Enable="True"
                         DisplayMemberPath="DisplayPath"
                         ItemContainerStyle="{StaticResource Pane1FlatListBoxItemStyle}"
                         ItemsSource="{Binding XmlFiles}"
+                        ScrollViewer.CanContentScroll="False"
                         SelectedItem="{Binding SelectedXmlFile}"
+                        VirtualizingPanel.ScrollUnit="Pixel"
                         Visibility="{Binding IsFlatMode, Converter={StaticResource BoolToVis}}" />
                 </Grid>
             </Border>
@@ -1399,6 +1403,7 @@
                             ScrollViewer.CanContentScroll="False"
                             SelectedItemChanged="RawOutlineTreeView_SelectedItemChanged"
                             VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.ScrollUnit="Pixel"
                             VirtualizingPanel.VirtualizationMode="Recycling">
                             <TreeView.ItemContainerStyle>
                                 <Style BasedOn="{StaticResource XmlTreeItemStyle}" TargetType="TreeViewItem">
