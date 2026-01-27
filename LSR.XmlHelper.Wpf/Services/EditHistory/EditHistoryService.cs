@@ -174,6 +174,63 @@ namespace LSR.XmlHelper.Wpf.Services.EditHistory
             _settings.EditHistory.Pending.Add(item);
             Persist();
         }
+        public void AddPendingFieldChangesFromXmlDiff(string filePath, string? oldXmlText, string? newXmlText)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            if (string.Equals(oldXmlText ?? "", newXmlText ?? "", StringComparison.Ordinal))
+                return;
+
+            var oldDoc = _friendly.TryBuild(oldXmlText ?? "");
+            var newDoc = _friendly.TryBuild(newXmlText ?? "");
+
+            if (oldDoc is null || newDoc is null)
+                return;
+
+            var items = new List<EditHistoryItem>();
+
+            foreach (var newCollection in newDoc.Collections)
+            {
+                foreach (var newEntry in newCollection.Entries)
+                {
+                    if (!TryGetEntry(oldDoc, newCollection.Title, newEntry.Key, newEntry.Occurrence, out var oldEntry))
+                        continue;
+
+                    foreach (var kvp in newEntry.Fields)
+                    {
+                        var fieldPath = kvp.Key;
+                        var newValue = kvp.Value.Value ?? "";
+
+                        oldEntry.Fields.TryGetValue(fieldPath, out var oldField);
+                        var oldValue = oldField?.Value;
+
+                        if (string.Equals(oldValue ?? "", newValue, StringComparison.Ordinal))
+                            continue;
+
+                        items.Add(new EditHistoryItem
+                        {
+                            Operation = EditHistoryOperation.FieldChange,
+                            FilePath = filePath,
+                            CollectionTitle = newCollection.Title,
+                            EntryKey = newEntry.Key,
+                            EntryOccurrence = newEntry.Occurrence,
+                            FieldPath = fieldPath,
+                            OldValue = oldValue,
+                            NewValue = newValue
+                        });
+                    }
+                }
+            }
+
+            if (items.Count == 0)
+                return;
+
+            foreach (var item in items)
+                _settings.EditHistory.Pending.Add(item);
+
+            Persist();
+        }
 
         public void CommitForFile(string filePath)
         {

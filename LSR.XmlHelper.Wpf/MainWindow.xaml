@@ -1403,6 +1403,7 @@
                             ScrollViewer.CanContentScroll="False"
                             SelectedItemChanged="RawOutlineTreeView_SelectedItemChanged"
                             VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.ScrollUnit="Pixel"
                             VirtualizingPanel.VirtualizationMode="Recycling">
                             <TreeView.ItemContainerStyle>
                                 <Style BasedOn="{StaticResource XmlTreeItemStyle}" TargetType="TreeViewItem">

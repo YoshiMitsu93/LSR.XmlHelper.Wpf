@@ -58,6 +58,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _title = "LSR XML Helper";
         private string _status = "Ready.";
         private string _xmlText = "";
+        private string _lastCommittedXmlText = "";
         private string? _rootFolder;
         private RawNavigationRequest? _pendingRawNavigation;
         private string _friendlySearchQuery = "";
@@ -2572,6 +2573,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
+            if (!IsFriendlyView)
+                _editHistory.AddPendingFieldChangesFromXmlDiff(path, _lastCommittedXmlText, XmlText);
+
+            _lastCommittedXmlText = XmlText;
             IsDirty = false;
             _editHistory.CommitForFile(path);
 
@@ -2616,6 +2621,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 return;
             }
 
+            if (!IsFriendlyView)
+                _editHistory.AddPendingFieldChangesFromXmlDiff(dlg.FileName, _lastCommittedXmlText, XmlText);
+
+            _lastCommittedXmlText = XmlText;
             IsDirty = false;
             _editHistory.CommitForFile(dlg.FileName);
 
@@ -2850,6 +2859,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _suppressFriendlyRebuild = true;
 
                 XmlText = result.Text ?? "";
+                _lastCommittedXmlText = XmlText;
                 IsDirty = false;
             }
             finally
