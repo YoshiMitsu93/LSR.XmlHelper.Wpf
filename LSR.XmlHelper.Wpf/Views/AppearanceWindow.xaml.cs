@@ -112,6 +112,8 @@ namespace LSR.XmlHelper.Wpf.Views
 
             SectionXmlGuidesPanel.Visibility = header == "LSR XML Guides" ? Visibility.Visible : Visibility.Collapsed;
 
+            SectionBuildersPanel.Visibility = header == "Builders" ? Visibility.Visible : Visibility.Collapsed;
+
             SectionSavedEditsPanel.Visibility = header == "Saved Edits" ? Visibility.Visible : Visibility.Collapsed;
 
             SectionEditorPanel.Visibility = header == "Editor" && !isFriendly ? Visibility.Visible : Visibility.Collapsed;

@@ -56,6 +56,19 @@ namespace LSR.XmlHelper.Core.Services
 
                 if (repeatingBlocks.Count == 0)
                 {
+                    if (TryGetSingleTypeChildList(child, out var singleTypeElements))
+                    {
+                        var title = child.Name.LocalName;
+
+                        if (seenTitles.Add(title))
+                        {
+                            var entries = BuildEntries(singleTypeElements);
+                            collections.Add(new XmlFriendlyCollection(title, entries));
+                        }
+
+                        continue;
+                    }
+
                     directEntries.Add(child);
                     continue;
                 }
@@ -101,6 +114,33 @@ namespace LSR.XmlHelper.Core.Services
                 .FirstOrDefault() ?? collections[0].Title;
 
             return new XmlFriendlyDocument(doc, collections, primaryKey);
+        }
+        private static bool TryGetSingleTypeChildList(XElement container, out List<XElement> elements)
+        {
+            elements = container.Elements().ToList();
+            if (elements.Count == 0)
+                return false;
+
+            var firstName = elements[0].Name.LocalName;
+
+            for (var i = 1; i < elements.Count; i++)
+            {
+                if (!string.Equals(elements[i].Name.LocalName, firstName, StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            var n = container.Name.LocalName;
+
+            if (n.EndsWith("List", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (n.EndsWith("Menus", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (n.EndsWith("Containers", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
         }
 
         private static List<(string BlockPath, bool IsDirectChild, List<XElement> Elements)> FindRepeatingChildBlocks(XElement entryRoot)

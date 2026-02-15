@@ -407,8 +407,79 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                     "restore", "backup browser", "revert"
                 ),
 
+                                new HelpTopic(
+                    9,
+                    "Builders",
+                    1,
+                    "Gang Builder - Build a Gang (Additive Pack)",
+                    "Build a fully custom gang through a guided UI (way faster than hand-editing XML) and output it as additive files that follow LSR's load order.",
+                    "What this builder is for:\n" +
+                    "- You want a brand new gang without wrestling raw XML\n" +
+                    "- You want to customize everything (names, members, vehicles, dens, menus, weapons, territories)\n" +
+                    "- You want your changes to be clean and mod-friendly (additive files)\n\n" +
+                    "How it works:\n" +
+                    "- You pick a starting gang as a template (this is just a starting point)\n" +
+                    "- The builder creates new IDs and new group IDs so your gang is its own thing\n" +
+                    "- You then customize the gang freely using the builder options\n" +
+                    "- When you build, it writes additive XML files using the +_ naming pattern\n\n" +
+                    "LSR load order (important):\n" +
+                    "- LSR loads the base file first (example: Gangs.xml)\n" +
+                    "- Then it loads additive files (example: Gangs+_*.xml) in filename order\n" +
+                    "- If two entries have the same ID, the one loaded later wins\n" +
+                    "- The builder follows that same logic so your pack behaves the way LSR expects\n\n" +
+                    "Beginner tip:\n" +
+                    "You can add more to the same additive files by using the same Packname"
+                ),
+
                 new HelpTopic(
                     9,
+                    "Builders",
+                    2,
+                    "Gang Builder - Edit a Gang (Any Gang)",
+                    "Edit an existing gang safely. The app finds the correct file using LSR's load order, makes a backup, then writes your changes.",
+                    "What this builder is for:\n" +
+                    "- You want to tweak an existing gang without hunting through multiple XML files\n" +
+                    "- You want to safely edit the 'real' version of a gang (base or additive)\n\n" +
+                    "How it works:\n" +
+                    "1) You select the gang you want to edit\n" +
+                    "2) The app resolves the winning gang definition using the same load order as LSR\n" +
+                    "   - Base first (Gangs.xml)\n" +
+                    "   - Then additive (Gangs+_*.xml), where later-loaded entries override earlier ones\n" +
+                    "3) It loads the winning file, applies your changes, and makes a backup before saving\n\n" +
+                    "Why this matters:\n" +
+                    "- If a gang is overridden by an additive file, editing Gangs.xml would do nothing in-game\n" +
+                    "- Edit mode avoids that trap by finding the file that actually wins at runtime\n\n" +
+                    "Beginner tip:\n" +
+                    "Backups are KEY!! You choose to skip them then dont dont feel hard done by if you mess something up."
+                ),
+
+                new HelpTopic(
+                    9,
+                    "Builders",
+                    3,
+                    "Dealers & Customers (Drugs) Menus Builder",
+                    "A friendly editor for changing what dealers sell and what customers buy. You choose which ShopMenus file you're editing, pick a menu group, then edit the items.",
+                    "What you can do here:\n" +
+                    "- Edit what dealers are offering (dealer menus)\n" +
+                    "- Edit what customers are buying (customer menus)\n" +
+                    "- Work on the exact ShopMenus*.xml file you choose\n\n" +
+                    "How it works:\n" +
+                    "1) Builders > Dealers & Customers (Drugs) Builder...\n" +
+                    "2) Pick the ShopMenus file you want to edit\n" +
+                    "   - Example: ShopMenus.xml or a ShopMenus+_PackName.xml\n" +
+                    "3) Pick a ShopMenuGroup (or paste the group ID)\n" +
+                    "4) Choose the menu page (MenuIndex) and edit the items\n" +
+                    "   - Add items, remove items, and switch between menu pages\n\n" +
+                    "Safety behavior:\n" +
+                    "- Before saving, the app creates a backup of the file you selected\n" +
+                    "- Then it writes your edited menu items back into that ShopMenuGroup\n\n" +
+                    "Beginner tip:\n" +
+                    "If you're not sure you picked the right group, change one small item, save, test in-game or check the XML, and undo with the backup if needed.",
+                    "builder", "dealers", "customers", "drugs", "ShopMenus", "menu", "ShopMenuGroup"
+                ),
+
+                new HelpTopic(
+                    10,
                     "Updates",
                     1,
                     "Check for Updates",
@@ -422,7 +493,7 @@ namespace LSR.XmlHelper.Wpf.Services.Help
                 ),
 
                 new HelpTopic(
-                    10,
+                    11,
                     "Troubleshooting",
                     1,
                     "If the game/mod crashes after edits",

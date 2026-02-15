@@ -8,7 +8,7 @@
     Background="{Binding Appearance.SharedConfigPacksWindowBackgroundBrush}"
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowState="Maximized">
 
     <Window.Resources>

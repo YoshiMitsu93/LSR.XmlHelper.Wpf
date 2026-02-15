@@ -1,0 +1,230 @@
+﻿<UserControl
+    x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceBuildersGangBuilderTab"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="12" Orientation="Vertical">
+
+            <TextBlock
+                FontSize="18"
+                FontWeight="SemiBold"
+                Text="Builders: Gang Build/Edit Window" />
+
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Window background"
+                    ToolTip="Background colour for the Gang Builder window." />
+                <TextBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowBackground"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Window text"
+                    ToolTip="Default text colour for the Gang Builder window." />
+                <TextBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowText, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowText"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Control background"
+                    ToolTip="Background colour for textboxes and dropdowns in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowControlBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowControlBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowControlBackground"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Control border"
+                    ToolTip="Border colour for textboxes, dropdowns, and buttons in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowControlBorder, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="3"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowControlBorderBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowControlBorder"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Header background"
+                    ToolTip="Background colour for DataGrid column headers in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowHeaderBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowHeaderBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowHeaderBackground"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="5"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Header text"
+                    ToolTip="Text colour for DataGrid column headers in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowHeaderText, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="5"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowHeaderTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowHeaderText"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="6"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Button background"
+                    ToolTip="Button background colour in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="6"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowButtonBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="6"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowButtonBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowButtonBackground"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="7"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Button text"
+                    ToolTip="Text colour used on buttons in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="7"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowButtonText, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="7"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowButtonTextBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowButtonText"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock
+                    Grid.Row="8"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Button hover background"
+                    ToolTip="Button background colour when hovered in the Gang Builder window." />
+                <TextBox
+                    Grid.Row="8"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowButtonHoverBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="8"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowButtonHoverBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowButtonHoverBackground"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+                <TextBlock
+                    Grid.Row="9"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Grid row selected background"
+                    ToolTip="Background colour of the selected row in Gang Builder grids." />
+                <TextBox
+                    Grid.Row="9"
+                    Grid.Column="1"
+                    Text="{Binding GangBuilderWindowGridRowSelectedBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    Grid.Row="9"
+                    Grid.Column="2"
+                    Height="22"
+                    Background="{Binding PreviewGangBuilderWindowGridRowSelectedBackgroundBrush}"
+                    Command="{Binding PickColorCommand}"
+                    CommandParameter="GangBuilderWindowGridRowSelectedBackground"
+                    Style="{DynamicResource SwatchButtonStyle}" />
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

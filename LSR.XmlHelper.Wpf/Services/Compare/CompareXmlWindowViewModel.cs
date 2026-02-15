@@ -22,6 +22,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         private readonly string _currentOpenXmlTextSnapshot;
         private readonly ObservableCollection<SelectableEditHistoryItemViewModel> _rows;
         private readonly AppearanceService _appearance;
+        private readonly CompareSelectionDetailsService _details;
+
+        private SelectableEditHistoryItemViewModel? _selectedRow;
+        private string _selectedDetailsHeader = "";
+        private readonly ObservableCollection<string> _selectedDetailsLines = new ObservableCollection<string>();
 
         private XmlFileListItem? _selectedTarget;
         private string? _externalFilePath;
@@ -36,12 +41,15 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             XmlCompareService comparer,
             CompareEditsImportService importer,
             CompareEditsApplyService applier,
+            CompareSelectionDetailsService details,
             AppearanceService appearance)
+
         {
             _comparer = comparer;
             _importer = importer;
             _applier = applier;
             _appearance = appearance;
+            _details = details;
             _currentOpenPathSnapshot = currentOpenPathSnapshot;
             _currentOpenXmlTextSnapshot = currentOpenXmlTextSnapshot ?? "";
 
@@ -93,6 +101,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         }
 
         public ObservableCollection<SelectableEditHistoryItemViewModel> Rows => _rows;
+        public SelectableEditHistoryItemViewModel? SelectedRow
+        {
+            get => _selectedRow;
+            set
+            {
+                if (!SetProperty(ref _selectedRow, value))
+                    return;
+
+                RebuildSelectedDetails();
+            }
+        }
+
+        public string SelectedDetailsHeader
+        {
+            get => _selectedDetailsHeader;
+            set => SetProperty(ref _selectedDetailsHeader, value);
+        }
+
+        public ObservableCollection<string> SelectedDetailsLines => _selectedDetailsLines;
 
         public RelayCommand BrowseExternalCommand { get; }
         public RelayCommand ClearExternalCommand { get; }
@@ -181,12 +208,28 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 var row = new SelectableEditHistoryItemViewModel(item, true);
                 row.PropertyChanged += (_, _) => System.Windows.Input.CommandManager.InvalidateRequerySuggested();
                 Rows.Add(row);
+                SelectedRow = Rows.FirstOrDefault();
             }
 
             System.Windows.Input.CommandManager.InvalidateRequerySuggested();
 
             if (Rows.Count == 0 && string.IsNullOrWhiteSpace(Status))
                 Status = "No differences were found that can be imported as Saved Edits.";
+        }
+        private void RebuildSelectedDetails()
+        {
+            SelectedDetailsLines.Clear();
+            SelectedDetailsHeader = "";
+
+            var details = _details.Build(SelectedRow?.Item);
+            if (details is null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(details.Header))
+                SelectedDetailsHeader = details.Header;
+
+            foreach (var line in details.Lines)
+                SelectedDetailsLines.Add(line);
         }
 
         private void SelectAll()

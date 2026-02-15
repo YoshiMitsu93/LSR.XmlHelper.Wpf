@@ -969,25 +969,31 @@
                     Header="Open _Backups Folder"
                     ToolTip="Open the folder where backups are stored." />
             </MenuItem>
-            <MenuItem Header="_Tools">
+            <MenuItem Header="_Builders">
+                <MenuItem
+                    Click="GangBuilder_Click"
+                    Header="Gang Builder..."
+                    ToolTip="Build a full Los Santos RED gang pack across multiple XML files, with a live checklist." />
+                <MenuItem
+                    Click="DealersCustomersDrugsBuilder_Click"
+                    Header="Dealers &amp; Customers (Drugs)..."
+                    ToolTip="Edit dealer and customer shop menus in ShopMenus.xml / ShopMenus*.xml (supports additive files)." />
+            </MenuItem>
+            <MenuItem Header="_Settings">
                 <MenuItem
                     Click="OpenSettingsInfo_Click"
-                    Header="Settings &amp; _Info..."
+                    Header="Settings &amp; Info..."
                     ToolTip="Open the settings and info screen (QoL toggles + app info)." />
             </MenuItem>
+
             <MenuItem Header="_Help">
                 <MenuItem
-                    Click="CheckForUpdates_Click"
-                    Header="Check for _Updates..."
-                    ToolTip="Check GitHub for the latest release." />
-                <Separator />
-                <MenuItem
                     Click="About_Click"
-                    Header="_Documentation..."
+                    Header="Documentation..."
                     ToolTip="Open documentation for features, shortcuts, and how-to guides." />
                 <MenuItem
                     Click="XmlGuides_Click"
-                    Header="LSR XML _Guides..."
+                    Header="LSR XML Guides..."
                     ToolTip="Create, edit, import, and export community guides for editing LSR XML files." />
             </MenuItem>
         </Menu>

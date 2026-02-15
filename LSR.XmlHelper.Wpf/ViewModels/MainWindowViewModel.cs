@@ -597,7 +597,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _appearanceWindow = new AppearanceWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };
@@ -646,7 +645,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _globalSearchWindow = new GlobalSearchWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     DataContext = vm
                 };
 
@@ -816,7 +814,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _savedEditsWindow = new SavedEditsWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };
@@ -865,7 +862,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _sharedConfigPacksWindow = new SharedConfigPacksWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };
@@ -911,6 +907,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 var importer = new Services.Compare.CompareEditsImportService(_settingsService, _settings);
                 var comparer = new Services.Compare.XmlCompareService(_friendly);
                 var applier = new Services.Compare.CompareEditsApplyService(_editHistory, _saver, _backupRequest);
+                var details = new Services.Compare.CompareSelectionDetailsService();
 
                 var preferredTarget = GetSelectedFilePath();
                 var currentOpenPath = GetSelectedFilePath();
@@ -925,12 +922,12 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                     comparer,
                     importer,
                     applier,
+                    details,
                     _appearance);
 
 
                 _compareXmlWindow = new Views.CompareXmlWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };
@@ -994,7 +991,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels
 
                 _backupBrowserWindow = new BackupBrowserWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };

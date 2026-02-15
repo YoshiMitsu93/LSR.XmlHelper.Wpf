@@ -1,0 +1,2057 @@
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.Builders.GangBuilderWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:infra="clr-namespace:LSR.XmlHelper.Wpf.Infrastructure"
+    x:Name="GangBuilderRoot"
+    Title="Gang Builder"
+    Width="1200"
+    Height="800"
+    Background="{Binding Appearance.GangBuilderWindowBackgroundBrush}"
+    FontFamily="{Binding Appearance.UiFontFamily}"
+    FontSize="{Binding Appearance.UiFontSize}"
+    FontStyle="{Binding Appearance.UiFontStyle}"
+    FontWeight="{Binding Appearance.UiFontWeight}"
+    Foreground="{Binding Appearance.GangBuilderWindowTextBrush}"
+    Icon="/Assets/AppIcon.ico"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized">
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding BuildPackCommand}" />
+    </Window.InputBindings>
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid>
+                            <ToggleButton
+                                x:Name="ToggleButton"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                ClickMode="Press"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox
+                                        x:Name="PART_EditableTextBox"
+                                        Grid.Column="0"
+                                        Margin="{TemplateBinding Padding}"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Stretch"
+                                        Background="Transparent"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        BorderThickness="0"
+                                        Visibility="Collapsed"
+                                        Text="{TemplateBinding Text}" />
+                                    <ContentPresenter
+                                        x:Name="ContentSite"
+                                        Grid.Column="0"
+                                        Margin="{TemplateBinding Padding}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding SelectionBoxItem}"
+                                        ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                        ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}" />
+                                    <Path
+                                        Grid.Column="1"
+                                        Width="10"
+                                        Height="6"
+                                        Margin="8,0,8,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Data="M 0 0 L 10 0 L 5 6 Z"
+                                        Fill="{TemplateBinding Foreground}" />
+                                </Grid>
+                            </ToggleButton>
+
+                            <Popup
+                                x:Name="Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade">
+                                <Border
+                                    Background="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    BorderBrush="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    BorderThickness="1">
+                                    <ScrollViewer CanContentScroll="True">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Collapsed" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="{x:Type TabItem}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border
+                            x:Name="TabBorder"
+                            Margin="0,0,2,0"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type DataGrid}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="6,4" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridCell}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="6,3" />
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowGridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="MinWidth" Value="92" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="{x:Type ListBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+        <Style TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Padding" Value="4,2" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowGridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowGridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type GroupBox}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border
+            Grid.Column="0"
+            Padding="14"
+            Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+            BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        FontSize="22"
+                        Text="Gang Builder" />
+                    <TextBlock
+                        Margin="0,0,0,14"
+                        Opacity="0.8"
+                        Text="{Binding RootFolderPath}"
+                        TextWrapping="Wrap" />
+                    <Popup
+                        x:Name="ValidationHintPopup"
+                        AllowsTransparency="True"
+                        HorizontalOffset="0"
+                        IsOpen="False"
+                        Placement="Bottom"
+                        StaysOpen="True"
+                        VerticalOffset="6">
+                        <Border
+                            Padding="10"
+                            Background="#B00020"
+                            CornerRadius="6">
+                            <DockPanel LastChildFill="True">
+                                <Button
+                                    x:Name="ValidationHintCloseButton"
+                                    Width="22"
+                                    Height="22"
+                                    Margin="8,0,0,0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Click="ValidationHintCloseButton_Click"
+                                    Content="✕"
+                                    DockPanel.Dock="Right" />
+                                <TextBlock
+                                    x:Name="ValidationHintPopupTextBlock"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"
+                                    TextWrapping="Wrap" />
+                            </DockPanel>
+                        </Border>
+                    </Popup>
+                    <TabControl Margin="0,0,0,12" SelectedIndex="{Binding IsEditExistingGang, Converter={StaticResource BoolToTabIndex}}">
+                        <TabItem Header="Build a gang">
+                            <StackPanel>
+                                <TextBlock Text="Pack name" />
+                                <TextBox Margin="0,6,0,12" Text="{Binding PackName, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="New gang ID" />
+                                <DockPanel Margin="0,6,0,12">
+                                    <Button
+                                        Width="110"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding SuggestNewGangIdCommand}"
+                                        Content="Suggest" />
+                                    <TextBox x:Name="NewGangIdTextBox" Text="{Binding NewGangId, UpdateSourceTrigger=PropertyChanged}" />
+                                </DockPanel>
+
+                                <TextBlock Text="Gang full name" />
+                                <TextBox Margin="0,6,0,12" Text="{Binding NewGangFullName, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock Text="Clone from gang (required for build)" />
+                                <DockPanel Margin="0,6,0,18">
+                                    <ComboBox
+                                        MinWidth="420"
+                                        DisplayMemberPath="DisplayText"
+                                        IsEditable="False"
+                                        IsSynchronizedWithCurrentItem="False"
+                                        IsTextSearchEnabled="True"
+                                        ItemsSource="{Binding ExistingGangs}"
+                                        SelectedItem="{Binding SelectedCloneGang}" />
+                                </DockPanel>
+                            </StackPanel>
+                        </TabItem>
+
+                        <TabItem Header="Edit a gang">
+                            <StackPanel>
+                                <TextBlock Text="Gang to edit" />
+                                <DockPanel Margin="0,6,0,12">
+                                    <ComboBox
+                                        MinWidth="420"
+                                        DisplayMemberPath="DisplayText"
+                                        IsEditable="False"
+                                        IsSynchronizedWithCurrentItem="False"
+                                        IsTextSearchEnabled="True"
+                                        ItemsSource="{Binding ExistingGangs}"
+                                        SelectedItem="{Binding SelectedEditGang}" />
+                                </DockPanel>
+                                <TextBlock
+                                    Margin="0,6,0,0"
+                                    Text="{Binding EditModeResolvedSourcesWarning}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding NewGangId, StringFormat=Gang ID: {0}}" />
+                                <TextBlock Margin="0,12,0,0" Text="Gang full name" />
+                                <TextBox Margin="0,6,0,0" Text="{Binding NewGangFullName, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                    <TextBlock
+                        Margin="0,0,0,6"
+                        FontSize="16"
+                        Text="What should be included?" />
+                    <WrapPanel>
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Zones"
+                            IsChecked="{Binding IncludeZones}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Territories"
+                            IsChecked="{Binding IncludeTerritories}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Territory menus"
+                            IsChecked="{Binding IncludeTerritoryMenus}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="People"
+                            IsChecked="{Binding IncludePeople}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Vehicles"
+                            IsChecked="{Binding IncludeVehicles}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Dens"
+                            IsChecked="{Binding IncludeDens}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Dealer menus"
+                            IsChecked="{Binding IncludeDealerMenus}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Weapons"
+                            IsChecked="{Binding IncludeWeapons}" />
+                        <CheckBox
+                            Margin="0,0,16,10"
+                            Content="Relationships"
+                            IsChecked="{Binding IncludeRelationships}" />
+                    </WrapPanel>
+                    <StackPanel Visibility="{Binding IncludePeople, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,10,0,6"
+                            FontSize="16"
+                            Text="People options" />
+                        <CheckBox
+                            Margin="0,0,0,6"
+                            Content="Use source gang people group"
+                            IsChecked="{Binding UseSourceGangPeopleGroup}"
+                            IsEnabled="{Binding IncludePeople}"
+                            Visibility="{Binding IsEditExistingGang, Converter={StaticResource InverseBoolToVis}}" />
+                        <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                            <Button
+                                Width="80"
+                                Margin="8,0,0,0"
+                                Command="{Binding RefreshDispatchablePeopleGroupsCommand}"
+                                Content="Refresh"
+                                DockPanel.Dock="Right"
+                                IsEnabled="{Binding IncludePeople}" />
+                            <ComboBox
+                                x:Name="DispatchablePeopleGroupComboBox"
+                                DisplayMemberPath="DisplayText"
+                                ItemsSource="{Binding DispatchablePeopleGroups}"
+                                SelectedItem="{Binding SelectedDispatchablePeopleGroup}">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="IsEnabled" Value="{Binding IncludePeople}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UseSourceGangPeopleGroup}" Value="True">
+                                                <Setter Property="IsEnabled" Value="False" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.Style>
+                            </ComboBox>
+                        </DockPanel>
+                        <Border Margin="0,6,0,8">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditExistingGang}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    Opacity="0.85"
+                                    Text="Current peds in selected PeopleGroupID" />
+                                <ListBox
+                                    Height="120"
+                                    DisplayMemberPath="DebugName"
+                                    ItemsSource="{Binding DispatchablePeopleEntries}" />
+                            </StackPanel>
+                        </Border>
+                        <Border
+                            Margin="0,0,0,8"
+                            Padding="8"
+                            Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+                            BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IncludePeople}" Value="True" />
+                                                <Condition Binding="{Binding UseSourceGangPeopleGroup}" Value="False" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    Text="DispatchablePeople group editor" />
+                                <DataGrid
+                                    MinHeight="160"
+                                    AutoGenerateColumns="False"
+                                    CanUserAddRows="False"
+                                    HeadersVisibility="Column"
+                                    ItemsSource="{Binding DispatchablePeopleEntries}"
+                                    SelectedItem="{Binding SelectedDispatchablePersonEntry}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding DebugName, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="DebugName" />
+                                        <DataGridTextColumn
+                                            Width="*"
+                                            Binding="{Binding ModelName, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="ModelName" />
+                                        <DataGridCheckBoxColumn
+                                            Width="140"
+                                            Binding="{Binding AlwaysHasLongGun, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="AlwaysHasLongGun" />
+                                        <DataGridTextColumn
+                                            Width="90"
+                                            Binding="{Binding MinWantedLevelSpawn, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="MinWanted" />
+                                        <DataGridTextColumn
+                                            Width="90"
+                                            Binding="{Binding MaxWantedLevelSpawn, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="MaxWanted" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock
+                                    Margin="0,10,0,6"
+                                    FontSize="14"
+                                    Text="All fields (advanced)" />
+                                <TextBlock Margin="0,0,0,4" Text="Search field names" />
+                                <TextBox Margin="0,0,0,8" Text="{Binding DispatchablePersonFieldSearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <DataGrid
+                                    MinHeight="160"
+                                    AutoGenerateColumns="False"
+                                    CanUserAddRows="False"
+                                    HeadersVisibility="Column"
+                                    ItemsSource="{Binding DispatchablePersonFieldsView}"
+                                    SelectedItem="{Binding SelectedDispatchablePersonField}">
+                                    <DataGrid.Resources>
+                                        <DataTemplate x:Key="DefaultDispatchableFieldViewerTemplate">
+                                            <TextBlock Text="{Binding Value}" />
+                                        </DataTemplate>
+                                        <DataTemplate x:Key="DefaultDispatchableFieldEditorTemplate">
+                                            <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                        <DataTemplate x:Key="BooleanDispatchableFieldEditorTemplate">
+                                            <ComboBox SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
+                                                <ComboBoxItem Content="false" Tag="false" />
+                                                <ComboBoxItem Content="true" Tag="true" />
+                                            </ComboBox>
+                                        </DataTemplate>
+                                        <DataTemplate x:Key="CombatAbilityDispatchableFieldEditorTemplate">
+                                            <ComboBox SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
+                                                <ComboBoxItem Content="0 - Poor" Tag="0" />
+                                                <ComboBoxItem Content="1 - Average" Tag="1" />
+                                                <ComboBoxItem Content="2 - Professional" Tag="2" />
+                                            </ComboBox>
+                                        </DataTemplate>
+
+                                        <DataTemplate x:Key="CombatMovementDispatchableFieldEditorTemplate">
+                                            <ComboBox SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
+                                                <ComboBoxItem Content="-1 - Default (LSR does not force a value)" Tag="-1" />
+                                                <ComboBoxItem Content="0 - Stationary (stand in place)" Tag="0" />
+                                                <ComboBoxItem Content="1 - Defensive (uses cover, may blind fire)" Tag="1" />
+                                                <ComboBoxItem Content="2 - Offensive (pushes enemy, still uses cover)" Tag="2" />
+                                                <ComboBoxItem Content="3 - Suicidal Offensive (aggressive flanks)" Tag="3" />
+                                            </ComboBox>
+                                        </DataTemplate>
+
+                                        <DataTemplate x:Key="CombatRangeDispatchableFieldEditorTemplate">
+                                            <ComboBox SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
+                                                <ComboBoxItem Content="-1 - Default (LSR does not force a value)" Tag="-1" />
+                                                <ComboBoxItem Content="0 - Near" Tag="0" />
+                                                <ComboBoxItem Content="1 - Medium" Tag="1" />
+                                                <ComboBoxItem Content="2 - Far" Tag="2" />
+                                                <ComboBoxItem Content="3 - Very Far" Tag="3" />
+                                            </ComboBox>
+                                        </DataTemplate>
+                                    </DataGrid.Resources>
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="ToolTip" Value="{Binding TooltipText}" />
+                                            <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="{Binding DataContext.Appearance.GangBuilderWindowGridRowSelectedBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                    <Setter Property="Foreground" Value="{Binding DataContext.Appearance.GangBuilderWindowButtonTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.RowStyle>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="220"
+                                            Binding="{Binding Name}"
+                                            Header="Field"
+                                            IsReadOnly="True" />
+                                        <DataGridTemplateColumn Width="*" Header="Value">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ContentControl Content="{Binding}">
+                                                        <ContentControl.Style>
+                                                            <Style TargetType="ContentControl">
+                                                                <Setter Property="ContentTemplate" Value="{StaticResource DefaultDispatchableFieldViewerTemplate}" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatRange">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatRangeDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatMovement">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatMovementDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatAbilityMin">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatAbilityDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatAbilityMax">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatAbilityDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+
+                                                                    <DataTrigger Binding="{Binding Name}" Value="AllowRandomizeBeforeVariationApplied">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="RandomizeHead">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideAgencyLessLethalWeapons">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideAgencySideArms">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideAgencyLongGuns">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableWrithe">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableWritheShooting">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableCriticalHits">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableBulletRagdoll">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="HasFullBodyArmor">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="AlwaysHasLongGun">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="IsAnimal">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideHelmet">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="ShrinkHeadForMask">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="IsInvisibleAndInvulnerable">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ContentControl.Style>
+                                                    </ContentControl>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                            <DataGridTemplateColumn.CellEditingTemplate>
+                                                <DataTemplate>
+                                                    <ContentControl Content="{Binding}">
+                                                        <ContentControl.Style>
+                                                            <Style TargetType="ContentControl">
+                                                                <Setter Property="ContentTemplate" Value="{StaticResource DefaultDispatchableFieldEditorTemplate}" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatRange">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatRangeDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatMovement">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatMovementDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatAbilityMin">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatAbilityDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="CombatAbilityMax">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource CombatAbilityDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+
+                                                                    <DataTrigger Binding="{Binding Name}" Value="AllowRandomizeBeforeVariationApplied">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="RandomizeHead">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideAgencyLessLethalWeapons">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideAgencySideArms">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideAgencyLongGuns">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableWrithe">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableWritheShooting">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableCriticalHits">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="DisableBulletRagdoll">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="HasFullBodyArmor">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="AlwaysHasLongGun">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="IsAnimal">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="OverrideHelmet">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="ShrinkHeadForMask">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Name}" Value="IsInvisibleAndInvulnerable">
+                                                                        <Setter Property="ContentTemplate" Value="{StaticResource BooleanDispatchableFieldEditorTemplate}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ContentControl.Style>
+                                                    </ContentControl>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellEditingTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock
+                                    Margin="0,10,0,6"
+                                    FontSize="14"
+                                    Text="Selected field editor" />
+
+                                <TextBlock Margin="0,0,0,4" Text="{Binding SelectedDispatchablePersonField.Name}" />
+
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    Text="{Binding SelectedDispatchablePersonField.TooltipText}"
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    Margin="0,0,0,8"
+                                    HorizontalAlignment="Left"
+                                    Command="{Binding SmartPasteRequiredVariationCommand}"
+                                    Content="Smart paste RequiredVariation"
+                                    ToolTip="Pastes RequiredVariation, PedVariation, or SavedOutfit XML from the clipboard. If you paste PedVariation or SavedOutfit, it converts it into RequiredVariation automatically."
+                                    Visibility="{Binding ShowSmartPasteRequiredVariation, Converter={StaticResource BoolToVis}}" />
+                                <TextBox
+                                    Height="120"
+                                    AcceptsReturn="True"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    Text="{Binding SelectedDispatchablePersonField.Value, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IncludeDens, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,10,0,6"
+                            FontSize="16"
+                            Text="Den options" />
+                        <CheckBox
+                            Margin="0,0,0,6"
+                            IsChecked="{Binding CreateNewDen}"
+                            IsEnabled="{Binding IncludeDens}">
+                            <CheckBox.Style>
+                                <Style TargetType="CheckBox">
+                                    <Setter Property="Content" Value="Create new den (instead of cloning)" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditExistingGang}" Value="True">
+                                            <Setter Property="Content" Value="Edit gang den" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </CheckBox.Style>
+                        </CheckBox>
+                        <StackPanel
+                            Margin="0,0,0,6"
+                            IsEnabled="{Binding IncludeDens}"
+                            Visibility="{Binding CreateNewDen, Converter={StaticResource InverseBoolToVis}}">
+                            <CheckBox Content="Keep cloned den TypeName from source gang" IsChecked="{Binding KeepSourceDenTypeName}" />
+                        </StackPanel>
+                        <StackPanel
+                            Margin="0,0,0,6"
+                            IsEnabled="{Binding IncludeDens}"
+                            Visibility="{Binding CreateNewDen, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Margin="0,0,0,4" Text="Den name" />
+                            <TextBox
+                                x:Name="NewDenNameTextBox"
+                                Margin="0,0,0,8"
+                                Text="{Binding NewDenName, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Margin="0,0,0,4" Text="Entrance position (X, Y, Z)" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox
+                                    Width="110"
+                                    Margin="0,0,8,8"
+                                    Text="{Binding NewDenX, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox
+                                    Width="110"
+                                    Margin="0,0,8,8"
+                                    Text="{Binding NewDenY, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox
+                                    Width="110"
+                                    Margin="0,0,0,8"
+                                    Text="{Binding NewDenZ, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <Button
+                                Width="170"
+                                Margin="0,0,0,8"
+                                Command="{Binding SmartPasteDenEntranceCoordsCommand}"
+                                Content="Smart paste coords"
+                                ToolTip="Pastes any coordinate text and auto-fills X, Y, Z, and Heading using the first 4 numbers found." />
+                            <TextBlock Margin="0,0,0,4" Text="Entrance heading" />
+                            <TextBox
+                                Width="110"
+                                Margin="0,0,0,8"
+                                Text="{Binding NewDenHeading, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Margin="0,0,0,4" Text="Den inventory menu (Buy/Sell)" />
+                            <ComboBox
+                                MinWidth="420"
+                                Margin="0,0,0,8"
+                                DisplayMemberPath="DisplayText"
+                                IsEditable="False"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding ShopMenusForSelectedGroup}"
+                                SelectedItem="{Binding SelectedDenShopMenu}" />
+                            <Border Margin="0,0,0,8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEditExistingGang}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        Opacity="0.85"
+                                        Text="{Binding DenMenuId, StringFormat=Current MenuID: {0}}" />
+                                    <ListBox Height="120" ItemsSource="{Binding SelectedEditGangDenInventoryItemsPreview}" />
+                                </StackPanel>
+                            </Border>
+                            <StackPanel Margin="0,8,0,0">
+                                <CheckBox IsChecked="{Binding GenerateDenInventoryMenu}">
+                                    <CheckBox.Style>
+                                        <Style TargetType="CheckBox">
+                                            <Setter Property="Content" Value="Generate custom den inventory menu (recommended)" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsEditExistingGang}" Value="True">
+                                                    <Setter Property="Content" Value="Edit den inventory" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </CheckBox.Style>
+                                </CheckBox>
+                                <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                                    <TextBlock
+                                        Margin="0,0,6,0"
+                                        VerticalAlignment="Center"
+                                        Text="Search:" />
+                                    <TextBox
+                                        Width="220"
+                                        Margin="0,0,12,0"
+                                        Text="{Binding DenInventorySearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock
+                                        Margin="0,0,6,0"
+                                        VerticalAlignment="Center"
+                                        Text="Category:" />
+                                    <ComboBox
+                                        Width="140"
+                                        Margin="0,0,12,0"
+                                        ItemsSource="{Binding DenInventoryCategories}"
+                                        SelectedItem="{Binding SelectedDenInventoryCategory}" />
+
+                                    <TextBlock
+                                        Margin="0,0,6,0"
+                                        VerticalAlignment="Center"
+                                        Text="Item:" />
+                                    <ComboBox
+                                        Width="280"
+                                        Margin="0,0,10,0"
+                                        IsEditable="True"
+                                        IsTextSearchEnabled="True"
+                                        ItemsSource="{Binding AvailableDenInventoryItemNamesView}"
+                                        Text="{Binding SelectedDenInventoryItemName, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Button
+                                        Width="70"
+                                        Margin="0,0,10,0"
+                                        Command="{Binding AddDenInventoryItemCommand}"
+                                        Content="Add" />
+                                    <Button
+                                        Width="120"
+                                        Command="{Binding RemoveDenInventoryItemCommand}"
+                                        Content="Remove selected" />
+                                </StackPanel>
+
+                                <DataGrid
+                                    Height="150"
+                                    Margin="0,6,0,0"
+                                    AutoGenerateColumns="False"
+                                    CanUserAddRows="False"
+                                    IsEnabled="{Binding GenerateDenInventoryMenu}"
+                                    IsReadOnly="False"
+                                    ItemsSource="{Binding DenInventoryItemsView}"
+                                    SelectedItem="{Binding SelectedDenInventoryItem}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="110"
+                                            Binding="{Binding Category, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Category" />
+                                        <DataGridTextColumn
+                                            Width="2*"
+                                            Binding="{Binding ModItemName, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Item" />
+                                        <DataGridTextColumn
+                                            Width="70"
+                                            Binding="{Binding PurchasePrice, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Buy" />
+                                        <DataGridTextColumn
+                                            Width="70"
+                                            Binding="{Binding SalesPrice, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Sell" />
+                                        <DataGridTextColumn
+                                            Width="70"
+                                            Binding="{Binding MinimumPurchaseAmount, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Min" />
+                                        <DataGridTextColumn
+                                            Width="70"
+                                            Binding="{Binding MaximumPurchaseAmount, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Max" />
+                                        <DataGridTextColumn
+                                            Width="70"
+                                            Binding="{Binding PurchaseIncrement, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Increment" />
+                                        <DataGridTextColumn
+                                            Width="120"
+                                            Binding="{Binding NumberOfItemsToSellToPlayer, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Max Sell To Player" />
+                                        <DataGridTextColumn
+                                            Width="130"
+                                            Binding="{Binding NumberOfItemsToPurchaseFromPlayer, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Max Buy From Player" />
+                                        <DataGridCheckBoxColumn
+                                            Width="70"
+                                            Binding="{Binding IsIllicilt, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Illicit" />
+                                        <DataGridCheckBoxColumn
+                                            Width="60"
+                                            Binding="{Binding IsFree, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Free" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                            <StackPanel Visibility="{Binding ShowDenMenuIdAdvanced, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Margin="0,0,0,4" Text="Den menu ID (advanced)" />
+                                <TextBox Margin="0,0,0,8" Text="{Binding DenMenuId, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <TextBlock Margin="0,0,0,4" Text="Den banner image" />
+                            <Border Margin="0,0,0,8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEditExistingGang}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Opacity="0.85" Text="{Binding DenBannerImagePath, StringFormat=Current BannerImagePath: {0}}" />
+                            </Border>
+                            <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                                <Button
+                                    Width="110"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding ChooseDenBannerImageCommand}"
+                                    Content="Browse" />
+                                <TextBox IsReadOnly="True" Text="{Binding DenBannerImagePath, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+                            <TextBlock Margin="0,6,0,4" Text="Blip settings" />
+                            <StackPanel Margin="0,0,0,6" Orientation="Horizontal">
+                                <Button
+                                    Width="170"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding OpenUrlCommand}"
+                                    CommandParameter="https://docs.fivem.net/docs/game-references/blips/"
+                                    Content="Open sprite list (FiveM)" />
+                            </StackPanel>
+
+                            <CheckBox
+                                Margin="0,0,0,8"
+                                Content="Enable blip"
+                                IsChecked="{Binding NewDenIsBlipEnabled}" />
+
+                            <TextBlock Margin="0,0,0,4" Text="Sprite (icon)" />
+                            <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                                <ComboBox
+                                    Width="260"
+                                    Margin="0,0,8,0"
+                                    DisplayMemberPath="DisplayText"
+                                    IsEditable="False"
+                                    IsTextSearchEnabled="True"
+                                    ItemsSource="{Binding CommonBlipSprites}"
+                                    SelectedItem="{Binding SelectedCommonBlipSprite}" />
+                                <TextBox Text="{Binding NewDenMapIcon, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+
+                            <TextBlock Margin="0,0,0,4" Text="Color name" />
+                            <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                                <ComboBox
+                                    Width="260"
+                                    Margin="0,0,8,0"
+                                    IsEditable="False"
+                                    IsTextSearchEnabled="True"
+                                    ItemsSource="{Binding CommonBlipColors}"
+                                    SelectedItem="{Binding SelectedCommonBlipColor}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border
+                                                    Width="14"
+                                                    Height="14"
+                                                    Margin="0,0,6,0"
+                                                    Background="{Binding Converter={StaticResource ColorNameToBrushConverter}}"
+                                                    BorderBrush="#FF666666"
+                                                    BorderThickness="1" />
+                                                <TextBlock VerticalAlignment="Center" Text="{Binding}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBox Text="{Binding NewDenMapIconColorString, UpdateSourceTrigger=PropertyChanged}" />
+                            </DockPanel>
+
+                            <TextBlock Margin="0,0,0,4" Text="Scale / Radius / Alpha (Open, Closed)" />
+                            <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                <TextBox
+                                    Width="90"
+                                    Margin="0,0,8,0"
+                                    Text="{Binding NewDenMapIconScale, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox
+                                    Width="90"
+                                    Margin="0,0,8,0"
+                                    Text="{Binding NewDenMapIconRadius, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox
+                                    Width="90"
+                                    Margin="0,0,8,0"
+                                    Text="{Binding NewDenMapOpenIconAlpha, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Width="90" Text="{Binding NewDenMapClosedIconAlpha, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <GroupBox Margin="0,10,0,0" IsEnabled="{Binding IncludeDens}">
+                            <GroupBox.Header>
+                                <DockPanel LastChildFill="False">
+                                    <TextBlock VerticalAlignment="Center" Text="Den ped spawns (from Locations.xml)" />
+                                    <CheckBox
+                                        Margin="12,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Content="Copy spawns from cloned gang"
+                                        IsChecked="{Binding CloneDenPedSpawnsFromSource}"
+                                        ToolTip="If enabled, imports den ped spawns from the cloned gang. If disabled, no spawns are imported and you can add your own."
+                                        Visibility="{Binding HasCloneSourceGang, Converter={StaticResource BoolToVis}}" />
+                                    <StackPanel
+                                        Margin="12,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <Button
+                                            MinWidth="70"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding AddDenPedSpawnRowCommand}"
+                                            Content="Add" />
+                                        <Button
+                                            MinWidth="90"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding DuplicateDenPedSpawnRowCommand}"
+                                            Content="Duplicate" />
+                                        <Button
+                                            MinWidth="80"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding RemoveDenPedSpawnRowCommand}"
+                                            Content="Remove" />
+                                        <Button
+                                            MinWidth="140"
+                                            Command="{Binding SmartPasteDenPedSpawnCoordsCommand}"
+                                            Content="Smart paste coords"
+                                            ToolTip="Pastes any coordinate text and fills X, Y, Z, and Heading on the selected row using the first 4 numbers found." />
+                                    </StackPanel>
+                                </DockPanel>
+                            </GroupBox.Header>
+
+                            <DataGrid
+                                x:Name="DenPedSpawnsGrid"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                HeadersVisibility="Column"
+                                IsReadOnly="False"
+                                Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+                                BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                                Foreground="{Binding Appearance.GangBuilderWindowTextBrush}"
+                                ItemsSource="{Binding PossiblePedSpawns}"
+                                SelectedItem="{Binding SelectedPossiblePedSpawn, Mode=TwoWay}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                        Width="220"
+                                        Binding="{Binding DenName, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="Den" />
+                                    <DataGridTextColumn
+                                        Width="90"
+                                        Binding="{Binding X, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="X" />
+                                    <DataGridTextColumn
+                                        Width="90"
+                                        Binding="{Binding Y, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="Y" />
+                                    <DataGridTextColumn
+                                        Width="90"
+                                        Binding="{Binding Z, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="Z" />
+                                    <DataGridTextColumn
+                                        Width="90"
+                                        Binding="{Binding Heading, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="Heading" />
+                                    <DataGridTextColumn
+                                        Width="60"
+                                        Binding="{Binding Percentage, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="%" />
+                                    <DataGridTemplateColumn Width="180" Header="Tasks">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding TaskRequirements}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox
+                                                    DisplayMemberPath="Text"
+                                                    IsEditable="True"
+                                                    IsTextSearchEnabled="True"
+                                                    ItemsSource="{Binding DataContext.DenPedTaskRequirementOptions, ElementName=GangBuilderRoot}"
+                                                    Text="{Binding TaskRequirements, UpdateSourceTrigger=PropertyChanged}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Text}" ToolTip="{Binding Description}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="95">
+                                        <DataGridTemplateColumn.Header>
+                                            <TextBlock Text="Hours" ToolTip="Spawn hour range (Min-Max)" />
+                                        </DataGridTemplateColumn.Header>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0} - {1}">
+                                                            <Binding Path="MinHourSpawn" />
+                                                            <Binding Path="MaxHourSpawn" />
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBox Width="35" Text="{Binding MinHourSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                    <TextBlock
+                                                        Margin="6,0,6,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="-" />
+                                                    <TextBox Width="35" Text="{Binding MaxHourSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Width="85">
+                                        <DataGridTemplateColumn.Header>
+                                            <TextBlock Text="WL" ToolTip="Wanted level range (Min-Max)" />
+                                        </DataGridTemplateColumn.Header>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0} - {1}">
+                                                            <Binding Path="MinWantedLevelSpawn" />
+                                                            <Binding Path="MaxWantedLevelSpawn" />
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBox Width="30" Text="{Binding MinWantedLevelSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                    <TextBlock
+                                                        Margin="6,0,6,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="-" />
+                                                    <TextBox Width="30" Text="{Binding MaxWantedLevelSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridCheckBoxColumn
+                                        Width="80"
+                                        Binding="{Binding LongGunAlwaysEquipped, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="Long Gun" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IncludeVehicles, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,10,0,6"
+                            FontSize="16"
+                            Text="Vehicle options" />
+                        <StackPanel IsEnabled="{Binding IncludeVehicles}">
+                            <Border Margin="0,6,0,8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEditExistingGang}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        Opacity="0.85"
+                                        Text="{Binding SelectedEditGangVehicleGroupId, StringFormat=Current VehicleGroupID: {0}}" />
+                                    <ListBox Height="120" ItemsSource="{Binding SelectedEditGangVehicleModelsPreview}" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock
+                                Margin="0,0,0,6"
+                                Opacity="0.85"
+                                Text="Choose a ModelName, then a specific variant from the XML library. Optionally override primary/secondary colors and liveries for the entry added to your new DispatchableVehicleGroup."
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Margin="0,0,0,4"
+                                Opacity="0.85"
+                                Text="ModelName" />
+                            <DockPanel Margin="0,0,0,6">
+                                <ComboBox
+                                    Width="260"
+                                    DisplayMemberPath="DisplayText"
+                                    IsEditable="True"
+                                    IsTextSearchEnabled="True"
+                                    ItemsSource="{Binding DispatchableVehicleModelOptions}"
+                                    SelectedItem="{Binding SelectedDispatchableVehicleModelOption}"
+                                    Text="{Binding VehicleModelPickerText, UpdateSourceTrigger=PropertyChanged}"
+                                    ToolTip="Pick a known ModelName, or type a custom one (FiveM spawn code)." />
+                                <Button
+                                    Margin="8,0,0,0"
+                                    Command="{Binding AddCustomDispatchableVehicleModelCommand}"
+                                    Content="Add" />
+                            </DockPanel>
+
+                            <TextBlock
+                                Margin="0,0,0,4"
+                                Opacity="0.85"
+                                Text="Variant (from XML)" />
+                            <ComboBox
+                                Width="520"
+                                Margin="0,0,0,6"
+                                DisplayMemberPath="DisplayText"
+                                ItemsSource="{Binding DispatchableVehicleVariantOptions}"
+                                SelectedItem="{Binding SelectedDispatchableVehicleVariantOption}"
+                                ToolTip="Pick the exact DispatchableVehicle entry (variant) to clone into the gang group. This includes mods/extras/toggles/neons that exist in the XML." />
+                            <DockPanel>
+                                <ListBox
+                                    Width="520"
+                                    Height="120"
+                                    DisplayMemberPath="DisplayText"
+                                    ItemsSource="{Binding CustomDispatchableVehicleModelsToAdd}"
+                                    SelectedItem="{Binding SelectedCustomDispatchableVehicleModelToAdd}" />
+                                <Button
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Top"
+                                    Command="{Binding RemoveSelectedCustomDispatchableVehicleModelCommand}"
+                                    Content="Remove" />
+                            </DockPanel>
+
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="200" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Text="Primary color ID" />
+                                <TextBox
+                                    Grid.Column="1"
+                                    Margin="6,0,0,0"
+                                    Text="{Binding SelectedCustomDispatchableVehicleModelToAdd.OverridePrimaryColorId, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Column="3"
+                                    VerticalAlignment="Center"
+                                    Text="Secondary color ID" />
+                                <TextBox
+                                    Grid.Column="4"
+                                    Margin="6,0,0,0"
+                                    Text="{Binding SelectedCustomDispatchableVehicleModelToAdd.OverrideSecondaryColorId, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Grid.Column="6"
+                                    VerticalAlignment="Center"
+                                    Text="Liveries" />
+                                <TextBox
+                                    Grid.Column="7"
+                                    Margin="6,0,0,0"
+                                    Text="{Binding SelectedCustomDispatchableVehicleModelToAdd.OverrideLiveriesCsv, UpdateSourceTrigger=PropertyChanged}"
+                                    ToolTip="Comma-separated livery IDs, example: 0,1,2" />
+                            </Grid>
+                        </StackPanel>
+                        <GroupBox Margin="0,10,0,0" IsEnabled="{Binding IncludeDens}">
+                            <GroupBox.Header>
+                                <DockPanel LastChildFill="False">
+                                    <TextBlock VerticalAlignment="Center" Text="Den vehicle spawns (from Locations.xml)" />
+                                    <StackPanel
+                                        Margin="12,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal">
+                                        <Button
+                                            MinWidth="70"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding AddDenVehicleSpawnRowCommand}"
+                                            Content="Add" />
+                                        <Button
+                                            MinWidth="90"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding DuplicateDenVehicleSpawnRowCommand}"
+                                            Content="Duplicate" />
+                                        <Button
+                                            MinWidth="80"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding RemoveDenVehicleSpawnRowCommand}"
+                                            Content="Remove" />
+                                        <Button
+                                            MinWidth="140"
+                                            Command="{Binding SmartPasteDenVehicleSpawnCoordsCommand}"
+                                            Content="Smart paste coords"
+                                            ToolTip="Pastes any coordinate text and fills X, Y, Z, and Heading on the selected row using the first 4 numbers found." />
+                                    </StackPanel>
+                                </DockPanel>
+                            </GroupBox.Header>
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    Text="Warning: Vehicle spawns can fail if spawn points are too close together for the vehicle size. Leave extra space, especially for large vehicles."
+                                    TextWrapping="Wrap" />
+
+                                <DataGrid
+                                    x:Name="DenVehicleSpawnsGrid"
+                                    AutoGenerateColumns="False"
+                                    CanUserAddRows="False"
+                                    HeadersVisibility="Column"
+                                    HorizontalScrollBarVisibility="Disabled"
+                                    IsReadOnly="False"
+                                    ItemsSource="{Binding PossibleVehicleSpawns}"
+                                    SelectedItem="{Binding SelectedPossibleVehicleSpawn, Mode=TwoWay}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn
+                                            Width="0.9*"
+                                            Binding="{Binding DenName, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Den" />
+                                        <DataGridTextColumn
+                                            Width="55"
+                                            Binding="{Binding X, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="X" />
+                                        <DataGridTextColumn
+                                            Width="55"
+                                            Binding="{Binding Y, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Y" />
+                                        <DataGridTextColumn
+                                            Width="55"
+                                            Binding="{Binding Z, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Z" />
+                                        <DataGridTextColumn
+                                            Width="60"
+                                            Binding="{Binding Heading, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Heading" />
+                                        <DataGridTextColumn
+                                            Width="45"
+                                            Binding="{Binding Percentage, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="%" />
+
+                                        <DataGridTemplateColumn Width="1.1*" Header="Tasks">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding TaskRequirements}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                            <DataGridTemplateColumn.CellEditingTemplate>
+                                                <DataTemplate>
+                                                    <ComboBox
+                                                        DisplayMemberPath="Text"
+                                                        IsEditable="True"
+                                                        IsTextSearchEnabled="True"
+                                                        ItemsSource="{Binding DataContext.DenPedTaskRequirementOptions, ElementName=GangBuilderRoot}"
+                                                        Text="{Binding TaskRequirements, UpdateSourceTrigger=PropertyChanged}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding Text}" ToolTip="{Binding Description}" />
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellEditingTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Width="95">
+                                            <DataGridTemplateColumn.Header>
+                                                <TextBlock Text="Hours" ToolTip="Spawn hour range (Min-Max)" />
+                                            </DataGridTemplateColumn.Header>
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock>
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} - {1}">
+                                                                <Binding Path="MinHourSpawn" />
+                                                                <Binding Path="MaxHourSpawn" />
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                            <DataGridTemplateColumn.CellEditingTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBox Width="35" Text="{Binding MinHourSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                        <TextBlock
+                                                            Margin="6,0,6,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="-" />
+                                                        <TextBox Width="35" Text="{Binding MaxHourSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellEditingTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTemplateColumn Width="85">
+                                            <DataGridTemplateColumn.Header>
+                                                <TextBlock Text="WL" ToolTip="Wanted level range (Min-Max)" />
+                                            </DataGridTemplateColumn.Header>
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock>
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} - {1}">
+                                                                <Binding Path="MinWantedLevelSpawn" />
+                                                                <Binding Path="MaxWantedLevelSpawn" />
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                            <DataGridTemplateColumn.CellEditingTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBox Width="30" Text="{Binding MinWantedLevelSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                        <TextBlock
+                                                            Margin="6,0,6,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="-" />
+                                                        <TextBox Width="30" Text="{Binding MaxWantedLevelSpawn, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellEditingTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Width="1.7*" Header="Vehicle (Group + Options)">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <ComboBox
+                                                            DisplayMemberPath="DisplayText"
+                                                            Focusable="False"
+                                                            IsEditable="True"
+                                                            IsHitTestVisible="False"
+                                                            IsTextSearchEnabled="True"
+                                                            ItemsSource="{Binding DataContext.DenVehicleGroupOptions, ElementName=GangBuilderRoot}"
+                                                            SelectedValue="{Binding RequiredVehicleGroup}"
+                                                            SelectedValuePath="Id"
+                                                            ToolTip="Vehicle group used by this spawn." />
+                                                        <WrapPanel Margin="0,6,0,0">
+                                                            <CheckBox
+                                                                Margin="0,0,10,0"
+                                                                Content="Allow air"
+                                                                Focusable="False"
+                                                                IsChecked="{Binding AllowAirVehicle}"
+                                                                IsHitTestVisible="False"
+                                                                ToolTip="If enabled, aircraft are allowed for this spawn." />
+                                                            <CheckBox
+                                                                Content="Allow boat"
+                                                                Focusable="False"
+                                                                IsChecked="{Binding AllowBoat}"
+                                                                IsHitTestVisible="False"
+                                                                ToolTip="If enabled, boats are allowed for this spawn." />
+                                                        </WrapPanel>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                            <DataGridTemplateColumn.CellEditingTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <ComboBox
+                                                            DisplayMemberPath="DisplayText"
+                                                            IsEditable="True"
+                                                            IsTextSearchEnabled="True"
+                                                            ItemsSource="{Binding DataContext.DenVehicleGroupOptions, ElementName=GangBuilderRoot}"
+                                                            SelectedValue="{Binding RequiredVehicleGroup, UpdateSourceTrigger=PropertyChanged}"
+                                                            SelectedValuePath="Id"
+                                                            ToolTip="Select an existing DispatchableVehicleGroupID, or type a custom one." />
+                                                        <WrapPanel Margin="0,6,0,0">
+                                                            <CheckBox
+                                                                Margin="0,0,10,0"
+                                                                Content="Allow air"
+                                                                IsChecked="{Binding AllowAirVehicle, UpdateSourceTrigger=PropertyChanged}"
+                                                                ToolTip="If enabled, aircraft are allowed for this spawn." />
+                                                            <CheckBox
+                                                                Content="Allow boat"
+                                                                IsChecked="{Binding AllowBoat, UpdateSourceTrigger=PropertyChanged}"
+                                                                ToolTip="If enabled, boats are allowed for this spawn." />
+                                                        </WrapPanel>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellEditingTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IncludeZones, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,6,0,6"
+                            FontSize="16"
+                            Text="Zones used for territories (multi-select)" />
+                        <TextBlock
+                            Margin="0,0,0,6"
+                            Opacity="0.85"
+                            Text="{Binding SelectedZonesSummary}"
+                            TextWrapping="Wrap" />
+                        <ListBox
+                            x:Name="ZonesListBox"
+                            Height="220"
+                            infra:ListBoxSelectedItemsBehavior.Enable="True"
+                            infra:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedZones}"
+                            IsEnabled="{Binding IncludeZones}"
+                            ItemsSource="{Binding Zones}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Border
+                            Margin="0,6,0,6"
+                            Padding="8"
+                            Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+                            BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Visibility="{Binding ShowZoneOverlapWarning, Converter={StaticResource BoolToVis}}">
+                            <TextBlock
+                                Opacity="0.9"
+                                Text="{Binding ZoneOverlapWarningText}"
+                                TextWrapping="Wrap" />
+                        </Border>
+                        <GroupBox Margin="0,6,0,6" Header="Custom Territory (adds a new Zone to the winner Zones file)">
+                            <StackPanel>
+                                <TextBlock
+                                    Opacity="0.85"
+                                    Text="Boundaries: one point per line, format: X,Y (use dots for decimals). Minimum 3 points."
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Opacity="0.85"
+                                    Text="Tip: Smart Paste can paste multiple points at once. You can paste lines from StoredLocations/debug output. Only X and Y are used for zones (Z and heading are ignored)."
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Opacity="0.85"
+                                    Text="InternalGameName: unique ID used by other XMLs (recommend: YourPack_TerritoryName, no spaces). DisplayName: user-friendly name shown in-game (can include spaces)."
+                                    TextWrapping="Wrap" />
+                                <WrapPanel Margin="0,6,0,0">
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="InternalGameName" />
+                                        <TextBox Width="260" Text="{Binding CustomTerritoryInternalGameName, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="DisplayName" />
+                                        <TextBox Width="260" Text="{Binding CustomTerritoryDisplayName, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="0,6,0,0">
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="CountyID" />
+                                        <ComboBox
+                                            Width="260"
+                                            IsEditable="True"
+                                            ItemsSource="{Binding CustomTerritoryCountyIdOptions}"
+                                            Text="{Binding CustomTerritoryCountyId, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="StateID" />
+                                        <ComboBox
+                                            Width="260"
+                                            IsEditable="True"
+                                            ItemsSource="{Binding CustomTerritoryStateIdOptions}"
+                                            Text="{Binding CustomTerritoryState, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="0,6,0,0">
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="Economy" />
+                                        <ComboBox
+                                            Width="260"
+                                            IsEditable="True"
+                                            ItemsSource="{Binding CustomTerritoryEconomyOptions}"
+                                            Text="{Binding CustomTerritoryEconomy, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,0">
+                                        <TextBlock Text="Type" />
+                                        <ComboBox
+                                            Width="260"
+                                            IsEditable="True"
+                                            ItemsSource="{Binding CustomTerritoryTypeOptions}"
+                                            Text="{Binding CustomTerritoryType, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                </WrapPanel>
+                                <WrapPanel Margin="0,6,0,0">
+                                    <CheckBox Content="IsRestrictedDuringWanted" IsChecked="{Binding CustomTerritoryIsRestrictedDuringWanted}" />
+                                    <CheckBox
+                                        Margin="16,0,0,0"
+                                        Content="IsSpecificLocation"
+                                        IsChecked="{Binding CustomTerritoryIsSpecificLocation}" />
+                                </WrapPanel>
+                                <TextBox
+                                    Height="90"
+                                    Margin="0,6,0,0"
+                                    AcceptsReturn="True"
+                                    Text="{Binding CustomTerritoryBoundariesText, UpdateSourceTrigger=PropertyChanged}"
+                                    VerticalScrollBarVisibility="Auto" />
+                                <Button
+                                    Width="220"
+                                    Margin="0,6,0,0"
+                                    Command="{Binding SmartPasteCustomTerritoryBoundariesCommand}"
+                                    Content="Smart Paste Boundaries" />
+                                <WrapPanel Margin="0,6,0,0">
+                                    <Button
+                                        Width="180"
+                                        Command="{Binding AddCustomTerritoryCommand}"
+                                        Content="Add Custom Territory" />
+                                    <Button
+                                        Width="220"
+                                        Margin="10,0,0,0"
+                                        Command="{Binding RemoveSelectedCustomTerritoryCommand}"
+                                        Content="Remove Selected Custom Territory" />
+                                </WrapPanel>
+                                <ListBox
+                                    Height="90"
+                                    Margin="0,6,0,0"
+                                    ItemsSource="{Binding CustomTerritoriesToAdd}"
+                                    SelectedItem="{Binding SelectedCustomTerritoryToAdd}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayText}" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </GroupBox>
+                        <StackPanel Visibility="{Binding IncludeTerritoryMenus, Converter={StaticResource BoolToVis}}">
+                            <Border
+                                Margin="0,6,0,6"
+                                Padding="8"
+                                Background="#FFFFF3CD"
+                                BorderBrush="#FFFFEEBA"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                                <TextBlock
+                                    Opacity="0.95"
+                                    Text="Territory menus are Zone-based. The selected Zones will have their DealerMenuContainerID and CustomerMenuContainerID set to these values. This controls which civilian dealers/customers can spawn and trade in those Zones."
+                                    TextWrapping="Wrap" />
+                            </Border>
+                            <TextBlock Margin="0,10,0,2" Text="Territory DealerMenuContainerID" />
+                            <ComboBox
+                                MinWidth="420"
+                                MinHeight="22"
+                                Padding="6,2"
+                                Background="#FFF2F2F2"
+                                BorderBrush="#FFCCCCCC"
+                                BorderThickness="1"
+                                DisplayMemberPath="DisplayText"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding TerritoryDealerMenuGroups}"
+                                SelectedValue="{Binding TerritoryDealerMenuContainerId, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedValuePath="Id"
+                                TextSearch.TextPath="DisplayText" />
+                            <TextBlock Margin="0,0,0,2" Text="Territory CustomerMenuContainerID" />
+                            <ComboBox
+                                MinWidth="420"
+                                MinHeight="22"
+                                Padding="6,2"
+                                Background="#FFF2F2F2"
+                                BorderBrush="#FFCCCCCC"
+                                BorderThickness="1"
+                                DisplayMemberPath="DisplayText"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding TerritoryCustomerMenuGroups}"
+                                SelectedValue="{Binding TerritoryCustomerMenuContainerId, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedValuePath="Id"
+                                TextSearch.TextPath="DisplayText" />
+                            <Border
+                                Margin="0,8,0,6"
+                                Padding="8"
+                                Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+                                BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Visibility="{Binding TerritoryCurrentSetupHasData, Converter={StaticResource BoolToVis}}">
+                                <TextBlock
+                                    FontFamily="Consolas"
+                                    Text="{Binding TerritoryCurrentSetupText}"
+                                    TextWrapping="Wrap" />
+                            </Border>
+                            <CheckBox Content="Clone territory menus into pack (merges into ShopMenus+_PackName.xml)" IsChecked="{Binding CloneTerritoryMenusIntoPack}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IncludeDealerMenus, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,10,0,6"
+                            FontSize="16"
+                            Text="Dealer menu group" />
+                        <CheckBox
+                            Margin="0,0,0,6"
+                            Content="Use source gang dealer menu group"
+                            IsChecked="{Binding UseSourceGangDealerMenuGroup}"
+                            IsEnabled="{Binding IncludeDealerMenus}"
+                            Visibility="{Binding IsEditExistingGang, Converter={StaticResource InverseBoolToVis}}" />
+                        <CheckBox
+                            Margin="0,0,0,6"
+                            Content="Show customer menus"
+                            IsChecked="{Binding ShowCustomerMenus}"
+                            IsEnabled="{Binding IncludeDealerMenus}" />
+                        <CheckBox
+                            Margin="0,0,0,6"
+                            Content="Clone dealer menus into pack (creates ShopMenus+_PackName.xml)"
+                            IsChecked="{Binding CloneDealerMenusIntoPack}"
+                            IsEnabled="{Binding IncludeDealerMenus}"
+                            Visibility="{Binding IsEditExistingGang, Converter={StaticResource InverseBoolToVis}}" />
+                        <StackPanel IsEnabled="{Binding IncludeDealerMenus}">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Opacity" Value="1" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseSourceGangDealerMenuGroup}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                                <Button
+                                    Width="110"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding RefreshShopMenuGroupsCommand}"
+                                    Content="Refresh" />
+                                <ComboBox
+                                    MinWidth="420"
+                                    DisplayMemberPath="DisplayText"
+                                    IsEditable="False"
+                                    IsTextSearchEnabled="True"
+                                    ItemsSource="{Binding ShopMenuGroups}"
+                                    SelectedItem="{Binding SelectedShopMenuGroup}" />
+                            </DockPanel>
+                            <TextBox
+                                x:Name="ManualDealerMenuGroupTextBox"
+                                Margin="0,0,0,6"
+                                Text="{Binding ManualDealerMenuGroupId, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IncludeWeapons, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,10,0,6"
+                            FontSize="16"
+                            Text="Weapons loadouts" />
+                        <CheckBox
+                            Margin="0,0,0,4"
+                            Content="Use source gang weapon loadouts"
+                            IsChecked="{Binding UseSourceGangWeaponsLoadouts}"
+                            IsEnabled="{Binding IncludeWeapons}"
+                            Visibility="{Binding IsEditExistingGang, Converter={StaticResource InverseBoolToVis}}" />
+                        <CheckBox
+                            Margin="0,0,0,8"
+                            Content="Clone weapons into pack (creates IssuableWeapons+_PackName.xml)"
+                            IsChecked="{Binding CloneWeaponsIntoPack}"
+                            Visibility="{Binding IsEditExistingGang, Converter={StaticResource InverseBoolToVis}}">
+                            <CheckBox.Style>
+                                <Style TargetType="CheckBox">
+                                    <Setter Property="IsEnabled" Value="{Binding IncludeWeapons}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseSourceGangWeaponsLoadouts}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </CheckBox.Style>
+                        </CheckBox>
+                        <TextBlock
+                            Margin="0,0,0,2"
+                            IsEnabled="{Binding IncludeWeapons}"
+                            Opacity="0.85"
+                            Text="{Binding SourceMeleeWeaponsId, StringFormat=Source melee: {0}}" />
+                        <TextBlock
+                            Margin="0,0,0,2"
+                            IsEnabled="{Binding IncludeWeapons}"
+                            Opacity="0.85"
+                            Text="{Binding SourceSideArmsId, StringFormat=Source sidearms: {0}}" />
+                        <TextBlock
+                            Margin="0,0,0,8"
+                            IsEnabled="{Binding IncludeWeapons}"
+                            Opacity="0.85"
+                            Text="{Binding SourceLongGunsId, StringFormat=Source long guns: {0}}" />
+                        <StackPanel IsEnabled="{Binding IncludeWeapons}">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Opacity" Value="1" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseSourceGangWeaponsLoadouts}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <DockPanel Margin="0,0,0,6" LastChildFill="True">
+                                <Button
+                                    Width="110"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding RefreshIssuableWeaponsGroupsCommand}"
+                                    Content="Refresh" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Opacity="0.85"
+                                    Text="Pick from IssuableWeapons groups" />
+                            </DockPanel>
+                            <TextBlock Text="Melee Weapons ID" />
+                            <ComboBox
+                                Margin="0,6,0,8"
+                                DisplayMemberPath="DisplayText"
+                                IsEditable="False"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding MeleeWeaponsGroups}"
+                                SelectedItem="{Binding SelectedMeleeWeaponsGroup}" />
+                            <TextBox Margin="0,0,0,10" Text="{Binding MeleeWeaponsId, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Text="Sidearms ID" />
+                            <ComboBox
+                                Margin="0,6,0,8"
+                                DisplayMemberPath="DisplayText"
+                                IsEditable="False"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding SidearmWeaponsGroups}"
+                                SelectedItem="{Binding SelectedSideArmsGroup}" />
+                            <TextBox Margin="0,0,0,10" Text="{Binding SideArmsId, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Long Guns ID" />
+                            <ComboBox
+                                Margin="0,6,0,8"
+                                DisplayMemberPath="DisplayText"
+                                IsEditable="False"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding LongGunWeaponsGroups}"
+                                SelectedItem="{Binding SelectedLongGunsGroup}" />
+                            <TextBox Margin="0,0,0,6" Text="{Binding LongGunsId, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IncludeRelationships, Converter={StaticResource BoolToVis}}">
+                        <TextBlock
+                            Margin="0,10,0,6"
+                            FontSize="16"
+                            Text="Relationships" />
+                        <CheckBox
+                            Margin="0,0,0,4"
+                            Content="Use source gang enemies"
+                            IsChecked="{Binding UseSourceGangEnemyGangs}"
+                            IsEnabled="{Binding IncludeRelationships}"
+                            Visibility="{Binding IsEditExistingGang, Converter={StaticResource InverseBoolToVis}}" />
+                        <TextBlock
+                            Margin="0,0,0,8"
+                            IsEnabled="{Binding IncludeRelationships}"
+                            Opacity="0.85"
+                            Text="{Binding SourceEnemyGangsSummary, StringFormat=Source enemies: {0}}" />
+                        <TextBlock
+                            Margin="0,0,0,4"
+                            IsEnabled="{Binding IncludeRelationships}"
+                            Text="Enemy gangs (multi-select)" />
+                        <ListBox
+                            Height="160"
+                            infra:ListBoxSelectedItemsBehavior.Enable="True"
+                            infra:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedEnemyGangs}"
+                            IsEnabled="{Binding IncludeRelationships}"
+                            ItemsSource="{Binding ExistingGangs}"
+                            SelectionMode="Multiple">
+                            <ListBox.Style>
+                                <Style TargetType="ListBox">
+                                    <Setter Property="Background" Value="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}" />
+                                    <Setter Property="BorderBrush" Value="{Binding Appearance.GangBuilderWindowControlBorderBrush}" />
+                                    <Setter Property="Foreground" Value="{Binding Appearance.GangBuilderWindowTextBrush}" />
+                                    <Setter Property="Opacity" Value="1" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseSourceGangEnemyGangs}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.Style>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Mode=TwoWay}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Margin="0,10,0,0">
+                            <Button
+                                Height="38"
+                                Command="{Binding BuildPackCommand}"
+                                Content="Build (F5)" />
+                        </StackPanel>
+                        <Border
+                            Margin="0,12,0,0"
+                            Padding="10"
+                            Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+                            BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Visibility="{Binding HasBuildSummary, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,8"
+                                    FontSize="16"
+                                    Text="Build summary" />
+                                <TextBlock
+                                    Margin="0,0,0,10"
+                                    Text="{Binding BuildSummaryText}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    Text="Files" />
+                                <ItemsControl ItemsSource="{Binding BuildOutputFiles}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,0,0,6">
+                                                <Button
+                                                    Width="70"
+                                                    Margin="8,0,0,0"
+                                                    Command="{Binding DataContext.OpenBuildOutputFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding FullPath}"
+                                                    Content="Open"
+                                                    DockPanel.Dock="Right" />
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding FileName}"
+                                                    TextWrapping="Wrap" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

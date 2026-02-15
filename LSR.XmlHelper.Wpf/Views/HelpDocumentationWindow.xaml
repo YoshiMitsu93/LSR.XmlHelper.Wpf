@@ -12,7 +12,7 @@
     FontWeight="{Binding Appearance.UiFontWeight}"
     Foreground="{Binding Appearance.DocumentationWindowTextBrush}"
     Icon="/Assets/AppIcon.ico"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowState="Maximized">
 
     <Window.Resources>

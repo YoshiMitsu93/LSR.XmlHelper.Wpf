@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace LSR.XmlHelper.Wpf.Services.Compare
 {
@@ -34,6 +35,13 @@ namespace LSR.XmlHelper.Wpf.Services.Compare
                 return new List<EditHistoryItem>();
 
             var externalText = File.ReadAllText(externalFilePath);
+
+            List<EditHistoryItem>? rawShopMenuAdds = null;
+            if (string.Equals(Path.GetFileName(currentFilePath), "ShopMenus.xml", StringComparison.OrdinalIgnoreCase))
+            {
+                var raw = new ShopMenusRawDiffService();
+                rawShopMenuAdds = raw.BuildAddEdits(currentXmlText, externalText, currentFilePath);
+            }
 
             var currentDoc = _friendly.TryBuild(currentXmlText);
             if (currentDoc is null)
@@ -88,7 +96,20 @@ namespace LSR.XmlHelper.Wpf.Services.Compare
                     {
                         if (curList.Count == 0)
                         {
-                            warnings.Add($"Cannot import added entry: {pair.Key} | {entryKey} (no base entry to duplicate)");
+                            foreach (var extEntry in extList)
+                            {
+                                edits.Add(new EditHistoryItem
+                                {
+                                    Operation = EditHistoryOperation.AddEntry,
+                                    FilePath = currentFilePath,
+                                    CollectionTitle = pair.Key,
+                                    EntryKey = entryKey,
+                                    EntryOccurrence = extEntry.Occurrence,
+                                    FieldPath = "ADD_ENTRY",
+                                    OldValue = extEntry.Display,
+                                    NewValue = extEntry.Element.ToString(SaveOptions.DisableFormatting)
+                                });
+                            }
                         }
                         else
                         {
@@ -170,6 +191,16 @@ namespace LSR.XmlHelper.Wpf.Services.Compare
                 }
             }
 
+            if (rawShopMenuAdds is not null && rawShopMenuAdds.Count > 0)
+                edits.AddRange(rawShopMenuAdds);
+
+            if (string.Equals(Path.GetFileName(currentFilePath), "ShopMenus.xml", StringComparison.OrdinalIgnoreCase))
+            {
+                edits = edits
+                    .Where(x => x.Operation != EditHistoryOperation.AddEntry || HasShopMenuInNewValue(x.NewValue))
+                    .ToList();
+            }
+
             if (warnings.Count > 0)
                 error = string.Join(" | ", warnings);
 
@@ -179,6 +210,13 @@ namespace LSR.XmlHelper.Wpf.Services.Compare
                 .ThenBy(x => x.EntryOccurrence)
                 .ThenBy(x => x.FieldPath ?? "", StringComparer.OrdinalIgnoreCase)
                 .ToList();
+        }
+        private static bool HasShopMenuInNewValue(string? xml)
+        {
+            if (string.IsNullOrWhiteSpace(xml))
+                return false;
+
+            return xml.IndexOf("<ShopMenu", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }

@@ -14,7 +14,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
     {
         private readonly ObservableCollection<HelpTopic> _allTopics;
         private readonly HelpContentService _content;
-
         private HelpTopic? _selectedTopic;
         private string _searchText = "";
 
@@ -22,7 +21,6 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         {
             Appearance = appearance;
             _content = new HelpContentService();
-
             _allTopics = new ObservableCollection<HelpTopic>(_content.GetTopics());
 
             TopicsView = CollectionViewSource.GetDefaultView(_allTopics);

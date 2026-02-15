@@ -9,7 +9,7 @@
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
     Foreground="{Binding Appearance.SavedEditsWindowTextBrush}"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowState="Maximized">
     <Window.Resources>
         <Style TargetType="{x:Type TextBox}">

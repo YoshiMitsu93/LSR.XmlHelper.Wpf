@@ -12,7 +12,7 @@
     FontSize="{Binding PreviewUiFontSize}"
     ResizeMode="CanResize"
     ShowInTaskbar="False"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowState="Maximized">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -205,19 +205,17 @@
                 Width="210"
                 Margin="0,0,12,0"
                 Padding="8"
-                DockPanel.Dock="Left"
                 Background="{Binding PreviewAppearanceWindowControlBackgroundBrush}"
                 BorderBrush="{Binding PreviewAppearanceWindowControlBorderBrush}"
-                BorderThickness="1">
+                BorderThickness="1"
+                DockPanel.Dock="Left">
                 <StackPanel>
                     <TextBlock
                         Margin="0,0,0,6"
                         FontWeight="Bold"
                         Foreground="{Binding PreviewAppearanceWindowTextBrush}"
                         Text="Profiles" />
-                    <TextBox
-                        Margin="0,0,0,6"
-                        Text="{Binding ProfileNameInput, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Margin="0,0,0,6" Text="{Binding ProfileNameInput, UpdateSourceTrigger=PropertyChanged}" />
                     <Button
                         Margin="0,0,0,8"
                         Padding="10,4"
@@ -225,13 +223,13 @@
                         Content="Save profile" />
                     <ListBox
                         Height="280"
-                        ItemsSource="{Binding AppearanceProfiles}"
-                        SelectedItem="{Binding SelectedAppearanceProfile, Mode=TwoWay}"
-                        DisplayMemberPath="Name"
                         Background="{Binding PreviewAppearanceWindowControlBackgroundBrush}"
-                        Foreground="{Binding PreviewAppearanceWindowTextBrush}"
                         BorderBrush="{Binding PreviewAppearanceWindowControlBorderBrush}"
-                        BorderThickness="1" />
+                        BorderThickness="1"
+                        DisplayMemberPath="Name"
+                        Foreground="{Binding PreviewAppearanceWindowTextBrush}"
+                        ItemsSource="{Binding AppearanceProfiles}"
+                        SelectedItem="{Binding SelectedAppearanceProfile, Mode=TwoWay}" />
                     <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
                         <Button
                             Margin="0,0,8,0"
@@ -260,6 +258,7 @@
                     <TabItem Header="Settings &amp; Info" />
                     <TabItem Header="Documentation" />
                     <TabItem Header="LSR XML Guides" />
+                    <TabItem Header="Builders" />
                     <TabItem Header="Editor" Visibility="{Binding IsEditingFriendlyView, Converter={StaticResource InverseBoolToVis}}" />
                     <TabItem Header="Saved Edits" />
                     <TabItem Header="Top Menu Bar" />
@@ -294,6 +293,16 @@
                         </StackPanel>
                         <StackPanel x:Name="SectionXmlGuidesPanel" Visibility="Collapsed">
                             <appearanceTabs:AppearanceXmlGuidesTab />
+                        </StackPanel>
+                        <StackPanel x:Name="SectionBuildersPanel" Visibility="Collapsed">
+                            <TabControl>
+                                <TabItem Header="Dealers &amp; Customers (Drugs)">
+                                    <appearanceTabs:AppearanceBuildersDealersCustomersDrugsTab />
+                                </TabItem>
+                                <TabItem Header="Gang Build/Edit">
+                                    <appearanceTabs:AppearanceBuildersGangBuilderTab />
+                                </TabItem>
+                            </TabControl>
                         </StackPanel>
                         <StackPanel x:Name="SectionEditorPanel" Visibility="Collapsed">
                             <appearanceTabs:AppearanceEditorTab />

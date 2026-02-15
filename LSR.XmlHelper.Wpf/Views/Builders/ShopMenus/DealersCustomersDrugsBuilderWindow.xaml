@@ -1,0 +1,297 @@
+﻿<Window
+    x:Class="LSR.XmlHelper.Wpf.Views.Builders.ShopMenus.DealersCustomersDrugsBuilderWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Dealers &amp; Customers (Drugs)"
+    Width="1200"
+    Height="860"
+    Background="{Binding Appearance.DealersCustomersDrugsBuilderWindowBackgroundBrush}"
+    FontFamily="{Binding Appearance.UiFontFamily}"
+    FontSize="{Binding Appearance.UiFontSize}"
+    Foreground="{Binding Appearance.DealersCustomersDrugsBuilderWindowTextBrush}"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="MinWidth" Value="92" />
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowButtonBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowButtonTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type DataGrid}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="RowBackground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="AlternatingRowBackground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowHeaderBackgroundBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowHeaderTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="6,4" />
+        </Style>
+
+        <Style TargetType="{x:Type DataGridCell}">
+            <Setter Property="Foreground" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowTextBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderBrush" Value="{Binding DataContext.Appearance.DealersCustomersDrugsBuilderWindowControlBorderBrush, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="6,3" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel
+            Grid.Row="0"
+            Margin="0,0,0,10"
+            Orientation="Vertical">
+            <DockPanel LastChildFill="True">
+                <Button
+                    Width="110"
+                    Margin="0,0,8,0"
+                    Command="{Binding ReloadCommand}"
+                    Content="Reload" />
+                <Button
+                    Width="110"
+                    Margin="0,0,12,0"
+                    Command="{Binding SaveShopMenusCommand}"
+                    Content="Save" />
+
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Text="File:" />
+                    <ComboBox
+                        Width="260"
+                        Height="26"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{Binding ShopMenusFiles}"
+                        SelectedItem="{Binding SelectedShopMenusFile}" />
+                </StackPanel>
+            </DockPanel>
+
+            <TextBlock
+                Margin="0,6,0,0"
+                Opacity="0.85"
+                Text="{Binding SelectedShopMenusFilePath, Mode=OneWay}" />
+            <Border
+                Margin="0,8,0,0"
+                Padding="10"
+                Background="#FFF2C9"
+                BorderBrush="#FFB300"
+                BorderThickness="1"
+                CornerRadius="4">
+                <TextBlock FontWeight="SemiBold" TextWrapping="Wrap">
+                    <Run Text="Editing file: " />
+                    <Run Text="{Binding SelectedShopMenusFilePath, Mode=OneWay}" />
+                </TextBlock>
+            </Border>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock
+                    Margin="0,0,0,6"
+                    FontSize="16"
+                    Text="Dealer menu group" />
+                <CheckBox
+                    Margin="0,0,0,6"
+                    Content="Show customer menus"
+                    IsChecked="{Binding ShowCustomerMenus}" />
+
+                <DockPanel Margin="0,0,0,8" LastChildFill="True">
+                    <Button
+                        Width="110"
+                        Margin="0,0,8,0"
+                        Command="{Binding RefreshShopMenuGroupsCommand}"
+                        Content="Refresh" />
+                    <ComboBox
+                        MinWidth="420"
+                        DisplayMemberPath="DisplayText"
+                        IsEditable="False"
+                        IsTextSearchEnabled="True"
+                        ItemsSource="{Binding ShopMenuGroups}"
+                        SelectedItem="{Binding SelectedShopMenuGroup}" />
+                </DockPanel>
+
+                <TextBox Margin="0,0,0,10" Text="{Binding ManualShopMenuGroupId, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock
+                    Margin="0,0,0,4"
+                    Opacity="0.85"
+                    Text="DealerMenuGroup items (selected ShopMenus file)" />
+
+                <StackPanel Margin="0,0,0,6" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Text="Search:" />
+                    <TextBox
+                        Width="220"
+                        Margin="0,0,12,0"
+                        Text="{Binding DealerMenuGroupItemsEditor.SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Text="Category:" />
+                    <ComboBox
+                        Width="140"
+                        Margin="0,0,12,0"
+                        ItemsSource="{Binding DealerMenuGroupItemsEditor.Categories}"
+                        SelectedItem="{Binding DealerMenuGroupItemsEditor.SelectedCategory}" />
+
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Text="Menu:" />
+                    <ComboBox
+                        Width="260"
+                        Margin="0,0,12,0"
+                        DisplayMemberPath="DisplayText"
+                        ItemsSource="{Binding DealerMenuGroupItemsEditor.EmbeddedMenus}"
+                        SelectedItem="{Binding DealerMenuGroupItemsEditor.SelectedEmbeddedMenu}" />
+
+                    <TextBlock
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Text="Item:" />
+                    <ComboBox
+                        Width="280"
+                        Margin="0,0,10,0"
+                        IsEditable="True"
+                        IsTextSearchEnabled="True"
+                        ItemsSource="{Binding DealerMenuGroupItemsEditor.AvailableItemNamesView}"
+                        Text="{Binding DealerMenuGroupItemsEditor.SelectedItemName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Button
+                        Width="70"
+                        Margin="0,0,10,0"
+                        Command="{Binding DealerMenuGroupItemsEditor.AddItemCommand}"
+                        Content="Add" />
+                    <Button
+                        Width="120"
+                        Command="{Binding DealerMenuGroupItemsEditor.RemoveSelectedItemCommand}"
+                        Content="Remove selected" />
+                </StackPanel>
+
+                <DataGrid
+                    Height="340"
+                    Margin="0,6,0,0"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    IsReadOnly="False"
+                    ItemsSource="{Binding DealerMenuGroupItemsEditor.ItemsView}"
+                    SelectedItem="{Binding DealerMenuGroupItemsEditor.SelectedItem}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="110"
+                            Binding="{Binding Category, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Category" />
+                        <DataGridTextColumn
+                            Width="2*"
+                            Binding="{Binding ModItemName, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Item" />
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding PurchasePrice, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Buy" />
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding SalesPrice, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Sell" />
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding MinimumPurchaseAmount, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Min" />
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding MaximumPurchaseAmount, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Max" />
+                        <DataGridTextColumn
+                            Width="70"
+                            Binding="{Binding PurchaseIncrement, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Increment" />
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding NumberOfItemsToSellToPlayer, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Max Sell To Player" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding NumberOfItemsToPurchaseFromPlayer, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Max Buy From Player" />
+                        <DataGridCheckBoxColumn
+                            Width="70"
+                            Binding="{Binding IsIllicilt, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Illicit" />
+                        <DataGridCheckBoxColumn
+                            Width="60"
+                            Binding="{Binding IsFree, UpdateSourceTrigger=PropertyChanged}"
+                            Header="Free" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock
+                    Margin="0,6,0,0"
+                    Opacity="0.75"
+                    Text="Save overwrites the selected ShopMenus file. A backup is created before writing." />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

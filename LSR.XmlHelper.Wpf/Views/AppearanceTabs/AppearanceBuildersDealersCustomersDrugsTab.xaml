@@ -1,0 +1,99 @@
+﻿<UserControl x:Class="LSR.XmlHelper.Wpf.Views.AppearanceTabs.AppearanceBuildersDealersCustomersDrugsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="12" Orientation="Vertical">
+
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Builders: Dealers &amp; Customers (Drugs)" />
+
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Window background"
+                           ToolTip="Background colour for the Dealers &amp; Customers (Drugs) builder window." />
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="0" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowBackgroundBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowBackground"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Window text"
+                           ToolTip="Default text colour for the Dealers &amp; Customers (Drugs) builder window." />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowText, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="1" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowTextBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowText"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Control background"
+                           ToolTip="Background colour for textboxes and dropdowns in the builder window." />
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowControlBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="2" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowControlBackgroundBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowControlBackground"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Control border"
+                           ToolTip="Border colour for textboxes, dropdowns, and buttons in the builder window." />
+                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowControlBorder, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="3" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowControlBorderBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowControlBorder"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Header background"
+                           ToolTip="Background colour for header-style areas in the builder window." />
+                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowHeaderBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="4" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowHeaderBackgroundBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowHeaderBackground"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Header text"
+                           ToolTip="Text colour used in header-style areas in the builder window." />
+                <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowHeaderText, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="5" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowHeaderTextBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowHeaderText"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Button background"
+                           ToolTip="Button background colour in the builder window." />
+                <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowButtonBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="6" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowButtonBackgroundBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowButtonBackground"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Button text"
+                           ToolTip="Text colour used on buttons in the builder window." />
+                <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowButtonText, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="7" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowButtonTextBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowButtonText"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+
+                <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Button hover background"
+                           ToolTip="Button background colour when hovered in the builder window." />
+                <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding DealersCustomersDrugsBuilderWindowButtonHoverBackground, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Grid.Row="8" Grid.Column="2" Height="22" Background="{Binding PreviewDealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush}"
+                        Command="{Binding PickColorCommand}" CommandParameter="DealersCustomersDrugsBuilderWindowButtonHoverBackground"
+                        Style="{DynamicResource SwatchButtonStyle}" />
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

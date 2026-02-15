@@ -5,7 +5,7 @@
     Title="Image"
     Width="1000"
     Height="800"
-    WindowStartupLocation="CenterOwner">
+    WindowStartupLocation="CenterScreen">
     <DockPanel Margin="10">
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
             <TextBlock VerticalAlignment="Center" Text="Zoom" Margin="0,0,8,0" />

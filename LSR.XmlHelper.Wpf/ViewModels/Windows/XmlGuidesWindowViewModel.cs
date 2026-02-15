@@ -1135,10 +1135,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             if (!File.Exists(path))
                 return;
 
-            var w = new LSR.XmlHelper.Wpf.Views.GuideImageViewerWindow(path)
-            {
-                Owner = System.Windows.Application.Current?.Windows.OfType<System.Windows.Window>().FirstOrDefault(x => x.IsActive)
-            };
+            var w = new LSR.XmlHelper.Wpf.Views.GuideImageViewerWindow(path);
 
             w.Show();
             w.Activate();

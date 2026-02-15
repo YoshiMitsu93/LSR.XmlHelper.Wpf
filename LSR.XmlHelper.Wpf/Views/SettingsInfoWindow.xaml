@@ -10,7 +10,7 @@
     FontSize="{Binding Appearance.UiFontSize}"
     Foreground="{Binding Appearance.SettingsInfoWindowTextBrush}"
     Icon="/Assets/AppIcon.ico"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowState="Maximized">
     <Window.Resources>
         <Style TargetType="TextBox">

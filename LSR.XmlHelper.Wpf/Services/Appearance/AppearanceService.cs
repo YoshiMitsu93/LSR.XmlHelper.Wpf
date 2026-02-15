@@ -166,6 +166,25 @@ namespace LSR.XmlHelper.Wpf.Services
         public WpfBrush XmlGuidesWindowGuidesListItemSelectedBackgroundBrush => CreateFrozenBrush(Active.XmlGuidesWindowGuidesListItemSelectedBackground);
         public WpfBrush XmlGuidesWindowGuidesListItemSelectedTextBrush => CreateFrozenBrush(Active.XmlGuidesWindowGuidesListItemSelectedText);
         public WpfBrush XmlGuidesWindowFontPickerTextBrush => CreateFrozenBrush(Active.XmlGuidesWindowFontPickerText);
+        public WpfBrush DealersCustomersDrugsBuilderWindowBackgroundBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowBackground);
+        public WpfBrush DealersCustomersDrugsBuilderWindowTextBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowText);
+        public WpfBrush DealersCustomersDrugsBuilderWindowControlBackgroundBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowControlBackground);
+        public WpfBrush DealersCustomersDrugsBuilderWindowControlBorderBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowControlBorder);
+        public WpfBrush DealersCustomersDrugsBuilderWindowHeaderBackgroundBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowHeaderBackground);
+        public WpfBrush DealersCustomersDrugsBuilderWindowHeaderTextBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowHeaderText);
+        public WpfBrush DealersCustomersDrugsBuilderWindowButtonBackgroundBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowButtonBackground);
+        public WpfBrush DealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowButtonHoverBackground);
+        public WpfBrush DealersCustomersDrugsBuilderWindowButtonTextBrush => CreateFrozenBrush(Active.DealersCustomersDrugsBuilderWindowButtonText);
+        public WpfBrush GangBuilderWindowBackgroundBrush => CreateFrozenBrush(Active.GangBuilderWindowBackground);
+        public WpfBrush GangBuilderWindowTextBrush => CreateFrozenBrush(Active.GangBuilderWindowText);
+        public WpfBrush GangBuilderWindowControlBackgroundBrush => CreateFrozenBrush(Active.GangBuilderWindowControlBackground);
+        public WpfBrush GangBuilderWindowControlBorderBrush => CreateFrozenBrush(Active.GangBuilderWindowControlBorder);
+        public WpfBrush GangBuilderWindowHeaderBackgroundBrush => CreateFrozenBrush(Active.GangBuilderWindowHeaderBackground);
+        public WpfBrush GangBuilderWindowHeaderTextBrush => CreateFrozenBrush(Active.GangBuilderWindowHeaderText);
+        public WpfBrush GangBuilderWindowButtonBackgroundBrush => CreateFrozenBrush(Active.GangBuilderWindowButtonBackground);
+        public WpfBrush GangBuilderWindowButtonHoverBackgroundBrush => CreateFrozenBrush(Active.GangBuilderWindowButtonHoverBackground);
+        public WpfBrush GangBuilderWindowButtonTextBrush => CreateFrozenBrush(Active.GangBuilderWindowButtonText);
+        public WpfBrush GangBuilderWindowGridRowSelectedBackgroundBrush => CreateFrozenBrush(Active.GangBuilderWindowGridRowSelectedBackground);
         public WpfBrush EditorBackgroundBrush => CreateFrozenBrush(Active.EditorBackground);
         public string EditorXmlSyntaxForeground => Active.EditorXmlSyntaxForeground;
         public string EditorScopeShadingColor => Active.EditorScopeShadingColor;
@@ -340,6 +359,27 @@ namespace LSR.XmlHelper.Wpf.Services
             OnPropertyChanged(nameof(XmlGuidesWindowGuidesListItemSelectedBackgroundBrush));
             OnPropertyChanged(nameof(XmlGuidesWindowGuidesListItemSelectedTextBrush));
             OnPropertyChanged(nameof(XmlGuidesWindowFontPickerTextBrush));
+
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowBackgroundBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowTextBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowControlBackgroundBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowControlBorderBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowHeaderBackgroundBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowHeaderTextBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowButtonBackgroundBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush));
+            OnPropertyChanged(nameof(DealersCustomersDrugsBuilderWindowButtonTextBrush));
+
+            OnPropertyChanged(nameof(GangBuilderWindowBackgroundBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowTextBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowControlBackgroundBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowControlBorderBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowHeaderBackgroundBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowHeaderTextBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowButtonBackgroundBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowButtonHoverBackgroundBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowButtonTextBrush));
+            OnPropertyChanged(nameof(GangBuilderWindowGridRowSelectedBackgroundBrush));
 
             OnPropertyChanged(nameof(EditorTextBrush));
             OnPropertyChanged(nameof(EditorBackgroundBrush));

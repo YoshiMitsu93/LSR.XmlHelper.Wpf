@@ -9,9 +9,10 @@ using LSR.XmlHelper.Wpf.Infrastructure.Behaviors;
 using LSR.XmlHelper.Wpf.Infrastructure.Commands;
 using LSR.XmlHelper.Wpf.Services.Appearance;
 using LSR.XmlHelper.Wpf.Services.RawXml;
-using LSR.XmlHelper.Wpf.Services.Updates;
 using LSR.XmlHelper.Wpf.Services.UndoRedo;
+using LSR.XmlHelper.Wpf.Services.Updates;
 using LSR.XmlHelper.Wpf.ViewModels;
+using LSR.XmlHelper.Wpf.ViewModels.Windows;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -30,6 +31,8 @@ namespace LSR.XmlHelper.Wpf
         private Views.SettingsInfoWindow? _settingsInfoWindow;
         private Views.HelpDocumentationWindow? _helpDocumentationWindow;
         private Views.XmlGuidesWindow? _xmlGuidesWindow;
+        private Views.Builders.GangBuilderWindow? _gangBuilderWindow;
+        private Views.Builders.ShopMenus.DealersCustomersDrugsBuilderWindow? _dealersCustomersDrugsBuilderWindow;
         private readonly XmlHelperRootService _helperRoot = new XmlHelperRootService();
         private SearchPanel? _searchPanel;
         private AvalonEditTextMarkerService? _rawXmlMarkerService;
@@ -966,7 +969,6 @@ namespace LSR.XmlHelper.Wpf
 
                 _settingsInfoWindow = new LSR.XmlHelper.Wpf.Views.SettingsInfoWindow
                 {
-                    Owner = System.Windows.Application.Current?.MainWindow,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };
@@ -993,7 +995,6 @@ namespace LSR.XmlHelper.Wpf
                 var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.HelpDocumentationWindowViewModel(mainVm.Appearance);
                 _helpDocumentationWindow = new LSR.XmlHelper.Wpf.Views.HelpDocumentationWindow
                 {
-                    Owner = this,
                     ShowInTaskbar = true,
                     DataContext = vm
                 };
@@ -1036,7 +1037,6 @@ namespace LSR.XmlHelper.Wpf
                 var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.XmlGuidesWindowViewModel(mainVm.Appearance, root);
                 _xmlGuidesWindow = new LSR.XmlHelper.Wpf.Views.XmlGuidesWindow
                 {
-                    Owner = this,
                     DataContext = vm
                 };
 
@@ -1050,6 +1050,66 @@ namespace LSR.XmlHelper.Wpf
                 _xmlGuidesWindow.WindowState = WindowState.Normal;
 
             _xmlGuidesWindow.Activate();
+        }
+        private void GangBuilder_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel mainVm)
+                return;
+
+            if (string.IsNullOrWhiteSpace(mainVm.RootFolderPath) || !Directory.Exists(mainVm.RootFolderPath))
+            {
+                System.Windows.MessageBox.Show("No folder is currently open. Open your LSR XML folder first.", "Gang Builder", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_gangBuilderWindow is null)
+            {
+                var vm = new LSR.XmlHelper.Wpf.ViewModels.Windows.GangBuilderWindowViewModel(mainVm.Appearance, mainVm.RootFolderPath);
+                _gangBuilderWindow = new LSR.XmlHelper.Wpf.Views.Builders.GangBuilderWindow
+                {
+                    DataContext = vm
+                };
+
+                _gangBuilderWindow.Closed += (_, _) => _gangBuilderWindow = null;
+            }
+
+            if (!_gangBuilderWindow.IsVisible)
+                _gangBuilderWindow.Show();
+
+            if (_gangBuilderWindow.WindowState == WindowState.Minimized)
+                _gangBuilderWindow.WindowState = WindowState.Normal;
+
+            _gangBuilderWindow.Activate();
+        }
+        private void DealersCustomersDrugsBuilder_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel mainVm)
+                return;
+
+            if (string.IsNullOrWhiteSpace(mainVm.RootFolderPath) || !Directory.Exists(mainVm.RootFolderPath))
+            {
+                System.Windows.MessageBox.Show("No folder is currently open. Open your LSR XML folder first.", "Dealers & Customers (Drugs)", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_dealersCustomersDrugsBuilderWindow is null)
+            {
+                var vm = new DealersCustomersDrugsBuilderWindowViewModel(mainVm.Appearance, mainVm.RootFolderPath);
+                _dealersCustomersDrugsBuilderWindow = new LSR.XmlHelper.Wpf.Views.Builders.ShopMenus.DealersCustomersDrugsBuilderWindow
+                {
+                    DataContext = vm
+                };
+
+                _dealersCustomersDrugsBuilderWindow.Closed += (_, _) => _dealersCustomersDrugsBuilderWindow = null;
+            }
+
+            if (!_dealersCustomersDrugsBuilderWindow.IsVisible)
+                _dealersCustomersDrugsBuilderWindow.Show();
+
+            if (_dealersCustomersDrugsBuilderWindow.WindowState == WindowState.Minimized)
+                _dealersCustomersDrugsBuilderWindow.WindowState = WindowState.Normal;
+
+            _dealersCustomersDrugsBuilderWindow.Activate();
         }
 
         private void OpenCurrentXmlFolder_Click(object sender, RoutedEventArgs e)
@@ -1543,7 +1603,6 @@ namespace LSR.XmlHelper.Wpf
             if (_replaceWindow is null)
             {
                 _replaceWindow = new Views.ReplaceWindow(editor);
-                _replaceWindow.Owner = this;
                 _replaceWindow.Closed += (_, __) => _replaceWindow = null;
                 _replaceWindow.Show();
                 _replaceWindow.Activate();

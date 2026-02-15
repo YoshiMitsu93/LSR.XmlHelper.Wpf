@@ -8,7 +8,9 @@
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <infra:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+        <infra:BooleanToTabIndexConverter x:Key="BoolToTabIndex" />
         <infra:InverseBooleanConverter x:Key="InverseBool" />
+        <infra:ColorNameToBrushConverter x:Key="ColorNameToBrushConverter" />
         <Style x:Key="SwatchButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Padding" Value="0" />

@@ -1,4 +1,4 @@
-﻿ 
+﻿
 <Window
     x:Class="LSR.XmlHelper.Wpf.Views.CompareXmlWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -12,7 +12,7 @@
     FontFamily="{Binding Appearance.UiFontFamily}"
     FontSize="{Binding Appearance.UiFontSize}"
     PreviewDragOver="CompareWindow_PreviewDragOver"
-    WindowStartupLocation="CenterOwner"
+    WindowStartupLocation="CenterScreen"
     WindowState="Maximized">
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}">
@@ -206,27 +206,66 @@
                 Text="Tip: drag and drop an XML file into this window." />
         </StackPanel>
 
-        <DataGrid
-            Grid.Row="1"
-            AutoGenerateColumns="False"
-            CanUserAddRows="False"
-            IsReadOnly="False"
-            ItemsSource="{Binding Rows}"
-            SelectionMode="Extended">
-            <DataGrid.Columns>
-                <DataGridCheckBoxColumn
-                    Width="70"
-                    Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    EditingElementStyle="{StaticResource CompareXmlImportCheckBoxStyle}"
-                    ElementStyle="{StaticResource CompareXmlImportCheckBoxStyle}"
-                    Header="Import" />
-                <DataGridTextColumn
-                    Width="*"
-                    Binding="{Binding Display}"
-                    Header="Change"
-                    IsReadOnly="True" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="6" />
+                <RowDefinition Height="160" />
+            </Grid.RowDefinitions>
+
+            <DataGrid
+                Grid.Row="0"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                IsReadOnly="False"
+                ItemsSource="{Binding Rows}"
+                SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                SelectionMode="Extended">
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn
+                        Width="70"
+                        Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        EditingElementStyle="{StaticResource CompareXmlImportCheckBoxStyle}"
+                        ElementStyle="{StaticResource CompareXmlImportCheckBoxStyle}"
+                        Header="Import" />
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding Display}"
+                        Header="Change"
+                        IsReadOnly="True" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <GridSplitter
+                Grid.Row="1"
+                Height="6"
+                HorizontalAlignment="Stretch"
+                Background="{Binding Appearance.CompareXmlWindowControlBorderBrush}" />
+
+            <Border
+                Grid.Row="2"
+                Padding="8"
+                Background="{Binding Appearance.CompareXmlWindowControlBackgroundBrush}"
+                BorderBrush="{Binding Appearance.CompareXmlWindowControlBorderBrush}"
+                BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        FontWeight="SemiBold"
+                        Text="{Binding SelectedDetailsHeader}" />
+                    <ListBox
+                        Grid.Row="1"
+                        Margin="0,6,0,0"
+                        ItemsSource="{Binding SelectedDetailsLines}"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                </Grid>
+            </Border>
+        </Grid>
         <StackPanel
             Grid.Row="2"
             Margin="0,10,0,0"

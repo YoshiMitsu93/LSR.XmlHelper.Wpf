@@ -141,6 +141,27 @@ namespace LSR.XmlHelper.Wpf.Services
         public string XmlGuidesWindowGuidesListItemSelectedText { get; set; } = "#FFFFFFFF";
         public string XmlGuidesWindowFontPickerText { get; set; } = "#FFD4D4D4";
 
+        public string DealersCustomersDrugsBuilderWindowBackground { get; set; } = "#FFFFFFFF";
+        public string DealersCustomersDrugsBuilderWindowText { get; set; } = "#FF000000";
+        public string DealersCustomersDrugsBuilderWindowControlBackground { get; set; } = "#FFFFFFFF";
+        public string DealersCustomersDrugsBuilderWindowControlBorder { get; set; } = "#FFB0B0B0";
+        public string DealersCustomersDrugsBuilderWindowHeaderBackground { get; set; } = "#FFF7F7F7";
+        public string DealersCustomersDrugsBuilderWindowHeaderText { get; set; } = "#FF000000";
+        public string DealersCustomersDrugsBuilderWindowButtonBackground { get; set; } = "#FFE5E5E5";
+        public string DealersCustomersDrugsBuilderWindowButtonHoverBackground { get; set; } = "#FFDADADA";
+        public string DealersCustomersDrugsBuilderWindowButtonText { get; set; } = "#FF000000";
+
+        public string GangBuilderWindowBackground { get; set; } = "#FFFFFFFF";
+        public string GangBuilderWindowText { get; set; } = "#FF000000";
+        public string GangBuilderWindowControlBackground { get; set; } = "#FFFFFFFF";
+        public string GangBuilderWindowControlBorder { get; set; } = "#FFB0B0B0";
+        public string GangBuilderWindowHeaderBackground { get; set; } = "#FFF7F7F7";
+        public string GangBuilderWindowHeaderText { get; set; } = "#FF000000";
+        public string GangBuilderWindowButtonBackground { get; set; } = "#FFE5E5E5";
+        public string GangBuilderWindowButtonHoverBackground { get; set; } = "#FFDADADA";
+        public string GangBuilderWindowButtonText { get; set; } = "#FF000000";
+        public string GangBuilderWindowGridRowSelectedBackground { get; set; } = "#FFDADADA";
+
         public string MenuBackground { get; set; } = "#FF1E1E1E";
          public string TopBarText { get; set; } = "#FFD4D4D4";
         public string MenuText { get; set; } = "#FFD4D4D4";
@@ -391,6 +412,26 @@ namespace LSR.XmlHelper.Wpf.Services
                 XmlGuidesWindowGuidesListItemSelectedText = "#FFFFFFFF",
                 XmlGuidesWindowFontPickerText = "#FF000000",
 
+                DealersCustomersDrugsBuilderWindowBackground = "#FF2F2F2F",
+                DealersCustomersDrugsBuilderWindowText = "#FF000000",
+                DealersCustomersDrugsBuilderWindowControlBackground = "#FFB0B0B0",
+                DealersCustomersDrugsBuilderWindowControlBorder = "#FF000000",
+                DealersCustomersDrugsBuilderWindowHeaderBackground = "#FFB0B0B0",
+                DealersCustomersDrugsBuilderWindowHeaderText = "#FF000000",
+                DealersCustomersDrugsBuilderWindowButtonBackground = "#FF555555",
+                DealersCustomersDrugsBuilderWindowButtonHoverBackground = "#FF0080C0",
+                DealersCustomersDrugsBuilderWindowButtonText = "#FFFFFFFF",
+
+                GangBuilderWindowBackground = "#FF252525",
+                GangBuilderWindowText = "#FFFFFFFF",
+                GangBuilderWindowControlBackground = "#FF252525",
+                GangBuilderWindowHeaderBackground = "#FF202020",
+                GangBuilderWindowHeaderText = "#FFFFFFFF",
+                GangBuilderWindowButtonBackground = "#FF808080",
+                GangBuilderWindowButtonHoverBackground = "#FF0080C0",
+                GangBuilderWindowButtonText = "#FFFFFFFF",
+                GangBuilderWindowGridRowSelectedBackground = "#FF0080C0",
+
                 EditorText = "#FFFFFF00",
                 EditorBackground = "#FF000000",
                 EditorXmlSyntaxForeground = "#FFC0C0C0",
@@ -560,6 +601,27 @@ namespace LSR.XmlHelper.Wpf.Services
                 XmlGuidesWindowGuidesListItemSelectedBackground = "#FFCCE4FF",
                 XmlGuidesWindowGuidesListItemSelectedText = "#FF000000",
                 XmlGuidesWindowFontPickerText = "#FF000000",
+
+                DealersCustomersDrugsBuilderWindowBackground = "#FFFFFFFF",
+                DealersCustomersDrugsBuilderWindowText = "#FF000000",
+                DealersCustomersDrugsBuilderWindowControlBackground = "#FFFFFFFF",
+                DealersCustomersDrugsBuilderWindowControlBorder = "#FF000000",
+                DealersCustomersDrugsBuilderWindowHeaderBackground = "#FFC0C0C0",
+                DealersCustomersDrugsBuilderWindowHeaderText = "#FF000000",
+                DealersCustomersDrugsBuilderWindowButtonBackground = "#FFC0C0C0",
+                DealersCustomersDrugsBuilderWindowButtonHoverBackground = "#FFCCE4FF",
+                DealersCustomersDrugsBuilderWindowButtonText = "#FF000000",
+
+                GangBuilderWindowBackground = "#FFFFFFFF",
+                GangBuilderWindowText = "#FF000000",
+                GangBuilderWindowControlBackground = "#FFFFFFFF",
+                GangBuilderWindowControlBorder = "#FF000000",
+                GangBuilderWindowHeaderBackground = "#FFC0C0C0",
+                GangBuilderWindowHeaderText = "#FF000000",
+                GangBuilderWindowButtonBackground = "#FFC0C0C0",
+                GangBuilderWindowButtonHoverBackground = "#FFCCE4FF",
+                GangBuilderWindowButtonText = "#FF000000",
+                GangBuilderWindowGridRowSelectedBackground = "#FFCCE4FF",
 
                 EditorText = "#FF0000FF",
                 EditorBackground = "#FFFFFFFF",

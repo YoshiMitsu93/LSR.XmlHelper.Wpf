@@ -346,7 +346,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
             private readonly int _direction;
             private DateTime _lastTickUtc;
             private ScrollViewer? _scrollViewer;
-            private bool _restoreCanContentScroll;
             private bool _previousCanContentScroll;
             private double _velocity;
 
@@ -378,8 +377,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
                     _previousCanContentScroll = _scrollViewer.CanContentScroll;
                 }
 
-                _restoreCanContentScroll = false;
-
                 var scaleSource = Window.GetWindow(_scrollBar) ?? (DependencyObject)_scrollBar;
                 var scale = GetSpeedScale(scaleSource);
                 if (scale <= 0)
@@ -398,7 +395,6 @@ namespace LSR.XmlHelper.Wpf.Infrastructure
             public void Stop()
             {
                 _timer.Stop();
-                _restoreCanContentScroll = false;
                 _velocity = 0;
             }
 

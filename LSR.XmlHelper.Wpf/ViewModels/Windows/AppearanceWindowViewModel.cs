@@ -350,6 +350,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         private string _xmlGuidesWindowGuidesListItemSelectedText = "#FFFFFFFF";
         private string _xmlGuidesWindowFontPickerText = "#FFD4D4D4";
 
+        private string _dealersCustomersDrugsBuilderWindowBackground = "#FF1E1E1E";
+        private string _dealersCustomersDrugsBuilderWindowText = "#FFD4D4D4";
+        private string _dealersCustomersDrugsBuilderWindowControlBackground = "#FF252525";
+        private string _dealersCustomersDrugsBuilderWindowControlBorder = "#FF5A5A5A";
+        private string _dealersCustomersDrugsBuilderWindowHeaderBackground = "#FF202020";
+        private string _dealersCustomersDrugsBuilderWindowHeaderText = "#FFD4D4D4";
+        private string _dealersCustomersDrugsBuilderWindowButtonBackground = "#FF2F2F2F";
+        private string _dealersCustomersDrugsBuilderWindowButtonHoverBackground = "#FF3A3A3A";
+        private string _dealersCustomersDrugsBuilderWindowButtonText = "#FFD4D4D4";
+
+        private string _gangBuilderWindowBackground = "#FF1E1E1E";
+        private string _gangBuilderWindowText = "#FFD4D4D4";
+        private string _gangBuilderWindowControlBackground = "#FF252525";
+        private string _gangBuilderWindowControlBorder = "#FF5A5A5A";
+        private string _gangBuilderWindowHeaderBackground = "#FF202020";
+        private string _gangBuilderWindowHeaderText = "#FFD4D4D4";
+        private string _gangBuilderWindowButtonBackground = "#FF2F2F2F";
+        private string _gangBuilderWindowButtonHoverBackground = "#FF3A3A3A";
+        private string _gangBuilderWindowGridRowSelectedBackground = "#FF3A3A3A";
+        private string _gangBuilderWindowButtonText = "#FFD4D4D4";
+
         public string UiFontFamily { get => _uiFontFamily; set { if (SetProperty(ref _uiFontFamily, value)) OnEdited(); } }
         public string UiFontSize { get => _uiFontSize; set { if (SetProperty(ref _uiFontSize, value)) OnEdited(); } }
 
@@ -513,6 +534,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public string XmlGuidesWindowGuidesListItemSelectedText { get => _xmlGuidesWindowGuidesListItemSelectedText; set { if (SetProperty(ref _xmlGuidesWindowGuidesListItemSelectedText, value)) OnEdited(); } }
         public string XmlGuidesWindowFontPickerText { get => _xmlGuidesWindowFontPickerText; set { if (SetProperty(ref _xmlGuidesWindowFontPickerText, value)) OnEdited(); } }
 
+        public string DealersCustomersDrugsBuilderWindowBackground { get => _dealersCustomersDrugsBuilderWindowBackground; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowBackground, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowText { get => _dealersCustomersDrugsBuilderWindowText; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowText, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowControlBackground { get => _dealersCustomersDrugsBuilderWindowControlBackground; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowControlBackground, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowControlBorder { get => _dealersCustomersDrugsBuilderWindowControlBorder; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowControlBorder, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowHeaderBackground { get => _dealersCustomersDrugsBuilderWindowHeaderBackground; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowHeaderBackground, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowHeaderText { get => _dealersCustomersDrugsBuilderWindowHeaderText; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowHeaderText, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowButtonBackground { get => _dealersCustomersDrugsBuilderWindowButtonBackground; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowButtonBackground, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowButtonText { get => _dealersCustomersDrugsBuilderWindowButtonText; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowButtonText, value)) OnEdited(); } }
+        public string DealersCustomersDrugsBuilderWindowButtonHoverBackground { get => _dealersCustomersDrugsBuilderWindowButtonHoverBackground; set { if (SetProperty(ref _dealersCustomersDrugsBuilderWindowButtonHoverBackground, value)) OnEdited(); } }
+        
+        public string GangBuilderWindowBackground { get => _gangBuilderWindowBackground; set { if (SetProperty(ref _gangBuilderWindowBackground, value)) OnEdited(); } }
+        public string GangBuilderWindowText { get => _gangBuilderWindowText; set { if (SetProperty(ref _gangBuilderWindowText, value)) OnEdited(); } }
+        public string GangBuilderWindowControlBackground { get => _gangBuilderWindowControlBackground; set { if (SetProperty(ref _gangBuilderWindowControlBackground, value)) OnEdited(); } }
+        public string GangBuilderWindowControlBorder { get => _gangBuilderWindowControlBorder; set { if (SetProperty(ref _gangBuilderWindowControlBorder, value)) OnEdited(); } }
+        public string GangBuilderWindowHeaderBackground { get => _gangBuilderWindowHeaderBackground; set { if (SetProperty(ref _gangBuilderWindowHeaderBackground, value)) OnEdited(); } }
+        public string GangBuilderWindowHeaderText { get => _gangBuilderWindowHeaderText; set { if (SetProperty(ref _gangBuilderWindowHeaderText, value)) OnEdited(); } }
+        public string GangBuilderWindowButtonBackground { get => _gangBuilderWindowButtonBackground; set { if (SetProperty(ref _gangBuilderWindowButtonBackground, value)) OnEdited(); } }
+        public string GangBuilderWindowButtonText { get => _gangBuilderWindowButtonText; set { if (SetProperty(ref _gangBuilderWindowButtonText, value)) OnEdited(); } }
+        public string GangBuilderWindowButtonHoverBackground { get => _gangBuilderWindowButtonHoverBackground; set { if (SetProperty(ref _gangBuilderWindowButtonHoverBackground, value)) OnEdited(); } }
+        public string GangBuilderWindowGridRowSelectedBackground { get => _gangBuilderWindowGridRowSelectedBackground; set { if (SetProperty(ref _gangBuilderWindowGridRowSelectedBackground, value)) OnEdited(); } }
+
         public WpfBrush PreviewTextBrush => TryParseBrush(Text);
         public WpfBrush PreviewBackgroundBrush => TryParseBrush(Background);
         public System.Windows.Media.FontFamily PreviewUiFontFamily => new System.Windows.Media.FontFamily(UiFontFamily ?? "Segoe UI");
@@ -623,6 +665,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         public WpfBrush PreviewXmlGuidesWindowGuidesListItemSelectedBackgroundBrush => TryParseBrush(XmlGuidesWindowGuidesListItemSelectedBackground);
         public WpfBrush PreviewXmlGuidesWindowGuidesListItemSelectedTextBrush => TryParseBrush(XmlGuidesWindowGuidesListItemSelectedText);
         public WpfBrush PreviewXmlGuidesWindowFontPickerTextBrush => TryParseBrush(XmlGuidesWindowFontPickerText);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowBackgroundBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowBackground);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowTextBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowText);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowControlBackgroundBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowControlBackground);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowControlBorderBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowControlBorder);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowHeaderBackgroundBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowHeaderBackground);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowHeaderTextBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowHeaderText);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowButtonBackgroundBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowButtonBackground);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowButtonTextBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowButtonText);
+        public WpfBrush PreviewDealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush => TryParseBrush(DealersCustomersDrugsBuilderWindowButtonHoverBackground);
+        public WpfBrush PreviewGangBuilderWindowBackgroundBrush => TryParseBrush(GangBuilderWindowBackground);
+        public WpfBrush PreviewGangBuilderWindowTextBrush => TryParseBrush(GangBuilderWindowText);
+        public WpfBrush PreviewGangBuilderWindowControlBackgroundBrush => TryParseBrush(GangBuilderWindowControlBackground);
+        public WpfBrush PreviewGangBuilderWindowControlBorderBrush => TryParseBrush(GangBuilderWindowControlBorder);
+        public WpfBrush PreviewGangBuilderWindowHeaderBackgroundBrush => TryParseBrush(GangBuilderWindowHeaderBackground);
+        public WpfBrush PreviewGangBuilderWindowHeaderTextBrush => TryParseBrush(GangBuilderWindowHeaderText);
+        public WpfBrush PreviewGangBuilderWindowButtonBackgroundBrush => TryParseBrush(GangBuilderWindowButtonBackground);
+        public WpfBrush PreviewGangBuilderWindowButtonTextBrush => TryParseBrush(GangBuilderWindowButtonText);
+        public WpfBrush PreviewGangBuilderWindowButtonHoverBackgroundBrush => TryParseBrush(GangBuilderWindowButtonHoverBackground);
+        public WpfBrush PreviewGangBuilderWindowGridRowSelectedBackgroundBrush => TryParseBrush(GangBuilderWindowGridRowSelectedBackground);
         public WpfBrush PreviewEditorTextBrush => TryParseBrush(EditorText);
         public WpfBrush PreviewEditorBackgroundBrush => TryParseBrush(EditorBackground);
         public WpfBrush PreviewEditorXmlSyntaxForegroundBrush => TryParseBrush(EditorXmlSyntaxForeground);
@@ -859,6 +920,28 @@ namespace LSR.XmlHelper.Wpf.ViewModels
         nameof(AppearanceProfileSettings.DocumentationWindowListSelectedBackground),
         nameof(AppearanceProfileSettings.DocumentationWindowButtonBackground),
         nameof(AppearanceProfileSettings.DocumentationWindowButtonHoverBackground)
+    },
+            ["Builders"] = new[]
+    {
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowBackground),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowText),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowControlBackground),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowControlBorder),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowHeaderBackground),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowHeaderText),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowButtonText),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowButtonBackground),
+                nameof(AppearanceProfileSettings.DealersCustomersDrugsBuilderWindowButtonHoverBackground),
+
+                nameof(AppearanceProfileSettings.GangBuilderWindowBackground),
+                nameof(AppearanceProfileSettings.GangBuilderWindowText),
+                nameof(AppearanceProfileSettings.GangBuilderWindowControlBackground),
+                nameof(AppearanceProfileSettings.GangBuilderWindowControlBorder),
+                nameof(AppearanceProfileSettings.GangBuilderWindowHeaderBackground),
+                nameof(AppearanceProfileSettings.GangBuilderWindowHeaderText),
+                nameof(AppearanceProfileSettings.GangBuilderWindowButtonBackground),
+                nameof(AppearanceProfileSettings.GangBuilderWindowButtonText),
+                nameof(AppearanceProfileSettings.GangBuilderWindowButtonHoverBackground)
     },
             ["LSR XML Guides"] = new[]
     {
@@ -1296,6 +1379,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 _xmlGuidesWindowGuidesListItemSelectedText = p.XmlGuidesWindowGuidesListItemSelectedText;
                 _xmlGuidesWindowFontPickerText = p.XmlGuidesWindowFontPickerText;
 
+                _dealersCustomersDrugsBuilderWindowBackground = p.DealersCustomersDrugsBuilderWindowBackground;
+                _dealersCustomersDrugsBuilderWindowText = p.DealersCustomersDrugsBuilderWindowText;
+                _dealersCustomersDrugsBuilderWindowControlBackground = p.DealersCustomersDrugsBuilderWindowControlBackground;
+                _dealersCustomersDrugsBuilderWindowControlBorder = p.DealersCustomersDrugsBuilderWindowControlBorder;
+                _dealersCustomersDrugsBuilderWindowHeaderBackground = p.DealersCustomersDrugsBuilderWindowHeaderBackground;
+                _dealersCustomersDrugsBuilderWindowHeaderText = p.DealersCustomersDrugsBuilderWindowHeaderText;
+                _dealersCustomersDrugsBuilderWindowButtonText = p.DealersCustomersDrugsBuilderWindowButtonText;
+                _dealersCustomersDrugsBuilderWindowButtonBackground = p.DealersCustomersDrugsBuilderWindowButtonBackground;
+                _dealersCustomersDrugsBuilderWindowButtonHoverBackground = p.DealersCustomersDrugsBuilderWindowButtonHoverBackground;
+
+                _gangBuilderWindowBackground = p.GangBuilderWindowBackground;
+                _gangBuilderWindowText = p.GangBuilderWindowText;
+                _gangBuilderWindowControlBackground = p.GangBuilderWindowControlBackground;
+                _gangBuilderWindowControlBorder = p.GangBuilderWindowControlBorder;
+                _gangBuilderWindowHeaderBackground = p.GangBuilderWindowHeaderBackground;
+                _gangBuilderWindowHeaderText = p.GangBuilderWindowHeaderText;
+                _gangBuilderWindowButtonBackground = p.GangBuilderWindowButtonBackground;
+                _gangBuilderWindowButtonHoverBackground = p.GangBuilderWindowButtonHoverBackground;
+                _gangBuilderWindowButtonText = p.GangBuilderWindowButtonText;
+                _gangBuilderWindowGridRowSelectedBackground = p.GangBuilderWindowGridRowSelectedBackground;
+
                 _savedEditsWindowBackground = p.SavedEditsWindowBackground;
                 _savedEditsWindowText = p.SavedEditsWindowText;
                 _savedEditsWindowControlBackground = p.SavedEditsWindowControlBackground;
@@ -1522,8 +1626,19 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 OnPropertyChanged(nameof(PreviewXmlGuidesWindowGuidesListItemSelectedBackgroundBrush));
                 OnPropertyChanged(nameof(PreviewXmlGuidesWindowGuidesListItemSelectedTextBrush));
                 OnPropertyChanged(nameof(PreviewXmlGuidesWindowFontPickerTextBrush));
+
+
                 OnPropertyChanged(nameof(EditorFontFamily));
                 OnPropertyChanged(nameof(EditorFontSize));
+
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowBackgroundBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowTextBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowControlBackgroundBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowControlBorderBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowHeaderBackgroundBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowHeaderTextBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowButtonBackgroundBrush));
+                OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush));
 
                 OnPropertyChanged(nameof(Text));
                 OnPropertyChanged(nameof(Background));
@@ -1695,6 +1810,28 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             p.XmlGuidesWindowGuidesListItemSelectedText = NormalizeColor(XmlGuidesWindowGuidesListItemSelectedText, p.XmlGuidesWindowGuidesListItemSelectedText);
             p.XmlGuidesWindowFontPickerText = NormalizeColor(XmlGuidesWindowFontPickerText, p.XmlGuidesWindowFontPickerText);
 
+            p.DealersCustomersDrugsBuilderWindowBackground = NormalizeColor(DealersCustomersDrugsBuilderWindowBackground, p.DealersCustomersDrugsBuilderWindowBackground);
+            p.DealersCustomersDrugsBuilderWindowText = NormalizeColor(DealersCustomersDrugsBuilderWindowText, p.DealersCustomersDrugsBuilderWindowText);
+            p.DealersCustomersDrugsBuilderWindowControlBackground = NormalizeColor(DealersCustomersDrugsBuilderWindowControlBackground, p.DealersCustomersDrugsBuilderWindowControlBackground);
+            p.DealersCustomersDrugsBuilderWindowControlBorder = NormalizeColor(DealersCustomersDrugsBuilderWindowControlBorder, p.DealersCustomersDrugsBuilderWindowControlBorder);
+            p.DealersCustomersDrugsBuilderWindowHeaderBackground = NormalizeColor(DealersCustomersDrugsBuilderWindowHeaderBackground, p.DealersCustomersDrugsBuilderWindowHeaderBackground);
+            p.DealersCustomersDrugsBuilderWindowHeaderText = NormalizeColor(DealersCustomersDrugsBuilderWindowHeaderText, p.DealersCustomersDrugsBuilderWindowHeaderText);
+            p.DealersCustomersDrugsBuilderWindowButtonText = NormalizeColor(DealersCustomersDrugsBuilderWindowButtonText, p.DealersCustomersDrugsBuilderWindowButtonText);
+            p.DealersCustomersDrugsBuilderWindowButtonBackground = NormalizeColor(DealersCustomersDrugsBuilderWindowButtonBackground, p.DealersCustomersDrugsBuilderWindowButtonBackground);
+            p.DealersCustomersDrugsBuilderWindowButtonHoverBackground = NormalizeColor(DealersCustomersDrugsBuilderWindowButtonHoverBackground, p.DealersCustomersDrugsBuilderWindowButtonHoverBackground);
+
+            p.GangBuilderWindowBackground = NormalizeColor(GangBuilderWindowBackground, p.GangBuilderWindowBackground);
+            p.GangBuilderWindowText = NormalizeColor(GangBuilderWindowText, p.GangBuilderWindowText);
+            p.GangBuilderWindowControlBackground = NormalizeColor(GangBuilderWindowControlBackground, p.GangBuilderWindowControlBackground);
+            p.GangBuilderWindowControlBorder = NormalizeColor(GangBuilderWindowControlBorder, p.GangBuilderWindowControlBorder);
+            p.GangBuilderWindowHeaderBackground = NormalizeColor(GangBuilderWindowHeaderBackground, p.GangBuilderWindowHeaderBackground);
+            p.GangBuilderWindowHeaderText = NormalizeColor(GangBuilderWindowHeaderText, p.GangBuilderWindowHeaderText);
+            p.GangBuilderWindowButtonBackground = NormalizeColor(GangBuilderWindowButtonBackground, p.GangBuilderWindowButtonBackground);
+            p.GangBuilderWindowButtonText = NormalizeColor(GangBuilderWindowButtonText, p.GangBuilderWindowButtonText);
+            p.GangBuilderWindowButtonHoverBackground = NormalizeColor(GangBuilderWindowButtonHoverBackground, p.GangBuilderWindowButtonHoverBackground);
+            p.GangBuilderWindowGridRowSelectedBackground = NormalizeColor(GangBuilderWindowGridRowSelectedBackground, p.GangBuilderWindowGridRowSelectedBackground);
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowButtonHoverBackgroundBrush));
+
             p.EditorText = NormalizeColor(EditorText, p.EditorText);
             p.EditorBackground = NormalizeColor(EditorBackground, p.EditorBackground);
             p.EditorXmlSyntaxForeground = NormalizeColor(EditorXmlSyntaxForeground, p.EditorXmlSyntaxForeground);
@@ -1859,6 +1996,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
             OnPropertyChanged(nameof(PreviewXmlGuidesWindowGuidesListItemSelectedBackgroundBrush));
             OnPropertyChanged(nameof(PreviewXmlGuidesWindowGuidesListItemSelectedTextBrush));
             OnPropertyChanged(nameof(PreviewXmlGuidesWindowFontPickerTextBrush));
+
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowTextBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowControlBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowControlBorderBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowHeaderBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowHeaderTextBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowButtonTextBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowButtonBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewDealersCustomersDrugsBuilderWindowButtonHoverBackgroundBrush));
+
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowTextBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowControlBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowControlBorderBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowHeaderBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowHeaderTextBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowButtonBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowButtonTextBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowButtonHoverBackgroundBrush));
+            OnPropertyChanged(nameof(PreviewGangBuilderWindowGridRowSelectedBackgroundBrush));
 
             OnPropertyChanged(nameof(PreviewSavedEditsWindowBackgroundBrush));
             OnPropertyChanged(nameof(PreviewSavedEditsWindowTextBrush));
@@ -2083,6 +2241,26 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 nameof(XmlGuidesWindowGuidesListItemSelectedText) => XmlGuidesWindowGuidesListItemSelectedText,
                 nameof(XmlGuidesWindowFontPickerText) => XmlGuidesWindowFontPickerText,
 
+                nameof(DealersCustomersDrugsBuilderWindowBackground) => DealersCustomersDrugsBuilderWindowBackground,
+                nameof(DealersCustomersDrugsBuilderWindowText) => DealersCustomersDrugsBuilderWindowText,
+                nameof(DealersCustomersDrugsBuilderWindowControlBackground) => DealersCustomersDrugsBuilderWindowControlBackground,
+                nameof(DealersCustomersDrugsBuilderWindowControlBorder) => DealersCustomersDrugsBuilderWindowControlBorder,
+                nameof(DealersCustomersDrugsBuilderWindowHeaderBackground) => DealersCustomersDrugsBuilderWindowHeaderBackground,
+                nameof(DealersCustomersDrugsBuilderWindowHeaderText) => DealersCustomersDrugsBuilderWindowHeaderText,
+                nameof(DealersCustomersDrugsBuilderWindowButtonText) => DealersCustomersDrugsBuilderWindowButtonText,
+                nameof(DealersCustomersDrugsBuilderWindowButtonBackground) => DealersCustomersDrugsBuilderWindowButtonBackground,
+                nameof(DealersCustomersDrugsBuilderWindowButtonHoverBackground) => DealersCustomersDrugsBuilderWindowButtonHoverBackground,
+
+                nameof(GangBuilderWindowBackground) => GangBuilderWindowBackground,
+                nameof(GangBuilderWindowText) => GangBuilderWindowText,
+                nameof(GangBuilderWindowControlBackground) => GangBuilderWindowControlBackground,
+                nameof(GangBuilderWindowControlBorder) => GangBuilderWindowControlBorder,
+                nameof(GangBuilderWindowHeaderBackground) => GangBuilderWindowHeaderBackground,
+                nameof(GangBuilderWindowHeaderText) => GangBuilderWindowHeaderText,
+                nameof(GangBuilderWindowButtonBackground) => GangBuilderWindowButtonBackground,
+                nameof(GangBuilderWindowButtonText) => GangBuilderWindowButtonText,
+                nameof(GangBuilderWindowButtonHoverBackground) => GangBuilderWindowButtonHoverBackground,
+
                 _ => "#FFFFFFFF"
             };
         }
@@ -2233,6 +2411,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 case nameof(XmlGuidesWindowGuidesListItemSelectedBackground): XmlGuidesWindowGuidesListItemSelectedBackground = hex; break;
                 case nameof(XmlGuidesWindowGuidesListItemSelectedText): XmlGuidesWindowGuidesListItemSelectedText = hex; break;
                 case nameof(XmlGuidesWindowFontPickerText): XmlGuidesWindowFontPickerText = hex; break;
+
+                case nameof(DealersCustomersDrugsBuilderWindowBackground): DealersCustomersDrugsBuilderWindowBackground = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowText): DealersCustomersDrugsBuilderWindowText = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowControlBackground): DealersCustomersDrugsBuilderWindowControlBackground = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowControlBorder): DealersCustomersDrugsBuilderWindowControlBorder = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowHeaderBackground): DealersCustomersDrugsBuilderWindowHeaderBackground = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowHeaderText): DealersCustomersDrugsBuilderWindowHeaderText = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowButtonText): DealersCustomersDrugsBuilderWindowButtonText = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowButtonBackground): DealersCustomersDrugsBuilderWindowButtonBackground = hex; break;
+                case nameof(DealersCustomersDrugsBuilderWindowButtonHoverBackground): DealersCustomersDrugsBuilderWindowButtonHoverBackground = hex; break;
+
+                case nameof(GangBuilderWindowBackground): GangBuilderWindowBackground = hex; break;
+                case nameof(GangBuilderWindowText): GangBuilderWindowText = hex; break;
+                case nameof(GangBuilderWindowControlBackground): GangBuilderWindowControlBackground = hex; break;
+                case nameof(GangBuilderWindowControlBorder): GangBuilderWindowControlBorder = hex; break;
+                case nameof(GangBuilderWindowHeaderBackground): GangBuilderWindowHeaderBackground = hex; break;
+                case nameof(GangBuilderWindowHeaderText): GangBuilderWindowHeaderText = hex; break;
+                case nameof(GangBuilderWindowButtonBackground): GangBuilderWindowButtonBackground = hex; break;
+                case nameof(GangBuilderWindowButtonText): GangBuilderWindowButtonText = hex; break;
+                case nameof(GangBuilderWindowButtonHoverBackground): GangBuilderWindowButtonHoverBackground = hex; break;
+                case nameof(GangBuilderWindowGridRowSelectedBackground): GangBuilderWindowGridRowSelectedBackground = hex; break;
 
                 case nameof(GridText): GridText = hex; break;
                 case nameof(GridBackground): GridBackground = hex; break;
@@ -2545,6 +2744,27 @@ namespace LSR.XmlHelper.Wpf.ViewModels
                 ValueColumnBackground = p.ValueColumnBackground,
                 HeaderText = p.HeaderText,
                 SelectorBackground = p.SelectorBackground,
+
+                DealersCustomersDrugsBuilderWindowBackground = p.DealersCustomersDrugsBuilderWindowBackground,
+                DealersCustomersDrugsBuilderWindowText = p.DealersCustomersDrugsBuilderWindowText,
+                DealersCustomersDrugsBuilderWindowControlBackground = p.DealersCustomersDrugsBuilderWindowControlBackground,
+                DealersCustomersDrugsBuilderWindowControlBorder = p.DealersCustomersDrugsBuilderWindowControlBorder,
+                DealersCustomersDrugsBuilderWindowHeaderBackground = p.DealersCustomersDrugsBuilderWindowHeaderBackground,
+                DealersCustomersDrugsBuilderWindowHeaderText = p.DealersCustomersDrugsBuilderWindowHeaderText,
+                DealersCustomersDrugsBuilderWindowButtonText = p.DealersCustomersDrugsBuilderWindowButtonText,
+                DealersCustomersDrugsBuilderWindowButtonBackground = p.DealersCustomersDrugsBuilderWindowButtonBackground,
+                DealersCustomersDrugsBuilderWindowButtonHoverBackground = p.DealersCustomersDrugsBuilderWindowButtonHoverBackground,
+
+                GangBuilderWindowBackground = p.GangBuilderWindowBackground,
+                GangBuilderWindowText = p.GangBuilderWindowText,
+                GangBuilderWindowControlBackground = p.GangBuilderWindowControlBackground,
+                GangBuilderWindowControlBorder = p.GangBuilderWindowControlBorder,
+                GangBuilderWindowHeaderBackground = p.GangBuilderWindowHeaderBackground,
+                GangBuilderWindowHeaderText = p.GangBuilderWindowHeaderText,
+                GangBuilderWindowButtonBackground = p.GangBuilderWindowButtonBackground,
+                GangBuilderWindowButtonText = p.GangBuilderWindowButtonText,
+                GangBuilderWindowButtonHoverBackground = p.GangBuilderWindowButtonHoverBackground,
+                GangBuilderWindowGridRowSelectedBackground = p.GangBuilderWindowGridRowSelectedBackground,
 
                 Pane2ComboText = p.Pane2ComboText,
                 Pane2ComboBackground = p.Pane2ComboBackground,
