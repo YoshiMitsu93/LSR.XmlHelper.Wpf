@@ -84,6 +84,13 @@ namespace LSR.XmlHelper.Core.Services.Builders
                 }
             }
 
+            if (foundAnyBuy)
+            {
+                purchasePrice = firstBuy;
+                salesPrice = foundAnySell ? firstSell : (int)Math.Round(firstBuy * 0.4, MidpointRounding.AwayFromZero);
+                return true;
+            }
+
             return false;
         }
 
