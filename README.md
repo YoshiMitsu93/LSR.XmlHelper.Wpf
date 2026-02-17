@@ -1,4 +1,4 @@
-### Core Application V1.4.3
+### Core Application V1.4.4
 
 - WPF desktop application for editing LSR XML files
 - Folder based workflow with automatic XML discovery
