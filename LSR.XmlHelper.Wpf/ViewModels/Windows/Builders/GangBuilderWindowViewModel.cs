@@ -113,6 +113,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             ChooseDenBannerImageCommand = new RelayCommand(ChooseDenBannerImage);
             RefreshIssuableWeaponsGroupsCommand = new RelayCommand(RefreshIssuableWeaponsGroups);
             RefreshDispatchablePeopleGroupsCommand = new RelayCommand(RefreshDispatchablePeopleGroups);
+            AddDispatchablePersonEntryCommand = new RelayCommand(AddDispatchablePersonEntry);
+            RemoveSelectedDispatchablePersonEntryCommand = new NotifyRelayCommand(RemoveSelectedDispatchablePersonEntry, HasSelectedDispatchablePersonEntry);
+            DuplicateSelectedDispatchablePersonEntryCommand = new NotifyRelayCommand(DuplicateSelectedDispatchablePersonEntry, HasSelectedDispatchablePersonEntry);
+            ResetDispatchablePeopleEntriesCommand = new NotifyRelayCommand(ResetDispatchablePeopleEntries, CanResetDispatchablePeopleEntries);
             OpenBuildOutputFileCommand = new RelayCommandOfT<string>(OpenBuildOutputFile);
             OpenUrlCommand = new RelayCommandOfT<string>(OpenUrl);
             AddDenPedSpawnRowCommand = new RelayCommand(AddDenPedSpawnRow);
@@ -178,6 +182,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         public ICommand BuildPackCommand { get; }
         public ICommand OpenBuildOutputFileCommand { get; }
         public ICommand RefreshDispatchablePeopleGroupsCommand { get; }
+        public ICommand AddDispatchablePersonEntryCommand { get; }
+        public NotifyRelayCommand RemoveSelectedDispatchablePersonEntryCommand { get; }
+        public NotifyRelayCommand DuplicateSelectedDispatchablePersonEntryCommand { get; }
+        public NotifyRelayCommand ResetDispatchablePeopleEntriesCommand { get; }
         public ICommand OpenUrlCommand { get; }
         public ObservableCollection<BuildOutputFileViewModel> BuildOutputFiles { get; } = new ObservableCollection<BuildOutputFileViewModel>();
         public ObservableCollection<ViewModels.Builders.PossiblePedSpawnViewModel> PossiblePedSpawns => _possiblePedSpawns;
@@ -470,6 +478,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 
                 RefreshTaskState();
                 LoadDispatchablePeopleEntries();
+                ResetDispatchablePeopleEntriesCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -485,6 +494,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 
                 RefreshTaskState();
                 LoadDispatchablePeopleEntries();
+                ResetDispatchablePeopleEntriesCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -500,6 +510,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 
                 SelectedDispatchablePersonField = _selectedDispatchablePersonEntry?.Fields.FirstOrDefault();
                 UpdateDispatchablePersonFieldsView();
+                RemoveSelectedDispatchablePersonEntryCommand.RaiseCanExecuteChanged();
+                DuplicateSelectedDispatchablePersonEntryCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -1885,6 +1897,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             SelectedDispatchablePersonEntry = DispatchablePeopleEntries.FirstOrDefault();
             SelectedDispatchablePersonField = SelectedDispatchablePersonEntry?.Fields.FirstOrDefault();
             UpdateDispatchablePersonFieldsView();
+            ResetDispatchablePeopleEntriesCommand.RaiseCanExecuteChanged();
         }
 
         private void RefreshShopMenuGroups()
@@ -2507,6 +2520,22 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 }
 
                 peopleDocToWrite = peopleDoc;
+
+                if (IncludePeople && !UseSourceGangPeopleGroup && DispatchablePeopleEntries.Count > 0)
+                {
+                    var applier = new LSR.XmlHelper.Wpf.Services.Editing.DispatchablePeopleGroupEditsApplyService();
+                    var applyResult = applier.Apply(peopleDocToWrite, result.PeopleGroupId, DispatchablePeopleEntries);
+
+                    if (applyResult.XmlIssues.Count > 0)
+                    {
+                        var issuesText = string.Join("\r\n- ", applyResult.XmlIssues.Select(x => $"Person index {x.PersonIndex}: {x.FieldName}"));
+                        System.Windows.MessageBox.Show(
+                            "Some fields contained invalid XML and were not saved:\r\n\r\n- " + issuesText,
+                            "Gang Builder",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+                }
             }
 
             if (IncludeDealerMenus)
@@ -4303,6 +4332,13 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                     "DispatchablePeopleGroupComboBox"));
             }
 
+            if (IncludePeople && !UseSourceGangPeopleGroup && SelectedDispatchablePeopleGroup is not null && DispatchablePeopleEntries.Count == 0)
+            {
+                issues.Add(new LSR.XmlHelper.Wpf.ViewModels.Builders.PreBuildValidationIssueViewModel(
+                    "People is enabled and override is on, but the selected group has no peds. Add at least one ped.",
+                    "DispatchablePeopleGroupComboBox"));
+            }
+
             return issues.Count == 0;
         }
         private static void SetOrCreate(XElement parent, string childName, string value)
@@ -5395,6 +5431,106 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 TerritoryCurrentSetupText = "";
                 TerritoryCurrentSetupHasData = false;
             }
+        }
+        private void ResetDispatchablePeopleEntries()
+        {
+            LoadDispatchablePeopleEntries();
+            ResetDispatchablePeopleEntriesCommand.RaiseCanExecuteChanged();
+        }
+
+        private bool CanResetDispatchablePeopleEntries()
+        {
+            if (UseSourceGangPeopleGroup && !IsEditExistingGang)
+                return false;
+
+            return SelectedDispatchablePeopleGroup is not null;
+        }
+
+        private void AddDispatchablePersonEntry()
+        {
+            if (UseSourceGangPeopleGroup && !IsEditExistingGang)
+                return;
+
+            var template = SelectedDispatchablePersonEntry ?? DispatchablePeopleEntries.FirstOrDefault();
+            if (template is null)
+            {
+                LoadDispatchablePeopleEntries();
+                template = SelectedDispatchablePersonEntry ?? DispatchablePeopleEntries.FirstOrDefault();
+            }
+
+            if (template is null)
+                return;
+
+            var cloner = new LSR.XmlHelper.Wpf.Services.Builders.Dispatchables.DispatchablePersonEntryCloneService();
+            var suggested = cloner.SuggestNextDebugName(DispatchablePeopleEntries, template.DebugName);
+            var created = cloner.Clone(template, suggested);
+            DispatchablePeopleEntries.Add(created);
+            SelectedDispatchablePersonEntry = created;
+
+            RemoveSelectedDispatchablePersonEntryCommand.RaiseCanExecuteChanged();
+            DuplicateSelectedDispatchablePersonEntryCommand.RaiseCanExecuteChanged();
+        }
+
+        private void DuplicateSelectedDispatchablePersonEntry()
+        {
+            if (!HasSelectedDispatchablePersonEntry())
+                return;
+
+            if (SelectedDispatchablePersonEntry is null)
+                return;
+
+            var index = DispatchablePeopleEntries.IndexOf(SelectedDispatchablePersonEntry);
+            if (index < 0)
+                index = DispatchablePeopleEntries.Count - 1;
+
+            var cloner = new LSR.XmlHelper.Wpf.Services.Builders.Dispatchables.DispatchablePersonEntryCloneService();
+            var suggested = cloner.SuggestNextDebugName(DispatchablePeopleEntries, SelectedDispatchablePersonEntry.DebugName);
+            var created = cloner.Clone(SelectedDispatchablePersonEntry, suggested);
+
+            if (index + 1 >= DispatchablePeopleEntries.Count)
+                DispatchablePeopleEntries.Add(created);
+            else
+                DispatchablePeopleEntries.Insert(index + 1, created);
+
+            SelectedDispatchablePersonEntry = created;
+        }
+
+        private void RemoveSelectedDispatchablePersonEntry()
+        {
+            if (!HasSelectedDispatchablePersonEntry())
+                return;
+
+            if (SelectedDispatchablePersonEntry is null)
+                return;
+
+            var index = DispatchablePeopleEntries.IndexOf(SelectedDispatchablePersonEntry);
+            if (index < 0)
+                return;
+
+            DispatchablePeopleEntries.RemoveAt(index);
+
+            if (DispatchablePeopleEntries.Count == 0)
+            {
+                SelectedDispatchablePersonEntry = null;
+                SelectedDispatchablePersonField = null;
+                UpdateDispatchablePersonFieldsView();
+            }
+            else
+            {
+                var nextIndex = Math.Min(index, DispatchablePeopleEntries.Count - 1);
+                SelectedDispatchablePersonEntry = DispatchablePeopleEntries[nextIndex];
+            }
+
+            RemoveSelectedDispatchablePersonEntryCommand.RaiseCanExecuteChanged();
+            DuplicateSelectedDispatchablePersonEntryCommand.RaiseCanExecuteChanged();
+        }
+
+        private bool HasSelectedDispatchablePersonEntry()
+        {
+            if (UseSourceGangPeopleGroup && !IsEditExistingGang)
+                return false;
+
+            return SelectedDispatchablePersonEntry is not null;
         }
 
         private bool TryGetClipboardXyzHeading(out double x, out double y, out double z, out double heading)

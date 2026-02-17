@@ -528,6 +528,12 @@
                                     Margin="0,0,0,6"
                                     FontSize="14"
                                     Text="DispatchablePeople group editor" />
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Button Width="90" Margin="0,0,8,0" Content="Add ped" Command="{Binding AddDispatchablePersonEntryCommand}" />
+                                    <Button Width="90" Margin="0,0,8,0" Content="Duplicate" Command="{Binding DuplicateSelectedDispatchablePersonEntryCommand}" />
+                                    <Button Width="90" Margin="0,0,8,0" Content="Remove" Command="{Binding RemoveSelectedDispatchablePersonEntryCommand}" />
+                                    <Button Width="110" Content="Reset list" Command="{Binding ResetDispatchablePeopleEntriesCommand}" />
+                                </StackPanel>
                                 <DataGrid
                                     MinHeight="160"
                                     AutoGenerateColumns="False"

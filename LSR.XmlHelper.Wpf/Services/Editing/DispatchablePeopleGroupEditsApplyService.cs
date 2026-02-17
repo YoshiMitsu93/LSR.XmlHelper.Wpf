@@ -32,24 +32,21 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
             if (group is null)
                 return (false, Array.Empty<XmlFieldApplyIssue>());
 
-            var people = group.Descendants("DispatchablePerson").ToList();
-            if (people.Count == 0)
-                return (false, Array.Empty<XmlFieldApplyIssue>());
-
             var before = peopleDoc.ToString(SaveOptions.DisableFormatting);
             var xmlIssues = new List<XmlFieldApplyIssue>();
 
-            foreach (var entry in entries)
+            var existingPeople = group.Elements("DispatchablePerson").ToList();
+            foreach (var p in existingPeople)
+                p.Remove();
+
+            var entryList = entries.Where(x => x is not null).ToList();
+
+            for (var i = 0; i < entryList.Count; i++)
             {
-                if (entry is null)
-                    continue;
+                var entryids = entryList[i];
+                var person = new XElement("DispatchablePerson");
 
-                if (entry.SourceIndex < 0 || entry.SourceIndex >= people.Count)
-                    continue;
-
-                var person = people[entry.SourceIndex];
-
-                foreach (var field in entry.Fields)
+                foreach (var field in entryList[i].Fields)
                 {
                     var name = (field?.Name ?? "").Trim();
                     if (string.IsNullOrWhiteSpace(name))
@@ -61,44 +58,22 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
                     if (string.Equals(name, "DispatchablePersonGroupID", StringComparison.OrdinalIgnoreCase))
                         continue;
 
-                    var desired = (field?.Value ?? "");
-
-                    var existing = person.Element(name);
-                    if (existing is null)
-                    {
-                        if (field is not null && field.IsXml)
-                        {
-                            if (TryParseSingleElement(desired, out var parsed) && parsed is not null)
-                                person.Add(parsed);
-                            else
-                                xmlIssues.Add(new XmlFieldApplyIssue(entry.SourceIndex, name));
-                        }
-                        else
-                        {
-                            person.Add(new XElement(name, desired));
-                        }
-
-                        continue;
-                    }
+                    var desired = field?.Value ?? "";
 
                     if (field is not null && field.IsXml)
                     {
                         if (TryParseSingleElement(desired, out var parsed) && parsed is not null)
-                        {
-                            if (!XNode.DeepEquals(existing, parsed))
-                                existing.ReplaceWith(parsed);
-                        }
+                            person.Add(parsed);
                         else
-                        {
-                            xmlIssues.Add(new XmlFieldApplyIssue(entry.SourceIndex, name));
-                        }
+                            xmlIssues.Add(new XmlFieldApplyIssue(i, name));
+
+                        continue;
                     }
-                    else
-                    {
-                        if (!string.Equals(existing.Value ?? "", desired, StringComparison.Ordinal))
-                            existing.Value = desired;
-                    }
+
+                    person.Add(new XElement(name, desired));
                 }
+
+                group.Add(person);
             }
 
             var after = peopleDoc.ToString(SaveOptions.DisableFormatting);
