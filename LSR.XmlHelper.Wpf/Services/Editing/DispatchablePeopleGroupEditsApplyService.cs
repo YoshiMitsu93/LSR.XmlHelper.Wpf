@@ -35,7 +35,16 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
             var before = peopleDoc.ToString(SaveOptions.DisableFormatting);
             var xmlIssues = new List<XmlFieldApplyIssue>();
 
-            var existingPeople = group.Elements("DispatchablePerson").ToList();
+            var peopleContainer = group.Element("DispatchablePeople") ?? group;
+
+            if (!ReferenceEquals(peopleContainer, group))
+            {
+                var directPeople = group.Elements("DispatchablePerson").ToList();
+                foreach (var p in directPeople)
+                    p.Remove();
+            }
+
+            var existingPeople = peopleContainer.Elements("DispatchablePerson").ToList();
             foreach (var p in existingPeople)
                 p.Remove();
 
@@ -62,6 +71,9 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
 
                     if (field is not null && field.IsXml)
                     {
+                        if (string.IsNullOrWhiteSpace(desired))
+                            continue;
+
                         if (TryParseSingleElement(desired, out var parsed) && parsed is not null)
                             person.Add(parsed);
                         else
@@ -73,7 +85,7 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
                     person.Add(new XElement(name, desired));
                 }
 
-                group.Add(person);
+                peopleContainer.Add(person);
             }
 
             var after = peopleDoc.ToString(SaveOptions.DisableFormatting);

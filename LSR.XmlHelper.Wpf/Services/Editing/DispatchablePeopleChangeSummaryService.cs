@@ -33,8 +33,8 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
             if (beforeGroup is null || afterGroup is null)
                 return new[] { "DispatchablePeople: group '" + groupId + "' could not be compared" };
 
-            var beforePeople = beforeGroup.Descendants("DispatchablePerson").ToDictionary(GetKey, x => x, StringComparer.OrdinalIgnoreCase);
-            var afterPeople = afterGroup.Descendants("DispatchablePerson").ToDictionary(GetKey, x => x, StringComparer.OrdinalIgnoreCase);
+            var beforePeople = ToPeopleDictionary(beforeGroup.Descendants("DispatchablePerson"));
+            var afterPeople = ToPeopleDictionary(afterGroup.Descendants("DispatchablePerson"));
 
             var lines = new List<string>();
 
@@ -84,5 +84,18 @@ namespace LSR.XmlHelper.Wpf.Services.Editing
             var key = ((string?)person.Element("DebugName") ?? "").Trim();
             return string.IsNullOrWhiteSpace(key) ? Guid.NewGuid().ToString("N") : key;
         }
+                    private static Dictionary<string, XElement> ToPeopleDictionary(IEnumerable<XElement> people)
+        {
+            var dict = new Dictionary<string, XElement>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var person in people)
+            {
+                var key = GetKey(person);
+                dict[key] = person;
+            }
+
+            return dict;
+        }
     }
 }
+

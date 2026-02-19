@@ -54,13 +54,13 @@
                                         x:Name="PART_EditableTextBox"
                                         Grid.Column="0"
                                         Margin="{TemplateBinding Padding}"
-                                        VerticalAlignment="Center"
                                         HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center"
                                         Background="Transparent"
-                                        Foreground="{TemplateBinding Foreground}"
                                         BorderThickness="0"
-                                        Visibility="Collapsed"
-                                        Text="{TemplateBinding Text}" />
+                                        Foreground="{TemplateBinding Foreground}"
+                                        Text="{TemplateBinding Text}"
+                                        Visibility="Collapsed" />
                                     <ContentPresenter
                                         x:Name="ContentSite"
                                         Grid.Column="0"
@@ -528,11 +528,26 @@
                                     Margin="0,0,0,6"
                                     FontSize="14"
                                     Text="DispatchablePeople group editor" />
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <Button Width="90" Margin="0,0,8,0" Content="Add ped" Command="{Binding AddDispatchablePersonEntryCommand}" />
-                                    <Button Width="90" Margin="0,0,8,0" Content="Duplicate" Command="{Binding DuplicateSelectedDispatchablePersonEntryCommand}" />
-                                    <Button Width="90" Margin="0,0,8,0" Content="Remove" Command="{Binding RemoveSelectedDispatchablePersonEntryCommand}" />
-                                    <Button Width="110" Content="Reset list" Command="{Binding ResetDispatchablePeopleEntriesCommand}" />
+                                <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                    <Button
+                                        Width="90"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding AddDispatchablePersonEntryCommand}"
+                                        Content="Add ped" />
+                                    <Button
+                                        Width="90"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding DuplicateSelectedDispatchablePersonEntryCommand}"
+                                        Content="Duplicate" />
+                                    <Button
+                                        Width="90"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding RemoveSelectedDispatchablePersonEntryCommand}"
+                                        Content="Remove" />
+                                    <Button
+                                        Width="110"
+                                        Command="{Binding ResetDispatchablePeopleEntriesCommand}"
+                                        Content="Reset list" />
                                 </StackPanel>
                                 <DataGrid
                                     MinHeight="160"
@@ -852,6 +867,13 @@
                                 x:Name="NewDenNameTextBox"
                                 Margin="0,0,0,8"
                                 Text="{Binding NewDenName, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Margin="0,0,0,4" Text="Gang territory color" />
+                            <ComboBox
+                                Margin="0,0,0,8"
+                                IsEditable="False"
+                                IsTextSearchEnabled="True"
+                                ItemsSource="{Binding GangColorNames}"
+                                SelectedItem="{Binding GangColorString, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Margin="0,0,0,4" Text="Entrance position (X, Y, Z)" />
                             <StackPanel Orientation="Horizontal">
                                 <TextBox
@@ -1159,12 +1181,12 @@
                             <DataGrid
                                 x:Name="DenPedSpawnsGrid"
                                 AutoGenerateColumns="False"
-                                CanUserAddRows="False"
-                                HeadersVisibility="Column"
-                                IsReadOnly="False"
                                 Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
                                 BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                                CanUserAddRows="False"
                                 Foreground="{Binding Appearance.GangBuilderWindowTextBrush}"
+                                HeadersVisibility="Column"
+                                IsReadOnly="False"
                                 ItemsSource="{Binding PossiblePedSpawns}"
                                 SelectedItem="{Binding SelectedPossiblePedSpawn, Mode=TwoWay}">
                                 <DataGrid.Columns>
@@ -2007,6 +2029,280 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+                        <Expander
+                            Margin="0,10,0,0"
+                            Header="Advanced gang settings"
+                            IsExpanded="False">
+                            <Border
+                                Margin="0,6,0,0"
+                                Padding="8"
+                                Background="{Binding Appearance.GangBuilderWindowControlBackgroundBrush}"
+                                BorderBrush="{Binding Appearance.GangBuilderWindowControlBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <StackPanel>
+                                    <Expander Header="Reputation levels" IsExpanded="False">
+                                        <UniformGrid Margin="0,6,0,8" Columns="4">
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="MinimumRep" />
+                                                <TextBox Width="140" Text="{Binding MinimumRep, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="MaximumRep" />
+                                                <TextBox Width="140" Text="{Binding MaximumRep, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="StartingRep" />
+                                                <TextBox Width="140" Text="{Binding StartingRep, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="HostileRepLevel" />
+                                                <TextBox Width="140" Text="{Binding HostileRepLevel, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="NeutralRepLevel" />
+                                                <TextBox Width="140" Text="{Binding NeutralRepLevel, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="FriendlyRepLevel" />
+                                                <TextBox Width="140" Text="{Binding FriendlyRepLevel, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="MemberOfferRepLevel" />
+                                                <TextBox Width="140" Text="{Binding MemberOfferRepLevel, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="HitSquadRep" />
+                                                <TextBox Width="140" Text="{Binding HitSquadRep, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Expander>
+
+                                    <Expander Header="Job payments (min/max)" IsExpanded="False">
+                                        <UniformGrid Margin="0,6,0,8" Columns="4">
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PickupPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding PickupPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PickupPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding PickupPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="TheftPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding TheftPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="TheftPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding TheftPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="HitPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding HitPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="HitPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding HitPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="DeliveryPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding DeliveryPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="DeliveryPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding DeliveryPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="WheelmanPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding WheelmanPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="WheelmanPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding WheelmanPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="ImpoundTheftPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding ImpoundTheftPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="ImpoundTheftPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding ImpoundTheftPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="BodyDisposalPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding BodyDisposalPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="BodyDisposalPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding BodyDisposalPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="CopHitPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding CopHitPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="CopHitPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding CopHitPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="AmbushPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding AmbushPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="AmbushPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding AmbushPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="BriberyPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding BriberyPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="BriberyPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding BriberyPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="ArsonPaymentMin" />
+                                                <TextBox Width="140" Text="{Binding ArsonPaymentMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="ArsonPaymentMax" />
+                                                <TextBox Width="140" Text="{Binding ArsonPaymentMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Expander>
+
+                                    <Expander Header="Behaviour &amp; equipment percentages" IsExpanded="False">
+                                        <UniformGrid Margin="0,6,0,8" Columns="4">
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="FightPercentage" />
+                                                <TextBox Width="140" Text="{Binding FightPercentage, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="FightPolicePercentage" />
+                                                <TextBox Width="140" Text="{Binding FightPolicePercentage, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="AlwaysFightPolicePercentage" />
+                                                <TextBox Width="140" Text="{Binding AlwaysFightPolicePercentage, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="DrugDealerPercentage" />
+                                                <TextBox Width="140" Text="{Binding DrugDealerPercentage, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PercentageTrustingOfPlayer" />
+                                                <TextBox Width="140" Text="{Binding PercentageTrustingOfPlayer, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PercentageWithLongGuns" />
+                                                <TextBox Width="140" Text="{Binding PercentageWithLongGuns, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PercentageWithSidearms" />
+                                                <TextBox Width="140" Text="{Binding PercentageWithSidearms, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PercentageWithMelee" />
+                                                <TextBox Width="140" Text="{Binding PercentageWithMelee, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="VehicleSpawnPercentage" />
+                                                <TextBox Width="140" Text="{Binding VehicleSpawnPercentage, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="PedestrianSpawnPercentageAroundDen" />
+                                                <TextBox Width="140" Text="{Binding PedestrianSpawnPercentageAroundDen, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Expander>
+
+                                    <Expander Header="Member money &amp; kick-up" IsExpanded="False">
+                                        <UniformGrid Margin="0,6,0,8" Columns="4">
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="AmbientMemberMoneyMin" />
+                                                <TextBox Width="140" Text="{Binding AmbientMemberMoneyMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="AmbientMemberMoneyMax" />
+                                                <TextBox Width="140" Text="{Binding AmbientMemberMoneyMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="DealerMemberMoneyMin" />
+                                                <TextBox Width="140" Text="{Binding DealerMemberMoneyMin, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="DealerMemberMoneyMax" />
+                                                <TextBox Width="140" Text="{Binding DealerMemberMoneyMax, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="CostToPayoffGangScalar" />
+                                                <TextBox Width="140" Text="{Binding CostToPayoffGangScalar, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="MemberKickUpDays" />
+                                                <TextBox Width="140" Text="{Binding MemberKickUpDays, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="MemberKickUpAmount" />
+                                                <TextBox Width="140" Text="{Binding MemberKickUpAmount, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,12,10">
+                                                <TextBlock Text="MemberKickUpMissLimit" />
+                                                <TextBox Width="140" Text="{Binding MemberKickUpMissLimit, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </Expander>
+
+                                    <Expander Header="Loan parameters" IsExpanded="True">
+                                        <DataGrid
+                                            MinHeight="140"
+                                            AutoGenerateColumns="False"
+                                            CanUserAddRows="False"
+                                            HeadersVisibility="Column"
+                                            ItemsSource="{Binding LoanParameters}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding ResepectLevel, UpdateSourceTrigger=PropertyChanged}"
+                                                    Header="ResepectLevel" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding Rate, UpdateSourceTrigger=PropertyChanged}"
+                                                    Header="Rate" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding MaxPeriods, UpdateSourceTrigger=PropertyChanged}"
+                                                    Header="MaxPeriods" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding MinAmount, UpdateSourceTrigger=PropertyChanged}"
+                                                    Header="MinAmount" />
+                                                <DataGridTextColumn
+                                                    Width="*"
+                                                    Binding="{Binding MaxAmount, UpdateSourceTrigger=PropertyChanged}"
+                                                    Header="MaxAmount" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+                        </Expander>
                         <StackPanel Margin="0,10,0,0">
                             <Button
                                 Height="38"

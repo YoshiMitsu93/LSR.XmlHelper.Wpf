@@ -22,12 +22,61 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         private const string NewGangVehicleGroupPlaceholder = "__NEW_GANG_VEHICLES__";
         private readonly Services.AppearanceService _appearance;
         private readonly string _rootFolderPath;
-
         private string _packName = "MyGangPack";
         private string _newGangId = "";
         private string _newGangFullName = "";
         private string _cloneFromGangId = "";
         private string _selectedEditGangVehicleGroupId = "";
+        private string _minimumRep = "";
+        private string _maximumRep = "";
+        private string _startingRep = "";
+        private string _hostileRepLevel = "";
+        private string _neutralRepLevel = "";
+        private string _friendlyRepLevel = "";
+        private string _memberOfferRepLevel = "";
+        private string _hitSquadRep = "";
+        private string _pickupPaymentMin = "";
+        private string _pickupPaymentMax = "";
+        private string _theftPaymentMin = "";
+        private string _theftPaymentMax = "";
+        private string _hitPaymentMin = "";
+        private string _hitPaymentMax = "";
+        private string _deliveryPaymentMin = "";
+        private string _deliveryPaymentMax = "";
+        private string _wheelmanPaymentMin = "";
+        private string _wheelmanPaymentMax = "";
+        private string _impoundTheftPaymentMin = "";
+        private string _impoundTheftPaymentMax = "";
+        private string _bodyDisposalPaymentMin = "";
+        private string _bodyDisposalPaymentMax = "";
+        private string _copHitPaymentMin = "";
+        private string _copHitPaymentMax = "";
+        private string _ambushPaymentMin = "";
+        private string _ambushPaymentMax = "";
+        private string _briberyPaymentMin = "";
+        private string _briberyPaymentMax = "";
+        private string _arsonPaymentMin = "";
+        private string _arsonPaymentMax = "";
+        private string _fightPercentage = "";
+        private string _fightPolicePercentage = "";
+        private string _alwaysFightPolicePercentage = "";
+        private string _drugDealerPercentage = "";
+        private string _ambientMemberMoneyMin = "";
+        private string _ambientMemberMoneyMax = "";
+        private string _dealerMemberMoneyMin = "";
+        private string _dealerMemberMoneyMax = "";
+        private string _costToPayoffGangScalar = "";
+        private string _percentageTrustingOfPlayer = "";
+        private string _percentageWithLongGuns = "";
+        private string _percentageWithSidearms = "";
+        private string _percentageWithMelee = "";
+        private string _vehicleSpawnPercentage = "";
+        private string _pedestrianSpawnPercentageAroundDen = "";
+        private string _memberKickUpDays = "";
+        private string _memberKickUpAmount = "";
+        private string _memberKickUpMissLimit = "";
+        private readonly ObservableCollection<LoanParameterEntryViewModel> _loanParameters = new ObservableCollection<LoanParameterEntryViewModel>();
+        private LoanParameterEntryViewModel? _selectedLoanParameter;
         private HashSet<string> _editVehicleModelsOriginal = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _includeTerritories = true;
         private bool _includeTerritoryMenus = true;
@@ -69,6 +118,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         private string _newDenMapIconRadius = "1";
         private string _newDenMapOpenIconAlpha = "1";
         private string _newDenMapClosedIconAlpha = "0.25";
+        private string _gangColorPrefix = "";
+        private string _gangColorString = "";
+        private bool _isUpdatingGangColor;
         private string _lastBuiltVehicleGroupId = "";
         private readonly ObservableCollection<ViewModels.Builders.PossiblePedSpawnViewModel> _possiblePedSpawns = new();
         private readonly ObservableCollection<ViewModels.Builders.PossibleVehicleSpawnViewModel> _possibleVehicleSpawns = new();
@@ -119,6 +171,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             ResetDispatchablePeopleEntriesCommand = new NotifyRelayCommand(ResetDispatchablePeopleEntries, CanResetDispatchablePeopleEntries);
             OpenBuildOutputFileCommand = new RelayCommandOfT<string>(OpenBuildOutputFile);
             OpenUrlCommand = new RelayCommandOfT<string>(OpenUrl);
+            AddLoanParameterCommand = new RelayCommand(AddLoanParameter);
+            DuplicateSelectedLoanParameterCommand = new NotifyRelayCommand(DuplicateSelectedLoanParameter, HasSelectedLoanParameter);
+            RemoveSelectedLoanParameterCommand = new NotifyRelayCommand(RemoveSelectedLoanParameter, HasSelectedLoanParameter);
+            ResetLoanParametersCommand = new RelayCommand(ResetLoanParameters);
             AddDenPedSpawnRowCommand = new RelayCommand(AddDenPedSpawnRow);
             RemoveDenPedSpawnRowCommand = new NotifyRelayCommand(RemoveDenPedSpawnRow, HasSelectedDenPedSpawnRow);
             DuplicateDenPedSpawnRowCommand = new NotifyRelayCommand(DuplicateDenPedSpawnRow, HasSelectedDenPedSpawnRow);
@@ -235,7 +291,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 }
             }
         }
-
+        public ICommand AddLoanParameterCommand { get; }
+        public NotifyRelayCommand DuplicateSelectedLoanParameterCommand { get; }
+        public NotifyRelayCommand RemoveSelectedLoanParameterCommand { get; }
+        public ICommand ResetLoanParametersCommand { get; }
         public ICommand AddDenPedSpawnRowCommand { get; }
         public NotifyRelayCommand RemoveDenPedSpawnRowCommand { get; }
         public NotifyRelayCommand DuplicateDenPedSpawnRowCommand { get; }
@@ -520,8 +579,16 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             get => _selectedDispatchablePersonField;
             set
             {
+                var old = _selectedDispatchablePersonField;
+
                 if (SetProperty(ref _selectedDispatchablePersonField, value))
                 {
+                    if (old is not null)
+                        old.PropertyChanged -= SelectedDispatchablePersonFieldOnPropertyChanged;
+
+                    if (_selectedDispatchablePersonField is not null)
+                        _selectedDispatchablePersonField.PropertyChanged += SelectedDispatchablePersonFieldOnPropertyChanged;
+
                     OnPropertyChanged(nameof(ShowSmartPasteRequiredVariation));
                     SmartPasteRequiredVariationCommand.RaiseCanExecuteChanged();
                 }
@@ -876,6 +943,111 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 RefreshTaskState();
             }
         }
+        public string GangColorPrefix
+        {
+            get => _gangColorPrefix;
+            set
+            {
+                if (!SetProperty(ref _gangColorPrefix, value))
+                    return;
+
+                if (!_isUpdatingGangColor && GangColorNameByPrefixMap.TryGetValue((_gangColorPrefix ?? "").Trim(), out var name))
+                {
+                    _isUpdatingGangColor = true;
+                    GangColorString = name;
+                    _isUpdatingGangColor = false;
+                }
+
+                RefreshTaskState();
+            }
+        }
+
+        public string GangColorString
+        {
+            get => _gangColorString;
+            set
+            {
+                if (!SetProperty(ref _gangColorString, value))
+                    return;
+
+                if (!_isUpdatingGangColor && GangColorPrefixMap.TryGetValue((_gangColorString ?? "").Trim(), out var prefix))
+                {
+                    _isUpdatingGangColor = true;
+                    GangColorPrefix = prefix;
+                    _isUpdatingGangColor = false;
+                }
+
+                RefreshTaskState();
+            }
+        }
+        public string MinimumRep { get => _minimumRep; set { if (SetProperty(ref _minimumRep, value)) RefreshTaskState(); } }
+        public string MaximumRep { get => _maximumRep; set { if (SetProperty(ref _maximumRep, value)) RefreshTaskState(); } }
+        public string StartingRep { get => _startingRep; set { if (SetProperty(ref _startingRep, value)) RefreshTaskState(); } }
+        public string HostileRepLevel { get => _hostileRepLevel; set { if (SetProperty(ref _hostileRepLevel, value)) RefreshTaskState(); } }
+        public string NeutralRepLevel { get => _neutralRepLevel; set { if (SetProperty(ref _neutralRepLevel, value)) RefreshTaskState(); } }
+        public string FriendlyRepLevel { get => _friendlyRepLevel; set { if (SetProperty(ref _friendlyRepLevel, value)) RefreshTaskState(); } }
+        public string MemberOfferRepLevel { get => _memberOfferRepLevel; set { if (SetProperty(ref _memberOfferRepLevel, value)) RefreshTaskState(); } }
+        public string HitSquadRep { get => _hitSquadRep; set { if (SetProperty(ref _hitSquadRep, value)) RefreshTaskState(); } }
+
+        public string PickupPaymentMin { get => _pickupPaymentMin; set { if (SetProperty(ref _pickupPaymentMin, value)) RefreshTaskState(); } }
+        public string PickupPaymentMax { get => _pickupPaymentMax; set { if (SetProperty(ref _pickupPaymentMax, value)) RefreshTaskState(); } }
+        public string TheftPaymentMin { get => _theftPaymentMin; set { if (SetProperty(ref _theftPaymentMin, value)) RefreshTaskState(); } }
+        public string TheftPaymentMax { get => _theftPaymentMax; set { if (SetProperty(ref _theftPaymentMax, value)) RefreshTaskState(); } }
+        public string HitPaymentMin { get => _hitPaymentMin; set { if (SetProperty(ref _hitPaymentMin, value)) RefreshTaskState(); } }
+        public string HitPaymentMax { get => _hitPaymentMax; set { if (SetProperty(ref _hitPaymentMax, value)) RefreshTaskState(); } }
+        public string DeliveryPaymentMin { get => _deliveryPaymentMin; set { if (SetProperty(ref _deliveryPaymentMin, value)) RefreshTaskState(); } }
+        public string DeliveryPaymentMax { get => _deliveryPaymentMax; set { if (SetProperty(ref _deliveryPaymentMax, value)) RefreshTaskState(); } }
+        public string WheelmanPaymentMin { get => _wheelmanPaymentMin; set { if (SetProperty(ref _wheelmanPaymentMin, value)) RefreshTaskState(); } }
+        public string WheelmanPaymentMax { get => _wheelmanPaymentMax; set { if (SetProperty(ref _wheelmanPaymentMax, value)) RefreshTaskState(); } }
+        public string ImpoundTheftPaymentMin { get => _impoundTheftPaymentMin; set { if (SetProperty(ref _impoundTheftPaymentMin, value)) RefreshTaskState(); } }
+        public string ImpoundTheftPaymentMax { get => _impoundTheftPaymentMax; set { if (SetProperty(ref _impoundTheftPaymentMax, value)) RefreshTaskState(); } }
+        public string BodyDisposalPaymentMin { get => _bodyDisposalPaymentMin; set { if (SetProperty(ref _bodyDisposalPaymentMin, value)) RefreshTaskState(); } }
+        public string BodyDisposalPaymentMax { get => _bodyDisposalPaymentMax; set { if (SetProperty(ref _bodyDisposalPaymentMax, value)) RefreshTaskState(); } }
+        public string CopHitPaymentMin { get => _copHitPaymentMin; set { if (SetProperty(ref _copHitPaymentMin, value)) RefreshTaskState(); } }
+        public string CopHitPaymentMax { get => _copHitPaymentMax; set { if (SetProperty(ref _copHitPaymentMax, value)) RefreshTaskState(); } }
+        public string AmbushPaymentMin { get => _ambushPaymentMin; set { if (SetProperty(ref _ambushPaymentMin, value)) RefreshTaskState(); } }
+        public string AmbushPaymentMax { get => _ambushPaymentMax; set { if (SetProperty(ref _ambushPaymentMax, value)) RefreshTaskState(); } }
+        public string BriberyPaymentMin { get => _briberyPaymentMin; set { if (SetProperty(ref _briberyPaymentMin, value)) RefreshTaskState(); } }
+        public string BriberyPaymentMax { get => _briberyPaymentMax; set { if (SetProperty(ref _briberyPaymentMax, value)) RefreshTaskState(); } }
+        public string ArsonPaymentMin { get => _arsonPaymentMin; set { if (SetProperty(ref _arsonPaymentMin, value)) RefreshTaskState(); } }
+        public string ArsonPaymentMax { get => _arsonPaymentMax; set { if (SetProperty(ref _arsonPaymentMax, value)) RefreshTaskState(); } }
+
+        public string FightPercentage { get => _fightPercentage; set { if (SetProperty(ref _fightPercentage, value)) RefreshTaskState(); } }
+        public string FightPolicePercentage { get => _fightPolicePercentage; set { if (SetProperty(ref _fightPolicePercentage, value)) RefreshTaskState(); } }
+        public string AlwaysFightPolicePercentage { get => _alwaysFightPolicePercentage; set { if (SetProperty(ref _alwaysFightPolicePercentage, value)) RefreshTaskState(); } }
+        public string DrugDealerPercentage { get => _drugDealerPercentage; set { if (SetProperty(ref _drugDealerPercentage, value)) RefreshTaskState(); } }
+
+        public string AmbientMemberMoneyMin { get => _ambientMemberMoneyMin; set { if (SetProperty(ref _ambientMemberMoneyMin, value)) RefreshTaskState(); } }
+        public string AmbientMemberMoneyMax { get => _ambientMemberMoneyMax; set { if (SetProperty(ref _ambientMemberMoneyMax, value)) RefreshTaskState(); } }
+        public string DealerMemberMoneyMin { get => _dealerMemberMoneyMin; set { if (SetProperty(ref _dealerMemberMoneyMin, value)) RefreshTaskState(); } }
+        public string DealerMemberMoneyMax { get => _dealerMemberMoneyMax; set { if (SetProperty(ref _dealerMemberMoneyMax, value)) RefreshTaskState(); } }
+        public string CostToPayoffGangScalar { get => _costToPayoffGangScalar; set { if (SetProperty(ref _costToPayoffGangScalar, value)) RefreshTaskState(); } }
+
+        public string PercentageTrustingOfPlayer { get => _percentageTrustingOfPlayer; set { if (SetProperty(ref _percentageTrustingOfPlayer, value)) RefreshTaskState(); } }
+        public string PercentageWithLongGuns { get => _percentageWithLongGuns; set { if (SetProperty(ref _percentageWithLongGuns, value)) RefreshTaskState(); } }
+        public string PercentageWithSidearms { get => _percentageWithSidearms; set { if (SetProperty(ref _percentageWithSidearms, value)) RefreshTaskState(); } }
+        public string PercentageWithMelee { get => _percentageWithMelee; set { if (SetProperty(ref _percentageWithMelee, value)) RefreshTaskState(); } }
+        public string VehicleSpawnPercentage { get => _vehicleSpawnPercentage; set { if (SetProperty(ref _vehicleSpawnPercentage, value)) RefreshTaskState(); } }
+        public string PedestrianSpawnPercentageAroundDen { get => _pedestrianSpawnPercentageAroundDen; set { if (SetProperty(ref _pedestrianSpawnPercentageAroundDen, value)) RefreshTaskState(); } }
+
+        public string MemberKickUpDays { get => _memberKickUpDays; set { if (SetProperty(ref _memberKickUpDays, value)) RefreshTaskState(); } }
+        public string MemberKickUpAmount { get => _memberKickUpAmount; set { if (SetProperty(ref _memberKickUpAmount, value)) RefreshTaskState(); } }
+        public string MemberKickUpMissLimit { get => _memberKickUpMissLimit; set { if (SetProperty(ref _memberKickUpMissLimit, value)) RefreshTaskState(); } }
+
+        public ObservableCollection<LoanParameterEntryViewModel> LoanParameters => _loanParameters;
+
+        public LoanParameterEntryViewModel? SelectedLoanParameter
+        {
+            get => _selectedLoanParameter;
+            set
+            {
+                if (!SetProperty(ref _selectedLoanParameter, value))
+                    return;
+
+                DuplicateSelectedLoanParameterCommand.RaiseCanExecuteChanged();
+                RemoveSelectedLoanParameterCommand.RaiseCanExecuteChanged();
+            }
+        }
 
         public string NewDenMapIconScale
         {
@@ -928,6 +1100,8 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
         public ObservableCollection<Models.BlipSpriteOption> CommonBlipSprites { get; } = new ObservableCollection<Models.BlipSpriteOption>();
 
         public ObservableCollection<string> CommonBlipColors { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> CommonTextColorPrefixes { get; } = new ObservableCollection<string>();
+        public ObservableCollection<string> GangColorNames { get; } = new ObservableCollection<string>();
 
 
         public Models.BlipSpriteOption? SelectedCommonBlipSprite
@@ -1130,6 +1304,9 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                     return;
 
                 CloneFromGangId = _selectedCloneGang?.Id ?? "";
+
+                if (!IsEditExistingGang)
+                    LoadSelectedGangAdvancedSettings(CloneFromGangId);
             }
         }
 
@@ -1249,6 +1426,7 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             LoadSelectedGangDenDetails(gangId);
             LoadSelectedGangDenSpawns(gangId);
             LoadSelectedGangEnemyGangs(gangId);
+            LoadSelectedGangAdvancedSettings(gangId);
             var info = new LSR.XmlHelper.Wpf.Services.Editing.EditModeResolvedSourcesInfoService();
             EditModeResolvedSourcesWarning = info.Build(_rootFolderPath, gangId);
         }
@@ -1594,6 +1772,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
 
                 if (!string.IsNullOrWhiteSpace(snapshot.FullName))
                     NewGangFullName = snapshot.FullName;
+
+                if (!string.IsNullOrWhiteSpace(snapshot.ColorString))
+                    GangColorString = snapshot.ColorString;
+                else if (!string.IsNullOrWhiteSpace(snapshot.ColorPrefix))
+                    GangColorPrefix = snapshot.ColorPrefix;
 
                 IncludePeople = true;
 
@@ -2813,6 +2996,10 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 SetTask("Configure Relationships", false, "Skipped");
             }
 
+            var advancedGangNode = result.GangsDoc.Descendants("Gang").FirstOrDefault();
+            if (advancedGangNode is not null)
+                ApplyAdvancedGangSettingsToGangNode(advancedGangNode);
+
             var gangsDocToWrite = result.GangsDoc;
 
             if (File.Exists(gangsPath))
@@ -2829,7 +3016,11 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 }
             }
 
+            ApplyGangColorToResult(gangsDocToWrite);
+
             xmlService.SaveToFile(gangsPath, xmlService.Format(gangsDocToWrite.ToString()));
+
+            editedFiles.Add(gangsPath);
 
             ApplyDispatchablePeopleEdits(peopleDocToWrite);
 
@@ -3520,6 +3711,25 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             if (!string.Equals(oldMemberName, newMemberName, StringComparison.Ordinal))
                 changes.Add($"MemberName: '{oldMemberName}' -> '{newMemberName}'");
             SetOrUpdateGangField(gangNode, "MemberName", newMemberName);
+
+            var desiredColorString = (GangColorString ?? "").Trim();
+            var desiredColorPrefix = (GangColorPrefix ?? "").Trim();
+
+            if (!string.IsNullOrWhiteSpace(desiredColorString) || !string.IsNullOrWhiteSpace(desiredColorPrefix))
+            {
+                var oldColorString = ((string?)gangNode.Element("ColorString") ?? "").Trim();
+                var oldColorPrefix = ((string?)gangNode.Element("ColorPrefix") ?? "").Trim();
+
+                if (!string.Equals(oldColorString, desiredColorString, StringComparison.Ordinal))
+                    changes.Add($"ColorString: '{oldColorString}' -> '{desiredColorString}'");
+
+                if (!string.Equals(oldColorPrefix, desiredColorPrefix, StringComparison.Ordinal))
+                    changes.Add($"ColorPrefix: '{oldColorPrefix}' -> '{desiredColorPrefix}'");
+
+                SetOrUpdateGangField(gangNode, "ColorString", desiredColorString);
+                SetOrUpdateGangField(gangNode, "ColorPrefix", desiredColorPrefix);
+                ApplyAdvancedGangSettingsToGangNode(gangNode);
+            }
 
             if (IncludePeople && !UseSourceGangPeopleGroup && SelectedDispatchablePeopleGroup is not null)
             {
@@ -4701,12 +4911,72 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
             return double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : 0;
         }
 
+        private static readonly IReadOnlyDictionary<string, string> GangColorPrefixMap =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Red"] = "~r~",
+                ["Green"] = "~g~",
+                ["Blue"] = "~b~",
+                ["Yellow"] = "~y~",
+                ["Purple"] = "~p~",
+                ["Orange"] = "~o~",
+                ["White"] = "~w~",
+                ["Gray"] = "~c~",
+                ["Black"] = "~u~",
+                ["DarkGray"] = "~m~",
+                ["Pink"] = "~q~"
+            };
+
+        private static readonly IReadOnlyDictionary<string, string> GangColorNameByPrefixMap =
+            GangColorPrefixMap
+                .GroupBy(x => x.Value, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().Key, StringComparer.OrdinalIgnoreCase);
+
         private void LoadBlipAndColorReferences()
         {
             CommonBlipColors.Clear();
+            CommonTextColorPrefixes.Clear();
+            GangColorNames.Clear();
 
-            foreach (var c in Enum.GetValues<System.Drawing.KnownColor>().Select(v => v.ToString()).OrderBy(s => s))
-                CommonBlipColors.Add(c);
+            foreach (var kc in Enum.GetValues<System.Drawing.KnownColor>())
+            {
+                var c = System.Drawing.Color.FromKnownColor(kc);
+                if (!c.IsSystemColor)
+                    CommonBlipColors.Add(c.Name);
+            }
+
+            var ordered = CommonBlipColors.OrderBy(s => s).ToList();
+            CommonBlipColors.Clear();
+            foreach (var name in ordered)
+                CommonBlipColors.Add(name);
+
+            var gangNames = GangColorPrefixMap.Keys.OrderBy(s => s).ToList();
+            foreach (var n in gangNames)
+                GangColorNames.Add(n);
+
+            CommonTextColorPrefixes.Add("~s~");
+            foreach (var p in GangColorPrefixMap.Values.Distinct(StringComparer.OrdinalIgnoreCase))
+                CommonTextColorPrefixes.Add(p);
+
+            var prefixes = new[]
+            {
+                "~s~",
+                "~r~",
+                "~g~",
+                "~b~",
+                "~y~",
+                "~p~",
+                "~o~",
+                "~w~",
+                "~h~",
+                "~c~",
+                "~u~",
+                "~m~",
+                "~q~"
+            };
+
+            foreach (var p in prefixes)
+                CommonTextColorPrefixes.Add(p);
 
             var dispatcher = System.Windows.Application.Current?.Dispatcher;
             System.Threading.Tasks.Task.Run(() =>
@@ -5531,6 +5801,311 @@ namespace LSR.XmlHelper.Wpf.ViewModels.Windows
                 return false;
 
             return SelectedDispatchablePersonEntry is not null;
+        }
+        private void SelectedDispatchablePersonFieldOnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (sender is not DispatchablePersonFieldViewModel field)
+                return;
+
+            if (!string.Equals(e.PropertyName ?? "", nameof(DispatchablePersonFieldViewModel.Value), StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!string.Equals(field.Name ?? "", "RequiredVariation", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            ApplyAppearanceLockFromRequiredVariation();
+        }
+
+        private void ApplyAppearanceLockFromRequiredVariation()
+        {
+            if (SelectedDispatchablePersonEntry is null)
+                return;
+
+            SetSelectedDispatchablePersonFieldValue("RandomizeHead", "false");
+            SetSelectedDispatchablePersonFieldValue("OptionalPropChance", "0");
+            SetSelectedDispatchablePersonFieldValue("OptionalComponentChance", "0");
+            SetSelectedDispatchablePersonFieldValue("OptionalComponents", "");
+            SetSelectedDispatchablePersonFieldValue("OptionalProps", "");
+            SetSelectedDispatchablePersonFieldValue("OptionalAppliedOverlayLogic", "");
+        }
+
+        private void SetSelectedDispatchablePersonFieldValue(string fieldName, string value)
+        {
+            if (SelectedDispatchablePersonEntry is null)
+                return;
+
+            var field = SelectedDispatchablePersonEntry.Fields.FirstOrDefault(x => string.Equals(x.Name ?? "", fieldName, StringComparison.OrdinalIgnoreCase));
+            if (field is null)
+                return;
+
+            field.Value = value;
+        }
+
+        private bool HasSelectedLoanParameter() => SelectedLoanParameter is not null;
+
+        private void AddLoanParameter()
+        {
+            var vm = new LoanParameterEntryViewModel();
+            _loanParameters.Add(vm);
+            SelectedLoanParameter = vm;
+        }
+
+        private void DuplicateSelectedLoanParameter()
+        {
+            if (SelectedLoanParameter is null)
+                return;
+
+            var clone = SelectedLoanParameter.Clone();
+            _loanParameters.Add(clone);
+            SelectedLoanParameter = clone;
+        }
+
+        private void RemoveSelectedLoanParameter()
+        {
+            if (SelectedLoanParameter is null)
+                return;
+
+            var toRemove = SelectedLoanParameter;
+            SelectedLoanParameter = null;
+            _loanParameters.Remove(toRemove);
+        }
+
+        private void ResetLoanParameters()
+        {
+            SelectedLoanParameter = null;
+            _loanParameters.Clear();
+        }
+
+        private void LoadSelectedGangAdvancedSettings(string gangId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_rootFolderPath))
+                    return;
+
+                if (string.IsNullOrWhiteSpace(gangId))
+                    return;
+
+                var reader = new LSR.XmlHelper.Core.Services.Builders.GangEditSnapshotReadService();
+                var snapshot = reader.TryGet(_rootFolderPath, gangId);
+
+                if (snapshot is null)
+                    return;
+
+                MinimumRep = snapshot.MinimumRep;
+                MaximumRep = snapshot.MaximumRep;
+                StartingRep = snapshot.StartingRep;
+                HostileRepLevel = snapshot.HostileRepLevel;
+                NeutralRepLevel = snapshot.NeutralRepLevel;
+                FriendlyRepLevel = snapshot.FriendlyRepLevel;
+                MemberOfferRepLevel = snapshot.MemberOfferRepLevel;
+                HitSquadRep = snapshot.HitSquadRep;
+
+                PickupPaymentMin = snapshot.PickupPaymentMin;
+                PickupPaymentMax = snapshot.PickupPaymentMax;
+                TheftPaymentMin = snapshot.TheftPaymentMin;
+                TheftPaymentMax = snapshot.TheftPaymentMax;
+                HitPaymentMin = snapshot.HitPaymentMin;
+                HitPaymentMax = snapshot.HitPaymentMax;
+                DeliveryPaymentMin = snapshot.DeliveryPaymentMin;
+                DeliveryPaymentMax = snapshot.DeliveryPaymentMax;
+                WheelmanPaymentMin = snapshot.WheelmanPaymentMin;
+                WheelmanPaymentMax = snapshot.WheelmanPaymentMax;
+                ImpoundTheftPaymentMin = snapshot.ImpoundTheftPaymentMin;
+                ImpoundTheftPaymentMax = snapshot.ImpoundTheftPaymentMax;
+                BodyDisposalPaymentMin = snapshot.BodyDisposalPaymentMin;
+                BodyDisposalPaymentMax = snapshot.BodyDisposalPaymentMax;
+                CopHitPaymentMin = snapshot.CopHitPaymentMin;
+                CopHitPaymentMax = snapshot.CopHitPaymentMax;
+                AmbushPaymentMin = snapshot.AmbushPaymentMin;
+                AmbushPaymentMax = snapshot.AmbushPaymentMax;
+                BriberyPaymentMin = snapshot.BriberyPaymentMin;
+                BriberyPaymentMax = snapshot.BriberyPaymentMax;
+                ArsonPaymentMin = snapshot.ArsonPaymentMin;
+                ArsonPaymentMax = snapshot.ArsonPaymentMax;
+
+                FightPercentage = snapshot.FightPercentage;
+                FightPolicePercentage = snapshot.FightPolicePercentage;
+                AlwaysFightPolicePercentage = snapshot.AlwaysFightPolicePercentage;
+                DrugDealerPercentage = snapshot.DrugDealerPercentage;
+
+                AmbientMemberMoneyMin = snapshot.AmbientMemberMoneyMin;
+                AmbientMemberMoneyMax = snapshot.AmbientMemberMoneyMax;
+                DealerMemberMoneyMin = snapshot.DealerMemberMoneyMin;
+                DealerMemberMoneyMax = snapshot.DealerMemberMoneyMax;
+                CostToPayoffGangScalar = snapshot.CostToPayoffGangScalar;
+
+                PercentageTrustingOfPlayer = snapshot.PercentageTrustingOfPlayer;
+                PercentageWithLongGuns = snapshot.PercentageWithLongGuns;
+                PercentageWithSidearms = snapshot.PercentageWithSidearms;
+                PercentageWithMelee = snapshot.PercentageWithMelee;
+                VehicleSpawnPercentage = snapshot.VehicleSpawnPercentage;
+                PedestrianSpawnPercentageAroundDen = snapshot.PedestrianSpawnPercentageAroundDen;
+
+                MemberKickUpDays = snapshot.MemberKickUpDays;
+                MemberKickUpAmount = snapshot.MemberKickUpAmount;
+                MemberKickUpMissLimit = snapshot.MemberKickUpMissLimit;
+
+                _loanParameters.Clear();
+                SelectedLoanParameter = null;
+
+                foreach (var lp in snapshot.LoanParameters)
+                {
+                    _loanParameters.Add(new LoanParameterEntryViewModel(
+                        lp.ResepectLevel,
+                        lp.Rate,
+                        lp.MaxPeriods,
+                        lp.MinAmount,
+                        lp.MaxAmount));
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private void ApplyGangColorToResult(XDocument gangsDoc)
+        {
+            if (gangsDoc is null)
+                return;
+
+            var gangId = (NewGangId ?? "").Trim();
+
+            var gangNode = string.IsNullOrWhiteSpace(gangId)
+                ? gangsDoc.Descendants("Gang").FirstOrDefault()
+                : gangsDoc.Descendants("Gang").FirstOrDefault(x => string.Equals((x.Element("ID")?.Value ?? "").Trim(), gangId, StringComparison.OrdinalIgnoreCase));
+
+            if (gangNode is null)
+                return;
+
+            var prefix = (GangColorPrefix ?? "").Trim();
+            var color = (GangColorString ?? "").Trim();
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+                SetOrCreate(gangNode, "ColorPrefix", prefix);
+
+            if (!string.IsNullOrWhiteSpace(color))
+                SetOrCreate(gangNode, "ColorString", color);
+        }
+
+        private void ApplyAdvancedGangSettingsToGangNode(System.Xml.Linq.XElement gangNode)
+        {
+            if (gangNode is null)
+                return;
+
+            ApplyAdvancedGangScalarFieldsToGangNode(gangNode);
+            ApplyAdvancedGangLoanParametersToGangNode(gangNode);
+        }
+
+        private void ApplyAdvancedGangScalarFieldsToGangNode(System.Xml.Linq.XElement gangNode)
+        {
+            void Apply(string fieldName, string value)
+            {
+                var trimmed = (value ?? "").Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                    SetOrUpdateGangField(gangNode, fieldName, trimmed);
+            }
+
+            Apply("MinimumRep", MinimumRep);
+            Apply("MaximumRep", MaximumRep);
+            Apply("StartingRep", StartingRep);
+            Apply("HostileRepLevel", HostileRepLevel);
+            Apply("NeutralRepLevel", NeutralRepLevel);
+            Apply("FriendlyRepLevel", FriendlyRepLevel);
+            Apply("MemberOfferRepLevel", MemberOfferRepLevel);
+            Apply("HitSquadRep", HitSquadRep);
+
+            Apply("PickupPaymentMin", PickupPaymentMin);
+            Apply("PickupPaymentMax", PickupPaymentMax);
+            Apply("TheftPaymentMin", TheftPaymentMin);
+            Apply("TheftPaymentMax", TheftPaymentMax);
+            Apply("HitPaymentMin", HitPaymentMin);
+            Apply("HitPaymentMax", HitPaymentMax);
+            Apply("DeliveryPaymentMin", DeliveryPaymentMin);
+            Apply("DeliveryPaymentMax", DeliveryPaymentMax);
+            Apply("WheelmanPaymentMin", WheelmanPaymentMin);
+            Apply("WheelmanPaymentMax", WheelmanPaymentMax);
+            Apply("ImpoundTheftPaymentMin", ImpoundTheftPaymentMin);
+            Apply("ImpoundTheftPaymentMax", ImpoundTheftPaymentMax);
+            Apply("BodyDisposalPaymentMin", BodyDisposalPaymentMin);
+            Apply("BodyDisposalPaymentMax", BodyDisposalPaymentMax);
+            Apply("CopHitPaymentMin", CopHitPaymentMin);
+            Apply("CopHitPaymentMax", CopHitPaymentMax);
+            Apply("AmbushPaymentMin", AmbushPaymentMin);
+            Apply("AmbushPaymentMax", AmbushPaymentMax);
+            Apply("BriberyPaymentMin", BriberyPaymentMin);
+            Apply("BriberyPaymentMax", BriberyPaymentMax);
+            Apply("ArsonPaymentMin", ArsonPaymentMin);
+            Apply("ArsonPaymentMax", ArsonPaymentMax);
+
+            Apply("FightPercentage", FightPercentage);
+            Apply("FightPolicePercentage", FightPolicePercentage);
+            Apply("AlwaysFightPolicePercentage", AlwaysFightPolicePercentage);
+            Apply("DrugDealerPercentage", DrugDealerPercentage);
+
+            Apply("AmbientMemberMoneyMin", AmbientMemberMoneyMin);
+            Apply("AmbientMemberMoneyMax", AmbientMemberMoneyMax);
+            Apply("DealerMemberMoneyMin", DealerMemberMoneyMin);
+            Apply("DealerMemberMoneyMax", DealerMemberMoneyMax);
+            Apply("CostToPayoffGangScalar", CostToPayoffGangScalar);
+
+            Apply("PercentageTrustingOfPlayer", PercentageTrustingOfPlayer);
+            Apply("PercentageWithLongGuns", PercentageWithLongGuns);
+            Apply("PercentageWithSidearms", PercentageWithSidearms);
+            Apply("PercentageWithMelee", PercentageWithMelee);
+            Apply("VehicleSpawnPercentage", VehicleSpawnPercentage);
+            Apply("PedestrianSpawnPercentageAroundDen", PedestrianSpawnPercentageAroundDen);
+
+            Apply("MemberKickUpDays", MemberKickUpDays);
+            Apply("MemberKickUpAmount", MemberKickUpAmount);
+            Apply("MemberKickUpMissLimit", MemberKickUpMissLimit);
+        }
+
+        private void ApplyAdvancedGangLoanParametersToGangNode(System.Xml.Linq.XElement gangNode)
+        {
+            if (gangNode is null)
+                return;
+
+            var loanParametersRoot = gangNode.Element("LoanParameters");
+            if (loanParametersRoot is null)
+            {
+                loanParametersRoot = new System.Xml.Linq.XElement("LoanParameters");
+                gangNode.Add(loanParametersRoot);
+            }
+
+            var loanParameterList = loanParametersRoot.Element("LoanParamterList");
+            if (loanParameterList is null)
+            {
+                loanParameterList = new System.Xml.Linq.XElement("LoanParamterList");
+                loanParametersRoot.Add(loanParameterList);
+            }
+
+            loanParameterList.Elements("LoanParameter").Remove();
+
+            foreach (var row in LoanParameters)
+            {
+                var resepectLevel = (row?.ResepectLevel ?? "").Trim();
+                var rate = (row?.Rate ?? "").Trim();
+                var maxPeriods = (row?.MaxPeriods ?? "").Trim();
+                var minAmount = (row?.MinAmount ?? "").Trim();
+                var maxAmount = (row?.MaxAmount ?? "").Trim();
+
+                if (string.IsNullOrWhiteSpace(resepectLevel)
+                    && string.IsNullOrWhiteSpace(rate)
+                    && string.IsNullOrWhiteSpace(maxPeriods)
+                    && string.IsNullOrWhiteSpace(minAmount)
+                    && string.IsNullOrWhiteSpace(maxAmount))
+                    continue;
+
+                var node = new System.Xml.Linq.XElement("LoanParameter",
+                    new System.Xml.Linq.XElement("ResepectLevel", resepectLevel),
+                    new System.Xml.Linq.XElement("Rate", rate),
+                    new System.Xml.Linq.XElement("MaxPeriods", maxPeriods),
+                    new System.Xml.Linq.XElement("MinAmount", minAmount),
+                    new System.Xml.Linq.XElement("MaxAmount", maxAmount));
+
+                loanParameterList.Add(node);
+            }
         }
 
         private bool TryGetClipboardXyzHeading(out double x, out double y, out double z, out double heading)

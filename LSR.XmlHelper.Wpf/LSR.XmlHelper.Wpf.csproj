@@ -13,9 +13,9 @@
     <RootNamespace>LSR.XmlHelper.Wpf</RootNamespace>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
 
-    <Version>1.4.4</Version>
-    <FileVersion>1.4.4</FileVersion>
-    <AssemblyVersion>1.4.4</AssemblyVersion>
+    <Version>1.4.5</Version>
+    <FileVersion>1.4.5</FileVersion>
+    <AssemblyVersion>1.4.5</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
