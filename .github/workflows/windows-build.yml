@@ -1,0 +1,40 @@
+name: Windows build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build .NET 8 solution
+    # WPF, Windows Forms, and BuildGuidesZip's powershell command require Windows.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        id: dotnet
+        with:
+          # Keep .NET 8 installed; use .NET 10 tooling to read the .slnx solution.
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Select solution-compatible SDK
+        run: dotnet new globaljson --sdk-version ${{ steps.dotnet.outputs.dotnet-version }} --roll-forward disable
+
+      - name: Restore solution
+        run: dotnet restore LSR.XmlHelper.slnx
+
+      - name: Prepare guide packaging directory
+        # BuildGuidesZip runs before PrepareForBuild creates this directory.
+        run: New-Item -ItemType Directory -Force LSR.XmlHelper.Wpf/obj/Release/net8.0-windows | Out-Null
+
+      - name: Build solution
+        run: dotnet build LSR.XmlHelper.slnx --configuration Release --no-restore
