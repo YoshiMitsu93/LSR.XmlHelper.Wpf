@@ -32,5 +32,9 @@ jobs:
       - name: Restore solution
         run: dotnet restore LSR.XmlHelper.slnx
 
+      - name: Prepare guide packaging directory
+        # BuildGuidesZip runs before PrepareForBuild creates this directory.
+        run: New-Item -ItemType Directory -Force LSR.XmlHelper.Wpf/obj/Release/net8.0-windows | Out-Null
+
       - name: Build solution
         run: dotnet build LSR.XmlHelper.slnx --configuration Release --no-restore
